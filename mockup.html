@@ -112,14 +112,14 @@
     transition: all 0.6s ease;
   }
 
-  /* Orb container — full width, centered */
+  /* Orb container — centred between title and prompt text */
   .orb-container {
     position: absolute;
-    top: 50%;
+    top: 75px;
+    bottom: 340px;
     left: 50%;
-    transform: translate(-50%, -55%);
+    transform: translateX(-50%);
     width: 375px;
-    height: 375px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,12 +170,12 @@
   .orb.active .orb-svg .layer-core   { opacity: 1 !important; }
   .orb.active .orb-svg .layer-bright { opacity: 1 !important; }
 
-  /* Prompt text — sits below orb centre, in the darker fade zone */
+  /* Prompt text — fixed position, stays put regardless of orb */
   .prompt-area {
     position: absolute;
-    top: 50%;
+    bottom: 260px;
     left: 50%;
-    transform: translate(-50%, 48%);
+    transform: translateX(-50%);
     width: 320px;
     text-align: center;
     z-index: 6;
@@ -574,10 +574,8 @@
     const cp3x = CX + (ORB_R + len * 0.72) * Math.cos(a + curl * 0.7);
     const cp3y = CY + (ORB_R + len * 0.72) * Math.sin(a + curl * 0.7);
 
-    // Opacity pulses gently
-    const op = flaring
-      ? 0.82
-      : 0.32 + 0.22 * Math.sin(time * t.lenSpd * 1.4 + t.lenPh + 0.5);
+    // Hidden for now
+    const op = 0;
 
     return { op,
       d: `M${b1x},${b1y} C${cp1x},${cp1y} ${cp3x},${cp3y} ${tx},${ty} C${cp3x},${cp3y} ${cp2x},${cp2y} ${b2x},${b2y} Z`
