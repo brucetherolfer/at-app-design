@@ -70,7 +70,7 @@
   .app-name {
     font-size: 11px;
     font-weight: 300;
-    color: rgba(240,240,240,0.4);
+    color: rgba(240,240,240,0.75);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     text-align: center;
@@ -106,7 +106,7 @@
   .status-text {
     font-size: 10px;
     font-weight: 300;
-    color: rgba(72,202,228,0.45);
+    color: rgba(72,202,228,0.8);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     transition: all 0.6s ease;
@@ -214,7 +214,7 @@
   .countdown-label {
     font-size: 9px;
     font-weight: 300;
-    color: rgba(240,240,240,0.2);
+    color: rgba(240,240,240,0.55);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     margin-bottom: 4px;
@@ -223,7 +223,7 @@
   .countdown-value {
     font-size: 26px;
     font-weight: 200;
-    color: rgba(72,202,228,0.5);
+    color: rgba(72,202,228,0.85);
     letter-spacing: 0.04em;
     font-variant-numeric: tabular-nums;
   }
@@ -303,7 +303,7 @@
     font-weight: 300;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(240,240,240,0.4);
+    color: rgba(240,240,240,0.75);
   }
 
   /* ---- Animations ---- */
@@ -383,20 +383,20 @@
         </defs>
 
         <!-- Outermost — wide deep blue wash -->
-        <ellipse class="layer-outer" cx="187" cy="187" rx="150" ry="150"
-          fill="#0096c7" opacity="0.35" filter="url(#f-outer)"/>
+        <ellipse class="layer-outer" cx="187" cy="187" rx="170" ry="170"
+          fill="#0096c7" opacity="0.6" filter="url(#f-outer)"/>
 
         <!-- Mid — caribbean blue -->
-        <ellipse class="layer-mid" cx="187" cy="187" rx="110" ry="110"
-          fill="#48cae4" opacity="0.45" filter="url(#f-mid)"/>
+        <ellipse class="layer-mid" cx="187" cy="187" rx="128" ry="128"
+          fill="#48cae4" opacity="0.7" filter="url(#f-mid)"/>
 
         <!-- Core — brighter teal -->
-        <ellipse class="layer-core" cx="187" cy="187" rx="78" ry="78"
-          fill="#90e0ef" opacity="0.45" filter="url(#f-core)"/>
+        <ellipse class="layer-core" cx="187" cy="187" rx="90" ry="90"
+          fill="#90e0ef" opacity="0.65" filter="url(#f-core)"/>
 
         <!-- Bright centre — blends softly, not a dot -->
-        <ellipse class="layer-bright" cx="187" cy="187" rx="62" ry="62"
-          fill="#caf0f8" opacity="0.3" filter="url(#f-bright)"/>
+        <ellipse class="layer-bright" cx="187" cy="187" rx="70" ry="70"
+          fill="#caf0f8" opacity="0.45" filter="url(#f-bright)"/>
       </svg>
     </div>
   </div>
@@ -521,10 +521,10 @@
     // Bloom the SVG layers brighter
     orb.classList.remove('stopped');
     const layers = orb.querySelectorAll('.orb-svg ellipse');
-    layers[0].setAttribute('opacity', '0.6');
-    layers[1].setAttribute('opacity', '0.75');
-    layers[2].setAttribute('opacity', '0.75');
-    layers[3].setAttribute('opacity', '0.55');
+    layers[0].setAttribute('opacity', '0.85');
+    layers[1].setAttribute('opacity', '0.95');
+    layers[2].setAttribute('opacity', '0.9');
+    layers[3].setAttribute('opacity', '0.75');
     promptText.classList.add('visible');
 
     // Ripples
@@ -540,10 +540,10 @@
     setTimeout(() => {
       orb.classList.remove('active');
       const layers = orb.querySelectorAll('.orb-svg ellipse');
-      layers[0].setAttribute('opacity', '0.35');
-      layers[1].setAttribute('opacity', '0.45');
-      layers[2].setAttribute('opacity', '0.45');
-      layers[3].setAttribute('opacity', '0.3');
+      layers[0].setAttribute('opacity', '0.6');
+      layers[1].setAttribute('opacity', '0.7');
+      layers[2].setAttribute('opacity', '0.65');
+      layers[3].setAttribute('opacity', '0.45');
       if (!isRunning) orb.classList.add('stopped');
       promptText.classList.remove('visible');
       isFiring = false;
