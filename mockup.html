@@ -175,7 +175,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, 35%);
+    transform: translate(-50%, 48%);
     width: 320px;
     text-align: center;
     z-index: 6;
@@ -313,40 +313,33 @@
     50%       { transform: scale(1.07); }
   }
 
-  /* Tendrils slowly rotate at different speeds — organic drift */
-  #tendrils { transform-origin: 187px 187px; }
+  /* Tendrils — each sways around the orb centre at its own pace */
+  .tendril { transform-box: fill-box; }
 
-  #tendrils ellipse:nth-child(1) { animation: tendrilDrift1 18s ease-in-out infinite alternate; }
-  #tendrils ellipse:nth-child(2) { animation: tendrilDrift2 22s ease-in-out infinite alternate; }
-  #tendrils ellipse:nth-child(3) { animation: tendrilDrift3 16s ease-in-out infinite alternate; }
-  #tendrils ellipse:nth-child(4) { animation: tendrilDrift4 25s ease-in-out infinite alternate; }
-  #tendrils ellipse:nth-child(5) { animation: tendrilDrift1 20s ease-in-out infinite alternate-reverse; }
-  #tendrils ellipse:nth-child(6) { animation: tendrilDrift3 19s ease-in-out infinite alternate; }
-  #tendrils ellipse:nth-child(7) { animation: tendrilDrift2 23s ease-in-out infinite alternate-reverse; }
-  #tendrils ellipse:nth-child(8) { animation: tendrilDrift4 17s ease-in-out infinite alternate; }
+  #tendrils .tendril:nth-child(1) { animation: sway1 7s  ease-in-out infinite alternate; }
+  #tendrils .tendril:nth-child(2) { animation: sway2 9s  ease-in-out infinite alternate-reverse; }
+  #tendrils .tendril:nth-child(3) { animation: sway1 11s ease-in-out infinite alternate; }
+  #tendrils .tendril:nth-child(4) { animation: sway3 8s  ease-in-out infinite alternate-reverse; }
+  #tendrils .tendril:nth-child(5) { animation: sway2 10s ease-in-out infinite alternate; }
+  #tendrils .tendril:nth-child(6) { animation: sway3 6s  ease-in-out infinite alternate-reverse; }
 
-  @keyframes tendrilDrift1 {
-    0%   { opacity: 0.18; transform: rotate(0deg)   scaleX(1);    }
-    100% { opacity: 0.28; transform: rotate(12deg)  scaleX(1.15); }
+  @keyframes sway1 {
+    0%   { transform: rotate(20deg)  scale(1);    opacity: 0.55; }
+    100% { transform: rotate(32deg)  scale(1.08); opacity: 0.35; }
   }
-  @keyframes tendrilDrift2 {
-    0%   { opacity: 0.15; transform: rotate(0deg)   scaleX(1);    }
-    100% { opacity: 0.25; transform: rotate(-10deg) scaleX(1.2);  }
+  @keyframes sway2 {
+    0%   { transform: rotate(85deg)  scale(0.95); opacity: 0.45; }
+    100% { transform: rotate(74deg)  scale(1.1);  opacity: 0.3;  }
   }
-  @keyframes tendrilDrift3 {
-    0%   { opacity: 0.14; transform: rotate(0deg)  scaleX(0.9);  }
-    100% { opacity: 0.22; transform: rotate(8deg)  scaleX(1.1);  }
-  }
-  @keyframes tendrilDrift4 {
-    0%   { opacity: 0.18; transform: rotate(0deg)   scaleX(1.05); }
-    100% { opacity: 0.3;  transform: rotate(-14deg) scaleX(1.25); }
+  @keyframes sway3 {
+    0%   { transform: rotate(150deg) scale(1);    opacity: 0.5;  }
+    100% { transform: rotate(162deg) scale(1.06); opacity: 0.32; }
   }
 
-  /* On active — tendrils flare up */
-  .orb.active #tendrils ellipse {
-    animation: none !important;
-    opacity: 0.55 !important;
-    transition: opacity 0.6s ease;
+  /* On pulse — tendrils reach outward */
+  .orb.active .tendril {
+    opacity: 0.75 !important;
+    transition: opacity 0.5s ease;
   }
 
   @keyframes sheenDrift {
@@ -418,25 +411,38 @@
           </filter>
         </defs>
 
-        <!-- Tendrils — blurred elongated ellipses at various angles -->
-        <g id="tendrils" opacity="1">
-          <!-- Each tendril: long+thin, heavily blurred, rotated around centre -->
-          <ellipse cx="187" cy="187" rx="180" ry="18" fill="#48cae4" opacity="0.18"
-            filter="url(#f-mid)" transform="rotate(18 187 187)"/>
-          <ellipse cx="187" cy="187" rx="160" ry="14" fill="#90e0ef" opacity="0.15"
-            filter="url(#f-mid)" transform="rotate(62 187 187)"/>
-          <ellipse cx="187" cy="187" rx="195" ry="16" fill="#48cae4" opacity="0.14"
-            filter="url(#f-mid)" transform="rotate(105 187 187)"/>
-          <ellipse cx="187" cy="187" rx="170" ry="20" fill="#0096c7" opacity="0.18"
-            filter="url(#f-mid)" transform="rotate(148 187 187)"/>
-          <ellipse cx="187" cy="187" rx="185" ry="13" fill="#90e0ef" opacity="0.13"
-            filter="url(#f-core)" transform="rotate(200 187 187)"/>
-          <ellipse cx="187" cy="187" rx="155" ry="17" fill="#48cae4" opacity="0.16"
-            filter="url(#f-mid)" transform="rotate(245 187 187)"/>
-          <ellipse cx="187" cy="187" rx="190" ry="15" fill="#caf0f8" opacity="0.12"
-            filter="url(#f-core)" transform="rotate(290 187 187)"/>
-          <ellipse cx="187" cy="187" rx="165" ry="19" fill="#48cae4" opacity="0.15"
-            filter="url(#f-mid)" transform="rotate(335 187 187)"/>
+        <!-- Tendril filter — soft edges but shape still readable -->
+        <filter id="f-tendril" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="6"/>
+        </filter>
+
+        <!-- Tendrils — bezier tapered paths, rotate around orb centre -->
+        <!-- Base template points RIGHT: base at orb edge (~277,187), tip extends further -->
+        <g id="tendrils">
+          <!-- T1: upper right, long -->
+          <path d="M272,175 C320,165 375,148 415,138 C385,148 335,162 272,199 Z"
+            fill="#48cae4" opacity="0.55" filter="url(#f-tendril)"
+            transform="rotate(20 187 187)" class="tendril"/>
+          <!-- T2: right, medium -->
+          <path d="M274,178 C318,170 368,162 400,155 C375,165 325,175 274,196 Z"
+            fill="#90e0ef" opacity="0.45" filter="url(#f-tendril)"
+            transform="rotate(85 187 187)" class="tendril"/>
+          <!-- T3: lower right, long thin -->
+          <path d="M272,180 C325,175 385,172 425,165 C390,178 328,185 272,194 Z"
+            fill="#48cae4" opacity="0.5" filter="url(#f-tendril)"
+            transform="rotate(150 187 187)" class="tendril"/>
+          <!-- T4: lower left, shorter -->
+          <path d="M274,182 C315,178 355,178 388,172 C360,184 318,190 274,192 Z"
+            fill="#0096c7" opacity="0.5" filter="url(#f-tendril)"
+            transform="rotate(215 187 187)" class="tendril"/>
+          <!-- T5: left, long -->
+          <path d="M272,176 C322,162 378,145 420,132 C388,148 330,160 272,198 Z"
+            fill="#90e0ef" opacity="0.45" filter="url(#f-tendril)"
+            transform="rotate(278 187 187)" class="tendril"/>
+          <!-- T6: upper left, medium -->
+          <path d="M273,179 C316,168 362,158 398,148 C370,162 322,172 273,195 Z"
+            fill="#48cae4" opacity="0.5" filter="url(#f-tendril)"
+            transform="rotate(338 187 187)" class="tendril"/>
         </g>
 
         <!-- Outermost — wide deep blue wash -->
