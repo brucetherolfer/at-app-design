@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alexander Technique — App Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #080c10;
+    border-radius: 54px;
+    border: 1.5px solid #1a2a35;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(72,202,228,0.04);
+  }
+
+  /* Notch */
+  .notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 34px;
+    background: #080c10;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+
+  /* Home indicator */
+  .home-indicator {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 3px;
+    z-index: 10;
+  }
+
+  /* Header */
+  .header {
+    position: absolute;
+    top: 52px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    z-index: 5;
+  }
+
+  .app-name {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(240,240,240,0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .settings-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+  }
+  .settings-btn:hover { opacity: 0.75; }
+  .settings-btn svg { width: 17px; height: 17px; }
+
+  /* Status */
+  .status {
+    position: absolute;
+    top: 86px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 5;
+  }
+
+  .status-text {
+    font-size: 10px;
+    font-weight: 300;
+    color: rgba(72,202,228,0.45);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: all 0.6s ease;
+  }
+
+  /* Orb container — centered in the screen */
+  .orb-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -58%);
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  /* Ripple rings — start at orb size, expand outward */
+  .ripple {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(72,202,228,0.2);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Orb wrapper — just for breathing animation */
+  .orb {
+    width: 300px;
+    height: 300px;
+    position: relative;
+    animation: breathe 5s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .orb-inner { display: none; }
+  .orb-sheen { display: none; }
+
+  /* SVG glob — Gaussian blur kills all edges */
+  .orb-svg {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    overflow: visible;
+  }
+
+  .orb-svg .layer-outer   { transition: opacity 1s ease; }
+  .orb-svg .layer-mid     { transition: opacity 1s ease; }
+  .orb-svg .layer-core    { transition: opacity 1s ease; }
+  .orb-svg .layer-bright  { transition: opacity 1s ease; }
+
+  /* Active — layers bloom brighter */
+  .orb.active .orb-svg .layer-outer  { opacity: 1 !important; }
+  .orb.active .orb-svg .layer-mid    { opacity: 1 !important; }
+  .orb.active .orb-svg .layer-core   { opacity: 1 !important; }
+  .orb.active .orb-svg .layer-bright { opacity: 1 !important; }
+
+  /* Prompt text — centered OVER the orb */
+  .prompt-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -58%);
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  .prompt-text {
+    font-size: 17px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+    text-align: center;
+    padding: 0 28px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 1s ease, transform 1s ease;
+  }
+
+  .prompt-text.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Countdown */
+  .countdown-area {
+    position: absolute;
+    bottom: 185px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 5;
+    transition: opacity 0.5s;
+  }
+
+  .countdown-label {
+    font-size: 9px;
+    font-weight: 300;
+    color: rgba(240,240,240,0.2);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .countdown-value {
+    font-size: 26px;
+    font-weight: 200;
+    color: rgba(72,202,228,0.5);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Controls */
+  .controls {
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    z-index: 5;
+  }
+
+  .main-btn {
+    width: 156px;
+    height: 50px;
+    border-radius: 25px;
+    border: 1.5px solid rgba(72,202,228,0.45);
+    background: transparent;
+    color: rgba(240,240,240,0.8);
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+
+  .main-btn:hover {
+    border-color: rgba(72,202,228,0.85);
+    background: rgba(72,202,228,0.07);
+    color: #f0f0f0;
+  }
+
+  .main-btn.running {
+    border-color: rgba(72,202,228,0.6);
+    background: rgba(72,202,228,0.08);
+  }
+
+  .secondary-controls {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+  }
+
+  .fire-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+  .fire-btn:hover { opacity: 0.9; }
+
+  .fire-btn-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(240,240,240,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fire-btn-label {
+    font-size: 8px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(240,240,240,0.4);
+  }
+
+  /* ---- Animations ---- */
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.965); }
+    50%       { transform: scale(1.035); }
+  }
+
+  @keyframes sheenDrift {
+    0%   { opacity: 1;   transform: rotate(0deg)  scale(1);    }
+    100% { opacity: 0.65; transform: rotate(18deg) scale(1.06); }
+  }
+
+  @keyframes rippleOut {
+    0%   { transform: scale(1);   opacity: 0.45; }
+    100% { transform: scale(2.4); opacity: 0;    }
+  }
+
+  /* Active state handled via SVG layer opacity above */
+
+  .ripple.animating {
+    animation: rippleOut 1.8s ease-out forwards;
+  }
+
+  /* Stopped */
+  .orb.stopped {
+    animation: none;
+    opacity: 0.35;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <span class="app-name">Alexander Technique</span>
+    <button class="settings-btn" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Status -->
+  <div class="status">
+    <div class="status-text" id="statusText">Ready</div>
+  </div>
+
+  <!-- Orb -->
+  <div class="orb-container">
+    <div class="ripple" id="ripple1"></div>
+    <div class="ripple" id="ripple2"></div>
+    <div class="ripple" id="ripple3"></div>
+    <div class="orb stopped" id="orb">
+      <div class="orb-inner"></div>
+      <div class="orb-sheen"></div>
+      <svg class="orb-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Heavy blur — dissolves all edges completely -->
+          <filter id="f-outer" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="42"/>
+          </filter>
+          <filter id="f-mid" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="28"/>
+          </filter>
+          <filter id="f-core" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="18"/>
+          </filter>
+          <filter id="f-bright" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="10"/>
+          </filter>
+        </defs>
+
+        <!-- Outermost — wide, very faint deep blue -->
+        <ellipse class="layer-outer" cx="150" cy="155" rx="95" ry="88"
+          fill="#0096c7" opacity="0.35" filter="url(#f-outer)"/>
+
+        <!-- Mid — caribbean blue -->
+        <ellipse class="layer-mid" cx="148" cy="152" rx="70" ry="65"
+          fill="#48cae4" opacity="0.45" filter="url(#f-mid)"/>
+
+        <!-- Core — brighter teal -->
+        <ellipse class="layer-core" cx="146" cy="148" rx="48" ry="44"
+          fill="#90e0ef" opacity="0.55" filter="url(#f-core)"/>
+
+        <!-- Bright centre highlight — shifts slightly for iridescence -->
+        <ellipse class="layer-bright" cx="140" cy="142" rx="28" ry="25"
+          fill="#caf0f8" opacity="0.65" filter="url(#f-bright)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Prompt text — over the orb -->
+  <div class="prompt-area">
+    <div class="prompt-text" id="promptText"></div>
+  </div>
+
+  <!-- Countdown -->
+  <div class="countdown-area" id="countdownArea" style="opacity:0;">
+    <div class="countdown-label">Next prompt in</div>
+    <div class="countdown-value" id="countdownValue">0:00</div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="main-btn" id="mainBtn" onclick="toggleRunning()">Start</button>
+    <div class="secondary-controls">
+      <button class="fire-btn" onclick="firePrompt()">
+        <div class="fire-btn-circle">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+        </div>
+        <span class="fire-btn-label">Fire now</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+  const prompts = [
+    "Let your neck be free",
+    "Allow the head to go forward and up",
+    "Do less",
+    "Notice where you are holding",
+    "Pause. Inhibit. Direct. Move.",
+    "Let your back lengthen and widen",
+    "Soften the eyes",
+    "Allow stillness inside movement",
+    "Stop. Think. Direct.",
+    "Is your jaw clenched?"
+  ];
+
+  let promptIndex = 0;
+  let isRunning = false;
+  let isFiring = false;
+  let countdownTimer = null;
+  let countdownSeconds = 0;
+  let nextPromptTimeout = null;
+
+  const orb = document.getElementById('orb');
+  const promptText = document.getElementById('promptText');
+  const mainBtn = document.getElementById('mainBtn');
+  const statusText = document.getElementById('statusText');
+  const countdownArea = document.getElementById('countdownArea');
+  const countdownValue = document.getElementById('countdownValue');
+  const ripples = [
+    document.getElementById('ripple1'),
+    document.getElementById('ripple2'),
+    document.getElementById('ripple3')
+  ];
+
+  function toggleRunning() {
+    isRunning = !isRunning;
+    if (isRunning) {
+      orb.classList.remove('stopped');
+      mainBtn.textContent = 'Stop';
+      mainBtn.classList.add('running');
+      statusText.textContent = 'Free Mode · All Prompts';
+      countdownArea.style.opacity = '1';
+      scheduleNextPrompt();
+    } else {
+      orb.classList.add('stopped');
+      orb.classList.remove('active');
+      mainBtn.textContent = 'Start';
+      mainBtn.classList.remove('running');
+      statusText.textContent = 'Ready';
+      countdownArea.style.opacity = '0';
+      promptText.classList.remove('visible');
+      clearTimeout(nextPromptTimeout);
+      clearInterval(countdownTimer);
+    }
+  }
+
+  function scheduleNextPrompt() {
+    const delay = Math.floor(Math.random() * 7000) + 8000;
+    countdownSeconds = Math.ceil(delay / 1000);
+    updateCountdown();
+
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      countdownSeconds = Math.max(0, countdownSeconds - 1);
+      updateCountdown();
+    }, 1000);
+
+    clearTimeout(nextPromptTimeout);
+    nextPromptTimeout = setTimeout(() => {
+      if (isRunning) {
+        firePrompt();
+        setTimeout(() => { if (isRunning) scheduleNextPrompt(); }, 4800);
+      }
+    }, delay);
+  }
+
+  function updateCountdown() {
+    const mins = Math.floor(countdownSeconds / 60);
+    const secs = countdownSeconds % 60;
+    countdownValue.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+  }
+
+  function firePrompt() {
+    if (isFiring) return;
+    isFiring = true;
+
+    promptText.textContent = prompts[promptIndex % prompts.length];
+    promptIndex++;
+
+    // Bloom the SVG layers brighter
+    orb.classList.remove('stopped');
+    const layers = orb.querySelectorAll('.orb-svg ellipse');
+    layers[0].setAttribute('opacity', '0.65');
+    layers[1].setAttribute('opacity', '0.75');
+    layers[2].setAttribute('opacity', '0.85');
+    layers[3].setAttribute('opacity', '0.95');
+    promptText.classList.add('visible');
+
+    // Ripples
+    ripples.forEach((r, i) => {
+      setTimeout(() => {
+        r.classList.remove('animating');
+        void r.offsetWidth;
+        r.classList.add('animating');
+      }, i * 500);
+    });
+
+    // Fade back after 4s
+    setTimeout(() => {
+      orb.classList.remove('active');
+      const layers = orb.querySelectorAll('.orb-svg ellipse');
+      layers[0].setAttribute('opacity', '0.35');
+      layers[1].setAttribute('opacity', '0.45');
+      layers[2].setAttribute('opacity', '0.55');
+      layers[3].setAttribute('opacity', '0.65');
+      if (!isRunning) orb.classList.add('stopped');
+      promptText.classList.remove('visible');
+      isFiring = false;
+    }, 4000);
+  }
+</script>
+</body>
+</html>
