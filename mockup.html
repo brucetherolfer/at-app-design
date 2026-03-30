@@ -313,34 +313,8 @@
     50%       { transform: scale(1.07); }
   }
 
-  /* Tendrils — sway ±8° around their base rotation, each at own speed */
-  #tendrils .tendril:nth-child(1) { animation: sway  0deg  8s  ease-in-out infinite alternate; }
-  #tendrils .tendril:nth-child(2) { animation: sway 60deg  11s ease-in-out infinite alternate-reverse; }
-  #tendrils .tendril:nth-child(3) { animation: sway 120deg 7s  ease-in-out infinite alternate; }
-  #tendrils .tendril:nth-child(4) { animation: sway 180deg 9s  ease-in-out infinite alternate-reverse; }
-  #tendrils .tendril:nth-child(5) { animation: sway 240deg 12s ease-in-out infinite alternate; }
-  #tendrils .tendril:nth-child(6) { animation: sway 300deg 8s  ease-in-out infinite alternate-reverse; }
-
-  /* Generic sway — JS sets the base angle via style, CSS animates delta */
-  #tendrils .tendril:nth-child(1) { animation: sway0   8s ease-in-out infinite alternate; }
-  #tendrils .tendril:nth-child(2) { animation: sway60  11s ease-in-out infinite alternate-reverse; }
-  #tendrils .tendril:nth-child(3) { animation: sway120 7s ease-in-out infinite alternate; }
-  #tendrils .tendril:nth-child(4) { animation: sway180 9s ease-in-out infinite alternate-reverse; }
-  #tendrils .tendril:nth-child(5) { animation: sway240 12s ease-in-out infinite alternate; }
-  #tendrils .tendril:nth-child(6) { animation: sway300 8s ease-in-out infinite alternate-reverse; }
-
-  @keyframes sway0   { 0%{transform:rotate(-7deg) scale(1);}   100%{transform:rotate(7deg)  scale(1.1);} }
-  @keyframes sway60  { 0%{transform:rotate(53deg) scale(0.95);} 100%{transform:rotate(68deg) scale(1.08);} }
-  @keyframes sway120 { 0%{transform:rotate(113deg) scale(1);}  100%{transform:rotate(128deg) scale(1.1);} }
-  @keyframes sway180 { 0%{transform:rotate(172deg) scale(0.95);} 100%{transform:rotate(188deg) scale(1.08);} }
-  @keyframes sway240 { 0%{transform:rotate(232deg) scale(1);}  100%{transform:rotate(248deg) scale(1.1);} }
-  @keyframes sway300 { 0%{transform:rotate(292deg) scale(0.95);} 100%{transform:rotate(308deg) scale(1.08);} }
-
-  /* On pulse — tendrils flare */
-  .orb.active .tendril {
-    opacity: 0.85 !important;
-    transition: opacity 0.5s ease;
-  }
+  /* Tendrils drawn by JS — no CSS animation needed */
+  #tendrils path { transition: opacity 0.6s ease; }
 
   @keyframes sheenDrift {
     0%   { opacity: 1;   transform: rotate(0deg)  scale(1);    }
@@ -411,32 +385,19 @@
           </filter>
         </defs>
 
-        <!-- Tendril filter — soft but shape stays readable -->
+        <!-- Tendril filter — soft glow, shape still readable -->
         <filter id="f-tendril" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="7"/>
+          <feGaussianBlur stdDeviation="5"/>
         </filter>
 
-        <!-- Tendrils — identical path, perfectly symmetric at 60° intervals -->
-        <!-- Path points RIGHT: base at orb edge, tapers to a tip -->
+        <!-- JS-animated plasma tendrils -->
         <g id="tendrils">
-          <path class="tendril" filter="url(#f-tendril)" fill="#48cae4" opacity="0.55"
-            transform="rotate(0 187 187)"
-            d="M270,172 C315,158 368,144 408,136 C375,152 322,168 270,202 Z"/>
-          <path class="tendril" filter="url(#f-tendril)" fill="#48cae4" opacity="0.55"
-            transform="rotate(60 187 187)"
-            d="M270,172 C315,158 368,144 408,136 C375,152 322,168 270,202 Z"/>
-          <path class="tendril" filter="url(#f-tendril)" fill="#48cae4" opacity="0.55"
-            transform="rotate(120 187 187)"
-            d="M270,172 C315,158 368,144 408,136 C375,152 322,168 270,202 Z"/>
-          <path class="tendril" filter="url(#f-tendril)" fill="#48cae4" opacity="0.55"
-            transform="rotate(180 187 187)"
-            d="M270,172 C315,158 368,144 408,136 C375,152 322,168 270,202 Z"/>
-          <path class="tendril" filter="url(#f-tendril)" fill="#48cae4" opacity="0.55"
-            transform="rotate(240 187 187)"
-            d="M270,172 C315,158 368,144 408,136 C375,152 322,168 270,202 Z"/>
-          <path class="tendril" filter="url(#f-tendril)" fill="#48cae4" opacity="0.55"
-            transform="rotate(300 187 187)"
-            d="M270,172 C315,158 368,144 408,136 C375,152 322,168 270,202 Z"/>
+          <path id="t0" fill="#90e0ef" filter="url(#f-tendril)"/>
+          <path id="t1" fill="#48cae4" filter="url(#f-tendril)"/>
+          <path id="t2" fill="#90e0ef" filter="url(#f-tendril)"/>
+          <path id="t3" fill="#48cae4" filter="url(#f-tendril)"/>
+          <path id="t4" fill="#90e0ef" filter="url(#f-tendril)"/>
+          <path id="t5" fill="#48cae4" filter="url(#f-tendril)"/>
         </g>
 
         <!-- Outermost — wide deep blue wash -->
@@ -568,6 +529,72 @@
     countdownValue.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
   }
 
+  // ── Plasma tendril animation ──────────────────────────────────────
+  const CX = 187, CY = 187, ORB_R = 92;
+  const tPaths = [0,1,2,3,4,5].map(i => document.getElementById('t'+i));
+  let flaring = false;
+
+  // Each tendril: base angle (deg), curl speed, length speed, phase offsets
+  const TENDRILS = [
+    { baseAngle:  10, curlSpd: 0.00042, lenSpd: 0.00031, curlPh: 0.0,  lenPh: 0.0  },
+    { baseAngle:  70, curlSpd: 0.00038, lenSpd: 0.00027, curlPh: 1.1,  lenPh: 2.3  },
+    { baseAngle: 135, curlSpd: 0.00051, lenSpd: 0.00035, curlPh: 2.4,  lenPh: 0.8  },
+    { baseAngle: 195, curlSpd: 0.00033, lenSpd: 0.00044, curlPh: 3.6,  lenPh: 1.7  },
+    { baseAngle: 260, curlSpd: 0.00046, lenSpd: 0.00029, curlPh: 0.7,  lenPh: 3.1  },
+    { baseAngle: 318, curlSpd: 0.00039, lenSpd: 0.00038, curlPh: 2.0,  lenPh: 0.4  },
+  ];
+
+  function tendrilPath(t, time) {
+    const a  = t.baseAngle * Math.PI / 180;
+    const perp = a + Math.PI / 2;
+
+    // Animated length: 70–140 units
+    const len = 95 + 45 * Math.sin(time * t.lenSpd + t.lenPh);
+
+    // Animated curl: how much the tendril sweeps sideways
+    const curl = 0.38 * Math.sin(time * t.curlSpd + t.curlPh);
+
+    // Base — two points straddling orb surface, 14px wide
+    const bw = 14;
+    const bx = CX + ORB_R * Math.cos(a);
+    const by = CY + ORB_R * Math.sin(a);
+    const b1x = bx + bw * Math.cos(perp), b1y = by + bw * Math.sin(perp);
+    const b2x = bx - bw * Math.cos(perp), b2y = by - bw * Math.sin(perp);
+
+    // Tip — single point at end of tendril
+    const tipAngle = a + curl;
+    const tx = CX + (ORB_R + len) * Math.cos(tipAngle);
+    const ty = CY + (ORB_R + len) * Math.sin(tipAngle);
+
+    // Control points — shape the arc of the tendril
+    const cp1x = CX + (ORB_R + len * 0.35) * Math.cos(a + curl * 0.3) + bw * 0.6 * Math.cos(perp);
+    const cp1y = CY + (ORB_R + len * 0.35) * Math.sin(a + curl * 0.3) + bw * 0.6 * Math.sin(perp);
+    const cp2x = CX + (ORB_R + len * 0.35) * Math.cos(a + curl * 0.3) - bw * 0.6 * Math.cos(perp);
+    const cp2y = CY + (ORB_R + len * 0.35) * Math.sin(a + curl * 0.3) - bw * 0.6 * Math.sin(perp);
+    const cp3x = CX + (ORB_R + len * 0.72) * Math.cos(a + curl * 0.7);
+    const cp3y = CY + (ORB_R + len * 0.72) * Math.sin(a + curl * 0.7);
+
+    // Opacity pulses gently
+    const op = flaring
+      ? 0.82
+      : 0.32 + 0.22 * Math.sin(time * t.lenSpd * 1.4 + t.lenPh + 0.5);
+
+    return { op,
+      d: `M${b1x},${b1y} C${cp1x},${cp1y} ${cp3x},${cp3y} ${tx},${ty} C${cp3x},${cp3y} ${cp2x},${cp2y} ${b2x},${b2y} Z`
+    };
+  }
+
+  function animateTendrils(time) {
+    TENDRILS.forEach((t, i) => {
+      const { d, op } = tendrilPath(t, time);
+      tPaths[i].setAttribute('d', d);
+      tPaths[i].setAttribute('opacity', op.toFixed(3));
+    });
+    requestAnimationFrame(animateTendrils);
+  }
+  requestAnimationFrame(animateTendrils);
+  // ─────────────────────────────────────────────────────────────────
+
   function firePrompt() {
     if (isFiring) return;
     isFiring = true;
@@ -575,7 +602,8 @@
     promptText.textContent = prompts[promptIndex % prompts.length];
     promptIndex++;
 
-    // Bloom the SVG layers brighter
+    // Bloom the SVG layers + flare tendrils
+    flaring = true;
     orb.classList.remove('stopped');
     const layers = orb.querySelectorAll('.orb-svg ellipse');
     layers[0].setAttribute('opacity', '0.85');
@@ -601,6 +629,7 @@
       layers[1].setAttribute('opacity', '0.7');
       layers[2].setAttribute('opacity', '0.65');
       layers[3].setAttribute('opacity', '0.45');
+      flaring = false;
       if (!isRunning) orb.classList.add('stopped');
       promptText.classList.remove('visible');
       isFiring = false;
