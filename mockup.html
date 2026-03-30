@@ -151,9 +151,11 @@
   .orb-inner { display: none; }
   .orb-sheen { display: none; }
 
-  /* SVG glob — Gaussian blur kills all edges */
+  /* SVG glob — explicitly anchored top-left so it can't drift */
   .orb-svg {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 375px;
     height: 375px;
     overflow: visible;
@@ -371,16 +373,16 @@
       <!-- viewBox padded so blur has symmetric room on all sides -->
       <svg class="orb-svg" viewBox="-80 -80 535 535" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="f-outer" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id="f-outer" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="55"/>
           </filter>
-          <filter id="f-mid" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id="f-mid" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="38"/>
           </filter>
-          <filter id="f-core" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id="f-core" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="28"/>
           </filter>
-          <filter id="f-bright" x="-50%" y="-50%" width="200%" height="200%">
+          <filter id="f-bright" x="-80%" y="-80%" width="260%" height="260%">
             <feGaussianBlur stdDeviation="22"/>
           </filter>
         </defs>
