@@ -370,27 +370,25 @@
     <div class="orb stopped" id="orb">
       <div class="orb-inner"></div>
       <div class="orb-sheen"></div>
-      <!-- viewBox padded so blur has symmetric room on all sides -->
-      <svg class="orb-svg" viewBox="-80 -80 535 535" xmlns="http://www.w3.org/2000/svg">
+      <!-- viewBox = pixel size, filterUnits=userSpaceOnUse, identical padding all sides -->
+      <svg class="orb-svg" viewBox="0 0 375 375" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="f-outer" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="55"/>
+          <filter id="f-outer" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615">
+            <feGaussianBlur stdDeviation="40"/>
           </filter>
-          <filter id="f-mid" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="38"/>
-          </filter>
-          <filter id="f-core" x="-80%" y="-80%" width="260%" height="260%">
+          <filter id="f-mid" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615">
             <feGaussianBlur stdDeviation="28"/>
           </filter>
-          <filter id="f-bright" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="22"/>
+          <filter id="f-core" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615">
+            <feGaussianBlur stdDeviation="20"/>
+          </filter>
+          <filter id="f-bright" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615">
+            <feGaussianBlur stdDeviation="14"/>
+          </filter>
+          <filter id="f-tendril" filterUnits="userSpaceOnUse" x="-80" y="-80" width="535" height="535">
+            <feGaussianBlur stdDeviation="5"/>
           </filter>
         </defs>
-
-        <!-- Tendril filter — soft glow, shape still readable -->
-        <filter id="f-tendril" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="5"/>
-        </filter>
 
         <!-- JS-animated plasma tendrils -->
         <g id="tendrils">
@@ -402,20 +400,14 @@
           <path id="t5" fill="#48cae4" filter="url(#f-tendril)"/>
         </g>
 
-        <!-- Outermost — wide deep blue wash -->
-        <ellipse class="layer-outer" cx="187" cy="187" rx="170" ry="170"
+        <!-- Dead centre at 187.5, 187.5 — exact middle of 375px -->
+        <ellipse class="layer-outer" cx="187.5" cy="187.5" rx="119" ry="119"
           fill="#0096c7" opacity="0.6" filter="url(#f-outer)"/>
-
-        <!-- Mid — caribbean blue -->
-        <ellipse class="layer-mid" cx="187" cy="187" rx="128" ry="128"
+        <ellipse class="layer-mid" cx="187.5" cy="187.5" rx="90" ry="90"
           fill="#48cae4" opacity="0.7" filter="url(#f-mid)"/>
-
-        <!-- Core — brighter teal -->
-        <ellipse class="layer-core" cx="187" cy="187" rx="90" ry="90"
+        <ellipse class="layer-core" cx="187.5" cy="187.5" rx="63" ry="63"
           fill="#90e0ef" opacity="0.65" filter="url(#f-core)"/>
-
-        <!-- Bright centre — blends softly, not a dot -->
-        <ellipse class="layer-bright" cx="187" cy="187" rx="70" ry="70"
+        <ellipse class="layer-bright" cx="187.5" cy="187.5" rx="49" ry="49"
           fill="#caf0f8" opacity="0.45" filter="url(#f-bright)"/>
       </svg>
     </div>
@@ -532,7 +524,7 @@
   }
 
   // ── Plasma tendril animation ──────────────────────────────────────
-  const CX = 187, CY = 187, ORB_R = 92;
+  const CX = 187.5, CY = 187.5, ORB_R = 92;
   const tPaths = [0,1,2,3,4,5].map(i => document.getElementById('t'+i));
   let flaring = false;
 
