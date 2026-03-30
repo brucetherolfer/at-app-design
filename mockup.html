@@ -61,7 +61,7 @@
     left: 0;
     right: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 0 28px;
     z-index: 5;
@@ -71,18 +71,21 @@
     font-size: 11px;
     font-weight: 300;
     color: rgba(240,240,240,0.4);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    text-align: center;
   }
 
   .settings-btn {
+    position: absolute;
+    right: 28px;
     width: 32px;
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    opacity: 0.4;
+    opacity: 0.35;
     transition: opacity 0.2s;
     background: none;
     border: none;
@@ -109,14 +112,14 @@
     transition: all 0.6s ease;
   }
 
-  /* Orb container — centered in the screen */
+  /* Orb container — full width, centered */
   .orb-container {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -58%);
-    width: 300px;
-    height: 300px;
+    transform: translate(-50%, -55%);
+    width: 375px;
+    height: 375px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -136,8 +139,8 @@
 
   /* Orb wrapper — just for breathing animation */
   .orb {
-    width: 300px;
-    height: 300px;
+    width: 375px;
+    height: 375px;
     position: relative;
     animation: breathe 5s ease-in-out infinite;
     display: flex;
@@ -151,8 +154,8 @@
   /* SVG glob — Gaussian blur kills all edges */
   .orb-svg {
     position: absolute;
-    width: 300px;
-    height: 300px;
+    width: 375px;
+    height: 375px;
     overflow: visible;
   }
 
@@ -172,8 +175,8 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, 10%);
-    width: 300px;
+    transform: translate(-50%, 18%);
+    width: 320px;
     text-align: center;
     z-index: 6;
     pointer-events: none;
@@ -340,7 +343,7 @@
 
   <!-- Header -->
   <div class="header">
-    <span class="app-name">Alexander Technique</span>
+    <span class="app-name">Alexander Technique App</span>
     <button class="settings-btn" title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
         <circle cx="12" cy="12" r="3"/>
@@ -362,37 +365,37 @@
     <div class="orb stopped" id="orb">
       <div class="orb-inner"></div>
       <div class="orb-sheen"></div>
-      <!-- viewBox padded large so filter blur has equal room all sides -->
-      <svg class="orb-svg" viewBox="-60 -60 420 420" xmlns="http://www.w3.org/2000/svg">
+      <!-- viewBox padded so blur has symmetric room on all sides -->
+      <svg class="orb-svg" viewBox="-80 -80 535 535" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <filter id="f-outer" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="45"/>
+            <feGaussianBlur stdDeviation="55"/>
           </filter>
           <filter id="f-mid" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="30"/>
+            <feGaussianBlur stdDeviation="38"/>
           </filter>
           <filter id="f-core" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="22"/>
+            <feGaussianBlur stdDeviation="28"/>
           </filter>
           <filter id="f-bright" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="18"/>
+            <feGaussianBlur stdDeviation="22"/>
           </filter>
         </defs>
 
-        <!-- Outermost — wide, very faint deep blue -->
-        <ellipse class="layer-outer" cx="150" cy="150" rx="112" ry="112"
+        <!-- Outermost — wide deep blue wash -->
+        <ellipse class="layer-outer" cx="187" cy="187" rx="150" ry="150"
           fill="#0096c7" opacity="0.35" filter="url(#f-outer)"/>
 
         <!-- Mid — caribbean blue -->
-        <ellipse class="layer-mid" cx="150" cy="150" rx="80" ry="80"
+        <ellipse class="layer-mid" cx="187" cy="187" rx="110" ry="110"
           fill="#48cae4" opacity="0.45" filter="url(#f-mid)"/>
 
-        <!-- Core — brighter teal, blends up -->
-        <ellipse class="layer-core" cx="150" cy="150" rx="58" ry="58"
+        <!-- Core — brighter teal -->
+        <ellipse class="layer-core" cx="187" cy="187" rx="78" ry="78"
           fill="#90e0ef" opacity="0.45" filter="url(#f-core)"/>
 
-        <!-- Bright centre — large + soft so it merges, not pops -->
-        <ellipse class="layer-bright" cx="150" cy="150" rx="48" ry="48"
+        <!-- Bright centre — blends softly, not a dot -->
+        <ellipse class="layer-bright" cx="187" cy="187" rx="62" ry="62"
           fill="#caf0f8" opacity="0.3" filter="url(#f-bright)"/>
       </svg>
     </div>
