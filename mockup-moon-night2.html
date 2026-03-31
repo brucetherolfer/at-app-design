@@ -173,9 +173,27 @@
     /* Teal tint */
     filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.92);
     transition: filter 0.8s ease;
-    /* screen blend: makes the photo's black background completely invisible —
-       no lines, no rings, no rectangles. Black = 0 in screen = transparent */
+    /* screen blend: black photo bg = invisible */
     mix-blend-mode: screen;
+    /* mask: fades edges to transparent so there's no hard boundary */
+    mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      black            32%,
+      rgba(0,0,0,0.88) 44%,
+      rgba(0,0,0,0.60) 56%,
+      rgba(0,0,0,0.25) 68%,
+      rgba(0,0,0,0.05) 80%,
+      transparent      90%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      black            32%,
+      rgba(0,0,0,0.88) 44%,
+      rgba(0,0,0,0.60) 56%,
+      rgba(0,0,0,0.25) 68%,
+      rgba(0,0,0,0.05) 80%,
+      transparent      90%
+    );
   }
 
   .moon-img.active {
