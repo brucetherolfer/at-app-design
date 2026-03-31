@@ -1,10 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=mockup.html">
-  <title>AT App Mockup</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AT App — Design Versions</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 48px 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 48px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      transition: box-shadow 0.2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+    }
+
+    .preview-wrap {
+      width: 100%;
+      height: 560px;
+      overflow: hidden;
+      position: relative;
+      background: #111;
+    }
+
+    .preview-wrap iframe {
+      width: 375px;
+      height: 812px;
+      border: none;
+      transform-origin: top left;
+      transform: scale(0.863);
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      margin-left: -187.5px;
+    }
+
+    .card-footer {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .open-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #0096c7;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .open-btn:hover {
+      background: #0077a8;
+    }
+
+    .current-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0096c7;
+      border: 1px solid #0096c7;
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+  </style>
 </head>
 <body>
-  <a href="mockup.html">Click here if not redirected</a>
+
+  <h1>AT App — Design Versions</h1>
+  <p class="subtitle">Click "Open" on any version to view it full screen</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="preview-wrap">
+        <iframe src="mockup.html" scrolling="no"></iframe>
+      </div>
+      <div class="card-footer">
+        <div>
+          <div class="card-label">Current <span class="current-badge">LATEST</span></div>
+          <div class="card-desc">Centred orb · ghost edges · white surround</div>
+        </div>
+        <a class="open-btn" href="mockup.html" target="_blank">Open</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="preview-wrap">
+        <iframe src="mockup-v5-clean-orb.html" scrolling="no"></iframe>
+      </div>
+      <div class="card-footer">
+        <div>
+          <div class="card-label">v5 — Clean orb</div>
+          <div class="card-desc">Orb centred between status &amp; countdown</div>
+        </div>
+        <a class="open-btn" href="mockup-v5-clean-orb.html" target="_blank">Open</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="preview-wrap">
+        <iframe src="mockup-v4-bright-orb.html" scrolling="no"></iframe>
+      </div>
+      <div class="card-footer">
+        <div>
+          <div class="card-label">v4 — Bright orb</div>
+          <div class="card-desc">Brighter glow · good text positioning</div>
+        </div>
+        <a class="open-btn" href="mockup-v4-bright-orb.html" target="_blank">Open</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="preview-wrap">
+        <iframe src="mockup-v2-liked.html" scrolling="no"></iframe>
+      </div>
+      <div class="card-footer">
+        <div>
+          <div class="card-label">v2 — Caribbean blue</div>
+          <div class="card-desc">CSS gradient orb · clear text · first liked version</div>
+        </div>
+        <a class="open-btn" href="mockup-v2-liked.html" target="_blank">Open</a>
+      </div>
+    </div>
+
+  </div>
+
 </body>
 </html>
