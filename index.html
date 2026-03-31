@@ -3,58 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AT App — Design Versions</title>
+  <title>AT App — Design Gallery</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: #f0f0f0;
+      background: #f2f2f2;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      padding: 48px 24px;
+      padding: 52px 24px 80px;
     }
 
     h1 {
       text-align: center;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 600;
       color: #111;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       letter-spacing: -0.3px;
     }
 
     .subtitle {
       text-align: center;
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 48px;
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 52px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #aaa;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 0 auto 18px;
+      max-width: 1400px;
+      padding: 0 4px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 40px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 32px;
       max-width: 1400px;
-      margin: 0 auto;
+      margin: 0 auto 52px;
     }
 
     .card {
       background: white;
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
       transition: box-shadow 0.2s;
     }
 
     .card:hover {
-      box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+      box-shadow: 0 6px 22px rgba(0,0,0,0.12);
     }
 
     .preview-wrap {
       width: 100%;
-      height: 560px;
+      height: 520px;
       overflow: hidden;
       position: relative;
-      background: #111;
+      background: #000;
     }
 
     .preview-wrap iframe {
@@ -62,7 +73,7 @@
       height: 812px;
       border: none;
       transform-origin: top left;
-      transform: scale(0.863);
+      transform: scale(0.84);
       pointer-events: none;
       position: absolute;
       top: 0;
@@ -71,59 +82,60 @@
     }
 
     .card-footer {
-      padding: 16px 20px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
     }
 
     .card-label {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: #111;
     }
 
     .card-desc {
-      font-size: 12px;
-      color: #999;
+      font-size: 11px;
+      color: #aaa;
       margin-top: 2px;
     }
 
     .open-btn {
+      flex-shrink: 0;
       display: inline-block;
-      padding: 8px 16px;
+      padding: 7px 14px;
       background: #0096c7;
       color: white;
       text-decoration: none;
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: 7px;
+      font-size: 12px;
       font-weight: 500;
-      white-space: nowrap;
       transition: background 0.15s;
     }
+    .open-btn:hover { background: #0077a8; }
 
-    .open-btn:hover {
-      background: #0077a8;
-    }
-
-    .current-badge {
+    .badge {
       display: inline-block;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
-      color: #0096c7;
-      border: 1px solid #0096c7;
-      border-radius: 4px;
       padding: 2px 6px;
-      margin-left: 8px;
+      border-radius: 4px;
+      margin-left: 6px;
       vertical-align: middle;
     }
+    .badge-day  { color: #0096c7; border: 1px solid #0096c7; }
+    .badge-night{ color: #7c5cbf; border: 1px solid #7c5cbf; }
+    .badge-new  { color: #2a9d5c; border: 1px solid #2a9d5c; }
   </style>
 </head>
 <body>
 
-  <h1>AT App — Design Versions</h1>
-  <p class="subtitle">Click "Open" on any version to view it full screen</p>
+  <h1>Alexander Technique App — Design Gallery</h1>
+  <p class="subtitle">Tap "Open" on any version to view it full screen &nbsp;·&nbsp; No login needed</p>
 
+  <!-- DAY MODE -->
+  <div class="section-label">Day Mode</div>
   <div class="grid">
 
     <div class="card">
@@ -132,12 +144,63 @@
       </div>
       <div class="card-footer">
         <div>
-          <div class="card-label">Current <span class="current-badge">LATEST</span></div>
-          <div class="card-desc">Centred orb · ghost edges · white surround</div>
+          <div class="card-label">Current <span class="badge badge-day">DAY</span></div>
+          <div class="card-desc">Teal ghost orb · ocean blue bg · white surround</div>
         </div>
         <a class="open-btn" href="mockup.html" target="_blank">Open</a>
       </div>
     </div>
+
+  </div>
+
+  <!-- NIGHT MODE — MOON -->
+  <div class="section-label">Night Mode — Moon Contenders</div>
+  <div class="grid">
+
+    <div class="card">
+      <div class="preview-wrap">
+        <iframe src="mockup-moon-night2-final.html" scrolling="no"></iframe>
+      </div>
+      <div class="card-footer">
+        <div>
+          <div class="card-label">Moon #2 <span class="badge badge-new">LATEST</span></div>
+          <div class="card-desc">Real photo · teal tint · bg glow fades to black</div>
+        </div>
+        <a class="open-btn" href="mockup-moon-night2-final.html" target="_blank">Open</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="preview-wrap">
+        <iframe src="mockup-moon-night1.html" scrolling="no"></iframe>
+      </div>
+      <div class="card-footer">
+        <div>
+          <div class="card-label">Moon #1 <span class="badge badge-night">NIGHT</span></div>
+          <div class="card-desc">Real photo · teal tint · dark flat bg</div>
+        </div>
+        <a class="open-btn" href="mockup-moon-night1.html" target="_blank">Open</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="preview-wrap">
+        <iframe src="mockup-nightmode-best.html" scrolling="no"></iframe>
+      </div>
+      <div class="card-footer">
+        <div>
+          <div class="card-label">Night — Teal Orb <span class="badge badge-night">NIGHT</span></div>
+          <div class="card-desc">CSS ghost orb · Caribbean teal · no photo</div>
+        </div>
+        <a class="open-btn" href="mockup-nightmode-best.html" target="_blank">Open</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EARLIER VERSIONS -->
+  <div class="section-label">Earlier Saved Versions</div>
+  <div class="grid">
 
     <div class="card">
       <div class="preview-wrap">
@@ -146,7 +209,7 @@
       <div class="card-footer">
         <div>
           <div class="card-label">v5 — Clean orb</div>
-          <div class="card-desc">Orb centred between status &amp; countdown</div>
+          <div class="card-desc">Orb centred · good text position</div>
         </div>
         <a class="open-btn" href="mockup-v5-clean-orb.html" target="_blank">Open</a>
       </div>
@@ -159,61 +222,9 @@
       <div class="card-footer">
         <div>
           <div class="card-label">v4 — Bright orb</div>
-          <div class="card-desc">Brighter glow · good text positioning</div>
+          <div class="card-desc">Brighter glow · bolder feel</div>
         </div>
         <a class="open-btn" href="mockup-v4-bright-orb.html" target="_blank">Open</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="preview-wrap">
-        <iframe src="mockup-moon-photo.html" scrolling="no"></iframe>
-      </div>
-      <div class="card-footer">
-        <div>
-          <div class="card-label">Moon — photo</div>
-          <div class="card-desc">Real moon photo · teal tint · soft ghost edges</div>
-        </div>
-        <a class="open-btn" href="mockup-moon-photo.html" target="_blank">Open</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="preview-wrap">
-        <iframe src="mockup-moon-v2.html" scrolling="no"></iframe>
-      </div>
-      <div class="card-footer">
-        <div>
-          <div class="card-label">Moon — SVG craters</div>
-          <div class="card-desc">Teal palette · hand-drawn SVG craters</div>
-        </div>
-        <a class="open-btn" href="mockup-moon-v2.html" target="_blank">Open</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="preview-wrap">
-        <iframe src="mockup-moon.html" scrolling="no"></iframe>
-      </div>
-      <div class="card-footer">
-        <div>
-          <div class="card-label">Moon — silver</div>
-          <div class="card-desc">Silver-white · crescent highlight · reference only</div>
-        </div>
-        <a class="open-btn" href="mockup-moon.html" target="_blank">Open</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="preview-wrap">
-        <iframe src="mockup-nightmode-best.html" scrolling="no"></iframe>
-      </div>
-      <div class="card-footer">
-        <div>
-          <div class="card-label">Night mode</div>
-          <div class="card-desc">Best night mode · Caribbean teal · saved reference</div>
-        </div>
-        <a class="open-btn" href="mockup-nightmode-best.html" target="_blank">Open</a>
       </div>
     </div>
 
