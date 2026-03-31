@@ -166,18 +166,17 @@
       0 0 280px 120px rgba(0,  75, 130, 0.08);
   }
 
-  /* SVG replaces the img — clipPath cuts inside the ring, mask fades the edge */
-  .moon-svg {
+  .moon-img {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     width: 300px; height: 300px;
-    overflow: visible;
     filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.92);
     transition: filter 0.8s ease;
+    mix-blend-mode: screen;
   }
 
-  .moon-svg.active {
+  .moon-img.active {
     filter: sepia(1) hue-rotate(150deg) saturate(2.8) brightness(1.2);
   }
 
@@ -329,28 +328,10 @@
     <div class="ripple" id="ripple2"></div>
     <div class="ripple" id="ripple3"></div>
 
-    <!-- Moon: CSS glow + SVG photo with clipPath to cut inside the dark ring -->
+    <!-- Moon: pre-cropped sphere PNG (transparent outside), CSS teal tint -->
     <div class="moon-wrap">
       <div class="moon-glow" id="moonGlow"></div>
-      <svg id="moonSvg" class="moon-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <!-- No clipPath — just a mask that reaches zero BEFORE the dark ring -->
-          <radialGradient id="moon-fade" cx="50%" cy="50%" r="50%">
-            <stop offset="42%" stop-color="white" stop-opacity="1"/>
-            <stop offset="56%" stop-color="white" stop-opacity="0.80"/>
-            <stop offset="66%" stop-color="white" stop-opacity="0.45"/>
-            <stop offset="74%" stop-color="white" stop-opacity="0.12"/>
-            <stop offset="80%" stop-color="white" stop-opacity="0"/>
-          </radialGradient>
-          <mask id="moon-fade-mask">
-            <rect x="0" y="0" width="300" height="300" fill="url(#moon-fade)"/>
-          </mask>
-        </defs>
-        <image href="moon-photo.jpg"
-               x="0" y="0" width="300" height="300"
-               preserveAspectRatio="xMidYMid slice"
-               mask="url(#moon-fade-mask)"/>
-      </svg>
+      <img id="moonImg" class="moon-img" src="moon-sphere.png" alt="Moon"/>
     </div>
 
     </div><!-- /.orb-anim -->
@@ -401,7 +382,7 @@
 
   const orbContainer  = document.getElementById('orbContainer');
   const orbAnim       = document.getElementById('orbAnim');
-  const moonImg       = document.getElementById('moonSvg');
+  const moonImg       = document.getElementById('moonImg');
   const moonGlow      = document.getElementById('moonGlow');
   const coreLayer     = document.getElementById('coreLayer');
   const brightLayer   = document.getElementById('brightLayer');
