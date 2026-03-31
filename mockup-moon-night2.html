@@ -171,33 +171,15 @@
     object-fit: cover;
     display: block;
     /* Teal tint */
-    filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.88);
+    filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.92);
     transition: filter 0.8s ease;
-    /* Very wide fade to TRUE transparent — starts early, ends well before the glow */
-    mask-image: radial-gradient(
-      ellipse at 50% 50%,
-      black              28%,
-      rgba(0,0,0,0.92)   38%,
-      rgba(0,0,0,0.72)   50%,
-      rgba(0,0,0,0.40)   62%,
-      rgba(0,0,0,0.12)   74%,
-      rgba(0,0,0,0.02)   84%,
-      transparent        92%
-    );
-    -webkit-mask-image: radial-gradient(
-      ellipse at 50% 50%,
-      black              28%,
-      rgba(0,0,0,0.92)   38%,
-      rgba(0,0,0,0.72)   50%,
-      rgba(0,0,0,0.40)   62%,
-      rgba(0,0,0,0.12)   74%,
-      rgba(0,0,0,0.02)   84%,
-      transparent        92%
-    );
+    /* screen blend: makes the photo's black background completely invisible —
+       no lines, no rings, no rectangles. Black = 0 in screen = transparent */
+    mix-blend-mode: screen;
   }
 
   .moon-img.active {
-    filter: sepia(1) hue-rotate(150deg) saturate(2.8) brightness(1.18);
+    filter: sepia(1) hue-rotate(150deg) saturate(2.8) brightness(1.2);
   }
 
   /* ── Front glow SVG — luminous core on top of moon ── */
