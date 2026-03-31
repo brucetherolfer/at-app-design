@@ -166,37 +166,18 @@
       0 0 280px 120px rgba(0,  75, 130, 0.08);
   }
 
-  .moon-img {
+  /* SVG replaces the img — clipPath cuts inside the ring, mask fades the edge */
+  .moon-svg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
     width: 300px; height: 300px;
-    object-fit: cover;
-    display: block;
-    /* Teal tint */
+    overflow: visible;
     filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.92);
     transition: filter 0.8s ease;
-    /* screen blend: black photo bg = invisible */
-    mix-blend-mode: screen;
-    /* mask: fades edges to transparent so there's no hard boundary */
-    mask-image: radial-gradient(
-      ellipse at 50% 50%,
-      black            28%,
-      rgba(0,0,0,0.90) 40%,
-      rgba(0,0,0,0.65) 52%,
-      rgba(0,0,0,0.28) 62%,
-      rgba(0,0,0,0.05) 72%,
-      transparent      78%
-    );
-    -webkit-mask-image: radial-gradient(
-      ellipse at 50% 50%,
-      black            28%,
-      rgba(0,0,0,0.90) 40%,
-      rgba(0,0,0,0.65) 52%,
-      rgba(0,0,0,0.28) 62%,
-      rgba(0,0,0,0.05) 72%,
-      transparent      78%
-    );
   }
 
-  .moon-img.active {
+  .moon-svg.active {
     filter: sepia(1) hue-rotate(150deg) saturate(2.8) brightness(1.2);
   }
 
@@ -348,12 +329,32 @@
     <div class="ripple" id="ripple2"></div>
     <div class="ripple" id="ripple3"></div>
 
-    <!-- Moon: CSS circular glow (no SVG filters) + photo -->
+    <!-- Moon: CSS glow + SVG photo with clipPath to cut inside the dark ring -->
     <div class="moon-wrap">
       <div class="moon-glow" id="moonGlow"></div>
-      <img id="moonImg" class="moon-img"
-           src="moon-photo.jpg"
-           alt="Moon"/>
+      <svg id="moonSvg" class="moon-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Clip inside the dark limb ring — r=116 is safely inside it -->
+          <clipPath id="moon-circle-clip">
+            <circle cx="150" cy="150" r="116"/>
+          </clipPath>
+          <!-- Soft fade mask so edges dissolve rather than hard-cut -->
+          <radialGradient id="moon-fade" cx="50%" cy="50%" r="50%">
+            <stop offset="58%" stop-color="white" stop-opacity="1"/>
+            <stop offset="75%" stop-color="white" stop-opacity="0.65"/>
+            <stop offset="88%" stop-color="white" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="white" stop-opacity="0"/>
+          </radialGradient>
+          <mask id="moon-fade-mask">
+            <circle cx="150" cy="150" r="150" fill="url(#moon-fade)"/>
+          </mask>
+        </defs>
+        <image href="moon-photo.jpg"
+               x="0" y="0" width="300" height="300"
+               preserveAspectRatio="xMidYMid slice"
+               clip-path="url(#moon-circle-clip)"
+               mask="url(#moon-fade-mask)"/>
+      </svg>
     </div>
 
     </div><!-- /.orb-anim -->
@@ -404,7 +405,7 @@
 
   const orbContainer  = document.getElementById('orbContainer');
   const orbAnim       = document.getElementById('orbAnim');
-  const moonImg       = document.getElementById('moonImg');
+  const moonImg       = document.getElementById('moonSvg');
   const moonGlow      = document.getElementById('moonGlow');
   const coreLayer     = document.getElementById('coreLayer');
   const brightLayer   = document.getElementById('brightLayer');
