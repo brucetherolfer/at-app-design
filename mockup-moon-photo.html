@@ -130,40 +130,41 @@
   /* ── Moon photo ── */
   .moon-wrap {
     position: absolute;
-    width: 230px; height: 230px;
+    width: 260px; height: 260px;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
   }
 
   .moon-img {
-    width: 230px; height: 230px;
-    border-radius: 50%;
+    width: 260px; height: 260px;
     object-fit: cover;
     display: block;
-    /* Teal tint: sepia → hue-rotate into cyan/teal range → boost saturation */
+    /* Teal tint */
     filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.88);
     transition: filter 0.8s ease;
+    /* Fade to TRUE transparent — no background colour dependency, no black ring */
+    mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      black              44%,
+      rgba(0,0,0,0.85)   56%,
+      rgba(0,0,0,0.55)   68%,
+      rgba(0,0,0,0.20)   80%,
+      rgba(0,0,0,0.04)   89%,
+      transparent        96%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      black              44%,
+      rgba(0,0,0,0.85)   56%,
+      rgba(0,0,0,0.55)   68%,
+      rgba(0,0,0,0.20)   80%,
+      rgba(0,0,0,0.04)   89%,
+      transparent        96%
+    );
   }
 
   .moon-img.active {
-    filter: sepia(1) hue-rotate(150deg) saturate(2.8) brightness(1.15);
-  }
-
-  /* Soft radial fade — dissolves the hard circular edge into the bg */
-  .moon-edge-fade {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: radial-gradient(
-      ellipse at 50% 50%,
-      transparent        46%,
-      rgba(6,10,16,0.15) 58%,
-      rgba(6,10,16,0.50) 72%,
-      rgba(6,10,16,0.82) 84%,
-      rgba(4,8,12,0.97)  95%,
-      #040810           100%
-    );
-    pointer-events: none;
+    filter: sepia(1) hue-rotate(150deg) saturate(2.8) brightness(1.18);
   }
 
   /* ── Front glow SVG — luminous core on top of moon ── */
@@ -332,8 +333,7 @@
     <div class="moon-wrap">
       <img id="moonImg" class="moon-img"
            src="https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg"
-           alt="Moon" crossorigin="anonymous"/>
-      <div class="moon-edge-fade"></div>
+           alt="Moon"/>
     </div>
 
     <!-- Front luminous core glow -->
