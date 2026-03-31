@@ -144,6 +144,28 @@
     transform: translate(-50%, -50%);
   }
 
+  /* CSS-only circular glow — no SVG filters, no rectangular boundaries possible */
+  .moon-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow:
+      0 0  50px 20px rgba(0, 150, 199, 0.35),
+      0 0  95px 45px rgba(0, 120, 175, 0.20),
+      0 0 160px 80px rgba(0,  90, 145, 0.10),
+      0 0 240px 110px rgba(0,  60, 110, 0.05);
+    z-index: 0;
+    transition: box-shadow 0.8s ease;
+  }
+
+  .moon-glow.active {
+    box-shadow:
+      0 0  60px 28px rgba(0, 180, 228, 0.55),
+      0 0 110px 55px rgba(0, 150, 199, 0.32),
+      0 0 190px 90px rgba(0, 110, 170, 0.16),
+      0 0 280px 120px rgba(0,  75, 130, 0.08);
+  }
+
   .moon-img {
     width: 300px; height: 300px;
     object-fit: cover;
@@ -326,31 +348,13 @@
     <div class="ripple" id="ripple2"></div>
     <div class="ripple" id="ripple3"></div>
 
-    <!-- Real moon photo, teal-tinted, soft edges -->
+    <!-- Moon: CSS circular glow (no SVG filters) + photo -->
     <div class="moon-wrap">
+      <div class="moon-glow" id="moonGlow"></div>
       <img id="moonImg" class="moon-img"
            src="moon-photo.jpg"
            alt="Moon"/>
     </div>
-
-    <!-- Front luminous core glow -->
-    <svg class="glow-front" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <filter id="f-edge" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
-          <feGaussianBlur stdDeviation="22"/>
-        </filter>
-        <filter id="f-core" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
-          <feGaussianBlur stdDeviation="16"/>
-        </filter>
-        <filter id="f-bright" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
-          <feGaussianBlur stdDeviation="10"/>
-        </filter>
-      </defs>
-      <!-- Edge-fill glow: covers the moon-to-background transition zone -->
-      <ellipse id="edgeLayer"   cx="160" cy="160" rx="92" ry="92" fill="#0096c7" opacity="0.30" filter="url(#f-edge)"/>
-      <ellipse id="coreLayer"   cx="160" cy="160" rx="55" ry="55" fill="#90e0ef" opacity="0.38" filter="url(#f-core)"/>
-      <ellipse id="brightLayer" cx="160" cy="160" rx="36" ry="36" fill="#caf0f8" opacity="0.28" filter="url(#f-bright)"/>
-    </svg>
 
     </div><!-- /.orb-anim -->
   </div><!-- /.orb-container -->
@@ -401,6 +405,7 @@
   const orbContainer  = document.getElementById('orbContainer');
   const orbAnim       = document.getElementById('orbAnim');
   const moonImg       = document.getElementById('moonImg');
+  const moonGlow      = document.getElementById('moonGlow');
   const coreLayer     = document.getElementById('coreLayer');
   const brightLayer   = document.getElementById('brightLayer');
   const promptText    = document.getElementById('promptText');
@@ -462,8 +467,7 @@
     promptText.textContent = prompts[promptIndex % prompts.length];
     promptIndex++;
     moonImg.classList.add('active');
-    coreLayer.setAttribute('opacity', '0.68');
-    brightLayer.setAttribute('opacity', '0.52');
+    moonGlow.classList.add('active');
     promptText.classList.add('visible');
     ripples.forEach((r, i) => {
       setTimeout(() => {
@@ -474,8 +478,7 @@
     });
     setTimeout(() => {
       moonImg.classList.remove('active');
-      coreLayer.setAttribute('opacity', '0.40');
-      brightLayer.setAttribute('opacity', '0.30');
+      moonGlow.classList.remove('active');
       if (!isRunning) orbAnim.classList.add('stopped');
       promptText.classList.remove('visible');
       isFiring = false;
