@@ -19,22 +19,16 @@
   .phone {
     width: 375px;
     height: 812px;
-    /* Moon sits at ~42% down — glow radiates from there, pure black at phone edges */
-    background:
-      radial-gradient(ellipse 280px 260px at 50% 42%,
-        rgba(8,28,44,0.95)   0%,
-        rgba(4,16,26,0.85)   35%,
-        rgba(1,6,12,0.70)    60%,
-        transparent          85%
-      ),
-      radial-gradient(ellipse 420px 500px at 50% 42%,
-        rgba(0,40,65,0.35)   0%,
-        rgba(0,20,38,0.20)   40%,
-        transparent          75%
-      ),
-      #000000;
+    /* Single smooth gradient — moon glows at centre, fades to pure black at edges */
+    background: radial-gradient(
+      ellipse 88% 80% at 50% 42%,
+      #0c1e2e 0%,
+      #060f18 38%,
+      #020609 65%,
+      #000000 100%
+    );
     border-radius: 54px;
-    border: 1.5px solid #0d1e2a;
+    border: 1.5px solid #0a0a0a;
     position: relative;
     overflow: hidden;
     box-shadow: 0 40px 120px rgba(0,0,0,0.92), inset 0 0 0 1px rgba(72,202,228,0.04);
