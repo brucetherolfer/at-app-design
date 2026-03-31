@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alexander Technique — Moon Night 2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    /* Moon sits at ~42% down — glow radiates from there, pure black at phone edges */
+    background:
+      radial-gradient(ellipse 280px 260px at 50% 42%,
+        rgba(8,28,44,0.95)   0%,
+        rgba(4,16,26,0.85)   35%,
+        rgba(1,6,12,0.70)    60%,
+        transparent          85%
+      ),
+      radial-gradient(ellipse 420px 500px at 50% 42%,
+        rgba(0,40,65,0.35)   0%,
+        rgba(0,20,38,0.20)   40%,
+        transparent          75%
+      ),
+      #000000;
+    border-radius: 54px;
+    border: 1.5px solid #0d1e2a;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.92), inset 0 0 0 1px rgba(72,202,228,0.04);
+  }
+
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #000000;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+
+  .home-indicator {
+    position: absolute;
+    bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    width: 134px; height: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    z-index: 10;
+  }
+
+  .header {
+    position: absolute;
+    top: 52px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    z-index: 5;
+  }
+
+  .app-name {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(240,240,240,0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .settings-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0.4;
+    transition: opacity 0.2s;
+    background: none; border: none;
+  }
+  .settings-btn:hover { opacity: 0.75; }
+  .settings-btn svg { width: 17px; height: 17px; }
+
+  .status {
+    position: absolute;
+    top: 86px; left: 0; right: 0;
+    text-align: center;
+    z-index: 5;
+  }
+
+  .status-text {
+    font-size: 10px;
+    font-weight: 300;
+    color: rgba(72,202,228,0.45);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* ── Orb container — matches day mode alignment ── */
+  .orb-container {
+    position: absolute;
+    top: 102px;
+    bottom: 228px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 375px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  /* Inner wrapper handles the breathing so transform: translateX(-50%) isn't disrupted */
+  .orb-anim {
+    position: relative;
+    width: 320px; height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: breathe 6s ease-in-out infinite;
+  }
+
+  .orb-anim.stopped {
+    animation: none;
+    opacity: 0.38;
+  }
+
+  /* Ripple rings */
+  .ripple {
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(72,202,228,0.2);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── Back glow SVG — atmospheric teal haze behind moon ── */
+  .glow-back {
+    position: absolute;
+    top: 0; left: 0;
+    width: 320px; height: 320px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* ── Moon photo ── */
+  .moon-wrap {
+    position: absolute;
+    width: 300px; height: 300px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .moon-img {
+    width: 300px; height: 300px;
+    object-fit: cover;
+    display: block;
+    /* Teal tint */
+    filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.88);
+    transition: filter 0.8s ease;
+    /* Very wide fade to TRUE transparent — starts early, ends well before the glow */
+    mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      black              28%,
+      rgba(0,0,0,0.92)   38%,
+      rgba(0,0,0,0.72)   50%,
+      rgba(0,0,0,0.40)   62%,
+      rgba(0,0,0,0.12)   74%,
+      rgba(0,0,0,0.02)   84%,
+      transparent        92%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse at 50% 50%,
+      black              28%,
+      rgba(0,0,0,0.92)   38%,
+      rgba(0,0,0,0.72)   50%,
+      rgba(0,0,0,0.40)   62%,
+      rgba(0,0,0,0.12)   74%,
+      rgba(0,0,0,0.02)   84%,
+      transparent        92%
+    );
+  }
+
+  .moon-img.active {
+    filter: sepia(1) hue-rotate(150deg) saturate(2.8) brightness(1.18);
+  }
+
+  /* ── Front glow SVG — luminous core on top of moon ── */
+  .glow-front {
+    position: absolute;
+    top: 0; left: 0;
+    width: 320px; height: 320px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* Prompt text — sits below the moon */
+  .prompt-area {
+    position: absolute;
+    bottom: 248px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    text-align: center;
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  .prompt-text {
+    font-size: 17px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.55;
+    letter-spacing: 0.02em;
+    text-align: center;
+    padding: 0 28px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 1s ease, transform 1s ease;
+  }
+  .prompt-text.visible { opacity: 1; transform: translateY(0); }
+
+  .countdown-area {
+    position: absolute;
+    bottom: 185px; left: 0; right: 0;
+    text-align: center;
+    z-index: 5;
+    transition: opacity 0.5s;
+  }
+
+  .countdown-label {
+    font-size: 9px;
+    font-weight: 300;
+    color: rgba(240,240,240,0.2);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .countdown-value {
+    font-size: 26px;
+    font-weight: 200;
+    color: rgba(72,202,228,0.5);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .controls {
+    position: absolute;
+    bottom: 50px; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    z-index: 5;
+  }
+
+  .main-btn {
+    width: 156px; height: 50px;
+    border-radius: 25px;
+    border: 1.5px solid rgba(72,202,228,0.45);
+    background: transparent;
+    color: rgba(240,240,240,0.8);
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+  .main-btn:hover { border-color: rgba(72,202,228,0.85); background: rgba(72,202,228,0.07); color: #f0f0f0; }
+  .main-btn.running { border-color: rgba(72,202,228,0.6); background: rgba(72,202,228,0.08); }
+
+  .secondary-controls { display: flex; gap: 28px; align-items: center; }
+
+  .fire-btn {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 5px;
+    cursor: pointer; opacity: 0.5;
+    transition: opacity 0.2s;
+    background: none; border: none;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+  .fire-btn:hover { opacity: 0.9; }
+  .fire-btn-circle {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(240,240,240,0.25);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fire-btn-label {
+    font-size: 8px; font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(240,240,240,0.4);
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.965); }
+    50%       { transform: scale(1.035); }
+  }
+
+  @keyframes rippleOut {
+    0%   { transform: scale(1);   opacity: 0.4; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  .ripple.animating { animation: rippleOut 1.8s ease-out forwards; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+
+  <div class="header">
+    <span class="app-name">Alexander Technique</span>
+    <button class="settings-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="status">
+    <div class="status-text" id="statusText">Ready</div>
+  </div>
+
+  <div class="orb-container" id="orbContainer">
+    <div class="orb-anim stopped" id="orbAnim">
+
+    <div class="ripple" id="ripple1"></div>
+    <div class="ripple" id="ripple2"></div>
+    <div class="ripple" id="ripple3"></div>
+
+    <!-- Back atmospheric glow -->
+    <svg class="glow-back" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="f-outer" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="40"/>
+        </filter>
+        <filter id="f-mid" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="26"/>
+        </filter>
+      </defs>
+      <!-- Extra-wide spill: moonlight bleeding into the black bg -->
+      <ellipse cx="160" cy="160" rx="148" ry="148" fill="#023e8a" opacity="0.55" filter="url(#f-outer)"/>
+      <ellipse cx="160" cy="160" rx="118" ry="118" fill="#0096c7" opacity="0.50" filter="url(#f-outer)"/>
+      <ellipse cx="160" cy="160" rx="88"  ry="88"  fill="#48cae4" opacity="0.55" filter="url(#f-mid)"/>
+    </svg>
+
+    <!-- Real moon photo, teal-tinted, soft edges -->
+    <div class="moon-wrap">
+      <img id="moonImg" class="moon-img"
+           src="https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg"
+           alt="Moon"/>
+    </div>
+
+    <!-- Front luminous core glow -->
+    <svg class="glow-front" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="f-edge" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="22"/>
+        </filter>
+        <filter id="f-core" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="16"/>
+        </filter>
+        <filter id="f-bright" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="10"/>
+        </filter>
+      </defs>
+      <!-- Edge-fill glow: covers the moon-to-background transition zone -->
+      <ellipse id="edgeLayer"   cx="160" cy="160" rx="92" ry="92" fill="#0096c7" opacity="0.30" filter="url(#f-edge)"/>
+      <ellipse id="coreLayer"   cx="160" cy="160" rx="55" ry="55" fill="#90e0ef" opacity="0.38" filter="url(#f-core)"/>
+      <ellipse id="brightLayer" cx="160" cy="160" rx="36" ry="36" fill="#caf0f8" opacity="0.28" filter="url(#f-bright)"/>
+    </svg>
+
+    </div><!-- /.orb-anim -->
+  </div><!-- /.orb-container -->
+
+  <div class="prompt-area">
+    <div class="prompt-text" id="promptText"></div>
+  </div>
+
+  <div class="countdown-area" id="countdownArea" style="opacity:0;">
+    <div class="countdown-label">Next prompt in</div>
+    <div class="countdown-value" id="countdownValue">0:00</div>
+  </div>
+
+  <div class="controls">
+    <button class="main-btn" id="mainBtn" onclick="toggleRunning()">Start</button>
+    <div class="secondary-controls">
+      <button class="fire-btn" onclick="firePrompt()">
+        <div class="fire-btn-circle">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+        </div>
+        <span class="fire-btn-label">Fire now</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+  const prompts = [
+    "Let your neck be free",
+    "Allow the head to go forward and up",
+    "Do less",
+    "Notice where you are holding",
+    "Pause. Inhibit. Direct. Move.",
+    "Let your back lengthen and widen",
+    "Soften the eyes",
+    "Allow stillness inside movement",
+    "Stop. Think. Direct.",
+    "Is your jaw clenched?"
+  ];
+
+  let promptIndex = 0, isRunning = false, isFiring = false;
+  let countdownTimer = null, countdownSeconds = 0, nextPromptTimeout = null;
+
+  const orbContainer  = document.getElementById('orbContainer');
+  const orbAnim       = document.getElementById('orbAnim');
+  const moonImg       = document.getElementById('moonImg');
+  const coreLayer     = document.getElementById('coreLayer');
+  const brightLayer   = document.getElementById('brightLayer');
+  const promptText    = document.getElementById('promptText');
+  const mainBtn       = document.getElementById('mainBtn');
+  const statusText    = document.getElementById('statusText');
+  const countdownArea = document.getElementById('countdownArea');
+  const countdownValue= document.getElementById('countdownValue');
+  const ripples = ['ripple1','ripple2','ripple3'].map(id => document.getElementById(id));
+
+  function toggleRunning() {
+    isRunning = !isRunning;
+    if (isRunning) {
+      orbAnim.classList.remove('stopped');
+      mainBtn.textContent = 'Stop';
+      mainBtn.classList.add('running');
+      statusText.textContent = 'Free Mode · All Prompts';
+      countdownArea.style.opacity = '1';
+      scheduleNextPrompt();
+    } else {
+      orbAnim.classList.add('stopped');
+      moonImg.classList.remove('active');
+      mainBtn.textContent = 'Start';
+      mainBtn.classList.remove('running');
+      statusText.textContent = 'Ready';
+      countdownArea.style.opacity = '0';
+      promptText.classList.remove('visible');
+      clearTimeout(nextPromptTimeout);
+      clearInterval(countdownTimer);
+    }
+  }
+
+  function scheduleNextPrompt() {
+    const delay = Math.floor(Math.random() * 7000) + 8000;
+    countdownSeconds = Math.ceil(delay / 1000);
+    updateCountdown();
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      countdownSeconds = Math.max(0, countdownSeconds - 1);
+      updateCountdown();
+    }, 1000);
+    clearTimeout(nextPromptTimeout);
+    nextPromptTimeout = setTimeout(() => {
+      if (isRunning) {
+        firePrompt();
+        setTimeout(() => { if (isRunning) scheduleNextPrompt(); }, 4800);
+      }
+    }, delay);
+  }
+
+  function updateCountdown() {
+    const m = Math.floor(countdownSeconds / 60);
+    const s = countdownSeconds % 60;
+    countdownValue.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }
+
+  function firePrompt() {
+    if (isFiring) return;
+    isFiring = true;
+    promptText.textContent = prompts[promptIndex % prompts.length];
+    promptIndex++;
+    moonImg.classList.add('active');
+    coreLayer.setAttribute('opacity', '0.68');
+    brightLayer.setAttribute('opacity', '0.52');
+    promptText.classList.add('visible');
+    ripples.forEach((r, i) => {
+      setTimeout(() => {
+        r.classList.remove('animating');
+        void r.offsetWidth;
+        r.classList.add('animating');
+      }, i * 500);
+    });
+    setTimeout(() => {
+      moonImg.classList.remove('active');
+      coreLayer.setAttribute('opacity', '0.40');
+      brightLayer.setAttribute('opacity', '0.30');
+      if (!isRunning) orbAnim.classList.add('stopped');
+      promptText.classList.remove('visible');
+      isFiring = false;
+    }, 4000);
+  }
+</script>
+</body>
+</html>
