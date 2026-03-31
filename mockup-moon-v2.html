@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alexander Technique — Moon Teal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: radial-gradient(ellipse at 50% 48%, #080c12 0%, #040810 45%, #020508 80%, #010305 100%);
+    border-radius: 54px;
+    border: 1.5px solid #1a2a35;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.85), inset 0 0 0 1px rgba(72,202,228,0.04);
+  }
+
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #080c12;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+  }
+
+  .home-indicator {
+    position: absolute;
+    bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    width: 134px; height: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    z-index: 10;
+  }
+
+  .header {
+    position: absolute;
+    top: 52px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+    z-index: 5;
+  }
+
+  .app-name {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(240,240,240,0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .settings-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0.4;
+    transition: opacity 0.2s;
+    background: none; border: none;
+  }
+  .settings-btn:hover { opacity: 0.75; }
+  .settings-btn svg { width: 17px; height: 17px; }
+
+  .status {
+    position: absolute;
+    top: 86px; left: 0; right: 0;
+    text-align: center;
+    z-index: 5;
+  }
+
+  .status-text {
+    font-size: 10px;
+    font-weight: 300;
+    color: rgba(72,202,228,0.45);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: all 0.6s ease;
+  }
+
+  /* Orb container — SVG moon */
+  .orb-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -58%);
+    width: 320px; height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .orb-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 320px; height: 320px;
+    overflow: visible;
+    animation: breathe 6s ease-in-out infinite;
+  }
+
+  .orb-svg.stopped {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  .ripple {
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(72,202,228,0.2);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Prompt text */
+  .prompt-area {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -58%);
+    width: 300px; height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  .prompt-text {
+    font-size: 17px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.95);
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+    text-align: center;
+    padding: 0 28px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 1s ease, transform 1s ease;
+  }
+
+  .prompt-text.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .countdown-area {
+    position: absolute;
+    bottom: 185px; left: 0; right: 0;
+    text-align: center;
+    z-index: 5;
+    transition: opacity 0.5s;
+  }
+
+  .countdown-label {
+    font-size: 9px;
+    font-weight: 300;
+    color: rgba(240,240,240,0.2);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .countdown-value {
+    font-size: 26px;
+    font-weight: 200;
+    color: rgba(72,202,228,0.5);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .controls {
+    position: absolute;
+    bottom: 50px; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    z-index: 5;
+  }
+
+  .main-btn {
+    width: 156px; height: 50px;
+    border-radius: 25px;
+    border: 1.5px solid rgba(72,202,228,0.45);
+    background: transparent;
+    color: rgba(240,240,240,0.8);
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+  .main-btn:hover {
+    border-color: rgba(72,202,228,0.85);
+    background: rgba(72,202,228,0.07);
+    color: #f0f0f0;
+  }
+  .main-btn.running {
+    border-color: rgba(72,202,228,0.6);
+    background: rgba(72,202,228,0.08);
+  }
+
+  .secondary-controls {
+    display: flex; gap: 28px; align-items: center;
+  }
+
+  .fire-btn {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 5px;
+    cursor: pointer; opacity: 0.5;
+    transition: opacity 0.2s;
+    background: none; border: none;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+  .fire-btn:hover { opacity: 0.9; }
+
+  .fire-btn-circle {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(240,240,240,0.25);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .fire-btn-label {
+    font-size: 8px; font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(240,240,240,0.4);
+  }
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.96); }
+    50%       { transform: scale(1.04); }
+  }
+
+  @keyframes rippleOut {
+    0%   { transform: scale(1);   opacity: 0.4; }
+    100% { transform: scale(2.4); opacity: 0;   }
+  }
+
+  .ripple.animating {
+    animation: rippleOut 1.8s ease-out forwards;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+
+  <div class="header">
+    <span class="app-name">Alexander Technique</span>
+    <button class="settings-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="status">
+    <div class="status-text" id="statusText">Ready</div>
+  </div>
+
+  <div class="orb-container">
+    <div class="ripple" id="ripple1"></div>
+    <div class="ripple" id="ripple2"></div>
+    <div class="ripple" id="ripple3"></div>
+
+    <!-- SVG Moon Orb — 320×320, center at 160,160 -->
+    <svg id="orbSvg" class="orb-svg stopped" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+
+        <!-- Blur filters for ghost glow layers -->
+        <filter id="f-outer" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="38"/>
+        </filter>
+        <filter id="f-mid" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="26"/>
+        </filter>
+        <filter id="f-core" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="16"/>
+        </filter>
+        <filter id="f-bright" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
+          <feGaussianBlur stdDeviation="10"/>
+        </filter>
+
+        <!-- Soft crater shadow blur -->
+        <filter id="f-crater" filterUnits="userSpaceOnUse" x="-200" y="-200" width="720" height="720">
+          <feGaussianBlur stdDeviation="2.2"/>
+        </filter>
+        <filter id="f-crater-sm" filterUnits="userSpaceOnUse" x="-200" y="-200" width="720" height="720">
+          <feGaussianBlur stdDeviation="1.2"/>
+        </filter>
+
+        <!-- Moon surface radial gradient — teal palette from v2 -->
+        <radialGradient id="moon-surface" cx="36%" cy="30%" r="72%" fx="36%" fy="30%">
+          <stop offset="0%"   stop-color="#caf0f8" stop-opacity="0.62"/>
+          <stop offset="22%"  stop-color="#90e0ef" stop-opacity="0.48"/>
+          <stop offset="48%"  stop-color="#48cae4" stop-opacity="0.28"/>
+          <stop offset="72%"  stop-color="#0096c7" stop-opacity="0.12"/>
+          <stop offset="90%"  stop-color="#023e8a" stop-opacity="0.04"/>
+          <stop offset="100%" stop-color="#010c1f" stop-opacity="0.0"/>
+        </radialGradient>
+
+        <!-- Edge-fade mask: full opacity in centre, fades to 0 at rim -->
+        <radialGradient id="edge-fade" cx="50%" cy="50%" r="50%">
+          <stop offset="60%"  stop-color="white" stop-opacity="1"/>
+          <stop offset="82%"  stop-color="white" stop-opacity="0.7"/>
+          <stop offset="94%"  stop-color="white" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="white" stop-opacity="0"/>
+        </radialGradient>
+        <mask id="sphere-mask">
+          <circle cx="160" cy="160" r="122" fill="url(#edge-fade)"/>
+        </mask>
+
+        <!-- Active-state bright surface gradient -->
+        <radialGradient id="moon-surface-active" cx="36%" cy="30%" r="72%" fx="36%" fy="30%">
+          <stop offset="0%"   stop-color="#caf0f8" stop-opacity="0.90"/>
+          <stop offset="18%"  stop-color="#90e0ef" stop-opacity="0.72"/>
+          <stop offset="42%"  stop-color="#48cae4" stop-opacity="0.48"/>
+          <stop offset="68%"  stop-color="#0096c7" stop-opacity="0.22"/>
+          <stop offset="88%"  stop-color="#023e8a" stop-opacity="0.07"/>
+          <stop offset="100%" stop-color="#010c1f" stop-opacity="0.0"/>
+        </radialGradient>
+
+      </defs>
+
+      <!-- ── Ghost glow layers (atmospheric, outside mask) ── -->
+      <ellipse class="layer-outer" cx="160" cy="160" rx="102" ry="102"
+               fill="#0096c7" opacity="0.50" filter="url(#f-outer)"/>
+      <ellipse class="layer-mid"   cx="160" cy="160" rx="78"  ry="78"
+               fill="#48cae4" opacity="0.58" filter="url(#f-mid)"/>
+
+      <!-- ── Moon surface + craters (masked to soft sphere) ── -->
+      <g mask="url(#sphere-mask)">
+
+        <!-- Base surface -->
+        <circle id="moonSurface" cx="160" cy="160" r="122" fill="url(#moon-surface)"/>
+
+        <!-- ══ CRATERS ══
+             Light source: upper-left (~315°)
+             Each crater = dark bowl + bright upper-left rim stroke
+             Blur softens the depression; rim gives 3D curvature read
+        -->
+
+        <!-- Crater A — large, lower-right quadrant -->
+        <ellipse cx="194" cy="196" rx="19" ry="16"
+                 fill="rgba(0,48,80,0.42)" filter="url(#f-crater)"/>
+        <ellipse cx="191" cy="193" rx="17" ry="14"
+                 fill="none" stroke="rgba(144,224,239,0.50)" stroke-width="2.2"/>
+
+        <!-- Crater B — medium, upper-left area -->
+        <ellipse cx="130" cy="138" rx="13" ry="11"
+                 fill="rgba(0,42,72,0.38)" filter="url(#f-crater)"/>
+        <ellipse cx="128" cy="136" rx="11.5" ry="9.5"
+                 fill="none" stroke="rgba(144,224,239,0.42)" stroke-width="1.8"/>
+
+        <!-- Crater C — medium, right side -->
+        <ellipse cx="200" cy="155" rx="11" ry="9"
+                 fill="rgba(0,44,75,0.36)" filter="url(#f-crater-sm)"/>
+        <ellipse cx="198" cy="153" rx="9.5" ry="7.8"
+                 fill="none" stroke="rgba(144,224,239,0.38)" stroke-width="1.5"/>
+
+        <!-- Crater D — small, lower-left -->
+        <ellipse cx="138" cy="200" rx="8" ry="6.5"
+                 fill="rgba(0,40,70,0.34)" filter="url(#f-crater-sm)"/>
+        <ellipse cx="136" cy="198" rx="7" ry="5.5"
+                 fill="none" stroke="rgba(144,224,239,0.35)" stroke-width="1.3"/>
+
+        <!-- Crater E — small, upper-right -->
+        <ellipse cx="188" cy="128" rx="7" ry="6"
+                 fill="rgba(0,42,72,0.32)" filter="url(#f-crater-sm)"/>
+        <ellipse cx="186" cy="126" rx="6" ry="5"
+                 fill="none" stroke="rgba(144,224,239,0.32)" stroke-width="1.2"/>
+
+        <!-- Crater F — tiny, centre-left -->
+        <ellipse cx="148" cy="168" rx="5" ry="4"
+                 fill="rgba(0,38,65,0.30)" filter="url(#f-crater-sm)"/>
+        <ellipse cx="147" cy="167" rx="4.2" ry="3.3"
+                 fill="none" stroke="rgba(202,240,248,0.28)" stroke-width="1.0"/>
+
+        <!-- Crater G — tiny, near crater A -->
+        <ellipse cx="210" cy="182" rx="4" ry="3.2"
+                 fill="rgba(0,38,65,0.28)" filter="url(#f-crater-sm)"/>
+        <ellipse cx="209" cy="181" rx="3.3" ry="2.6"
+                 fill="none" stroke="rgba(202,240,248,0.25)" stroke-width="0.9"/>
+
+        <!-- Sheen — upper-left highlight (stays on top of craters) -->
+        <ellipse cx="128" cy="118" rx="58" ry="48"
+                 fill="rgba(202,240,248,0.18)" filter="url(#f-core)"/>
+
+      </g>
+
+      <!-- ── Bright luminous core (on top, keeps orb glowing) ── -->
+      <ellipse class="layer-core"   cx="160" cy="160" rx="55" ry="55"
+               fill="#90e0ef" opacity="0.52" filter="url(#f-core)"/>
+      <ellipse class="layer-bright" cx="160" cy="160" rx="38" ry="38"
+               fill="#caf0f8" opacity="0.38" filter="url(#f-bright)"/>
+
+    </svg>
+  </div>
+
+  <div class="prompt-area">
+    <div class="prompt-text" id="promptText"></div>
+  </div>
+
+  <div class="countdown-area" id="countdownArea" style="opacity:0;">
+    <div class="countdown-label">Next prompt in</div>
+    <div class="countdown-value" id="countdownValue">0:00</div>
+  </div>
+
+  <div class="controls">
+    <button class="main-btn" id="mainBtn" onclick="toggleRunning()">Start</button>
+    <div class="secondary-controls">
+      <button class="fire-btn" onclick="firePrompt()">
+        <div class="fire-btn-circle">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+        </div>
+        <span class="fire-btn-label">Fire now</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+  const prompts = [
+    "Let your neck be free",
+    "Allow the head to go forward and up",
+    "Do less",
+    "Notice where you are holding",
+    "Pause. Inhibit. Direct. Move.",
+    "Let your back lengthen and widen",
+    "Soften the eyes",
+    "Allow stillness inside movement",
+    "Stop. Think. Direct.",
+    "Is your jaw clenched?"
+  ];
+
+  let promptIndex = 0, isRunning = false, isFiring = false;
+  let countdownTimer = null, countdownSeconds = 0, nextPromptTimeout = null;
+
+  const orbSvg      = document.getElementById('orbSvg');
+  const moonSurface = document.getElementById('moonSurface');
+  const promptText  = document.getElementById('promptText');
+  const mainBtn     = document.getElementById('mainBtn');
+  const statusText  = document.getElementById('statusText');
+  const countdownArea  = document.getElementById('countdownArea');
+  const countdownValue = document.getElementById('countdownValue');
+  const ripples = ['ripple1','ripple2','ripple3'].map(id => document.getElementById(id));
+
+  function toggleRunning() {
+    isRunning = !isRunning;
+    if (isRunning) {
+      orbSvg.classList.remove('stopped');
+      mainBtn.textContent = 'Stop';
+      mainBtn.classList.add('running');
+      statusText.textContent = 'Free Mode · All Prompts';
+      countdownArea.style.opacity = '1';
+      scheduleNextPrompt();
+    } else {
+      orbSvg.classList.add('stopped');
+      moonSurface.setAttribute('fill', 'url(#moon-surface)');
+      mainBtn.textContent = 'Start';
+      mainBtn.classList.remove('running');
+      statusText.textContent = 'Ready';
+      countdownArea.style.opacity = '0';
+      promptText.classList.remove('visible');
+      clearTimeout(nextPromptTimeout);
+      clearInterval(countdownTimer);
+    }
+  }
+
+  function scheduleNextPrompt() {
+    const delay = Math.floor(Math.random() * 7000) + 8000;
+    countdownSeconds = Math.ceil(delay / 1000);
+    updateCountdown();
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      countdownSeconds = Math.max(0, countdownSeconds - 1);
+      updateCountdown();
+    }, 1000);
+    clearTimeout(nextPromptTimeout);
+    nextPromptTimeout = setTimeout(() => {
+      if (isRunning) {
+        firePrompt();
+        setTimeout(() => { if (isRunning) scheduleNextPrompt(); }, 4800);
+      }
+    }, delay);
+  }
+
+  function updateCountdown() {
+    const m = Math.floor(countdownSeconds / 60);
+    const s = countdownSeconds % 60;
+    countdownValue.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }
+
+  function firePrompt() {
+    if (isFiring) return;
+    isFiring = true;
+    promptText.textContent = prompts[promptIndex % prompts.length];
+    promptIndex++;
+    moonSurface.setAttribute('fill', 'url(#moon-surface-active)');
+    promptText.classList.add('visible');
+    ripples.forEach((r, i) => {
+      setTimeout(() => {
+        r.classList.remove('animating');
+        void r.offsetWidth;
+        r.classList.add('animating');
+      }, i * 500);
+    });
+    setTimeout(() => {
+      moonSurface.setAttribute('fill', 'url(#moon-surface)');
+      if (!isRunning) orbSvg.classList.add('stopped');
+      promptText.classList.remove('visible');
+      isFiring = false;
+    }, 4000);
+  }
+</script>
+</body>
+</html>
