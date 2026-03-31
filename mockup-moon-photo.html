@@ -90,20 +90,31 @@
     text-transform: uppercase;
   }
 
-  /* ── Orb container ── */
+  /* ── Orb container — matches day mode alignment ── */
   .orb-container {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -58%);
-    width: 320px; height: 320px;
+    top: 102px;
+    bottom: 228px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 375px;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
+  }
+
+  /* Inner wrapper handles the breathing so transform: translateX(-50%) isn't disrupted */
+  .orb-anim {
+    position: relative;
+    width: 320px; height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     animation: breathe 6s ease-in-out infinite;
   }
 
-  .orb-container.stopped {
+  .orb-anim.stopped {
     animation: none;
     opacity: 0.38;
   }
@@ -178,25 +189,24 @@
     pointer-events: none;
   }
 
-  /* Prompt text */
+  /* Prompt text — sits below the moon */
   .prompt-area {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -58%);
-    width: 300px; height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    bottom: 248px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    text-align: center;
     z-index: 6;
     pointer-events: none;
   }
 
   .prompt-text {
     font-size: 17px;
-    font-weight: 300;
+    font-weight: 400;
     color: rgba(255,255,255,0.95);
     line-height: 1.55;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     text-align: center;
     padding: 0 28px;
     opacity: 0;
@@ -282,8 +292,8 @@
   }
 
   @keyframes breathe {
-    0%, 100% { transform: translate(-50%, -58%) scale(0.965); }
-    50%       { transform: translate(-50%, -58%) scale(1.035); }
+    0%, 100% { transform: scale(0.965); }
+    50%       { transform: scale(1.035); }
   }
 
   @keyframes rippleOut {
@@ -311,7 +321,8 @@
     <div class="status-text" id="statusText">Ready</div>
   </div>
 
-  <div class="orb-container stopped" id="orbContainer">
+  <div class="orb-container" id="orbContainer">
+    <div class="orb-anim stopped" id="orbAnim">
 
     <div class="ripple" id="ripple1"></div>
     <div class="ripple" id="ripple2"></div>
@@ -357,7 +368,8 @@
       <ellipse id="brightLayer" cx="160" cy="160" rx="36" ry="36" fill="#caf0f8" opacity="0.28" filter="url(#f-bright)"/>
     </svg>
 
-  </div>
+    </div><!-- /.orb-anim -->
+  </div><!-- /.orb-container -->
 
   <div class="prompt-area">
     <div class="prompt-text" id="promptText"></div>
@@ -403,6 +415,7 @@
   let countdownTimer = null, countdownSeconds = 0, nextPromptTimeout = null;
 
   const orbContainer  = document.getElementById('orbContainer');
+  const orbAnim       = document.getElementById('orbAnim');
   const moonImg       = document.getElementById('moonImg');
   const coreLayer     = document.getElementById('coreLayer');
   const brightLayer   = document.getElementById('brightLayer');
@@ -416,14 +429,14 @@
   function toggleRunning() {
     isRunning = !isRunning;
     if (isRunning) {
-      orbContainer.classList.remove('stopped');
+      orbAnim.classList.remove('stopped');
       mainBtn.textContent = 'Stop';
       mainBtn.classList.add('running');
       statusText.textContent = 'Free Mode · All Prompts';
       countdownArea.style.opacity = '1';
       scheduleNextPrompt();
     } else {
-      orbContainer.classList.add('stopped');
+      orbAnim.classList.add('stopped');
       moonImg.classList.remove('active');
       mainBtn.textContent = 'Start';
       mainBtn.classList.remove('running');
@@ -479,7 +492,7 @@
       moonImg.classList.remove('active');
       coreLayer.setAttribute('opacity', '0.40');
       brightLayer.setAttribute('opacity', '0.30');
-      if (!isRunning) orbContainer.classList.add('stopped');
+      if (!isRunning) orbAnim.classList.add('stopped');
       promptText.classList.remove('visible');
       isFiring = false;
     }, 4000);
