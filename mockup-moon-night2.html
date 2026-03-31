@@ -136,15 +136,6 @@
     pointer-events: none;
   }
 
-  /* ── Back glow SVG — atmospheric teal haze behind moon ── */
-  .glow-back {
-    position: absolute;
-    top: 0; left: 0;
-    width: 320px; height: 320px;
-    overflow: visible;
-    pointer-events: none;
-  }
-
   /* ── Moon photo ── */
   .moon-wrap {
     position: absolute;
@@ -334,22 +325,6 @@
     <div class="ripple" id="ripple1"></div>
     <div class="ripple" id="ripple2"></div>
     <div class="ripple" id="ripple3"></div>
-
-    <!-- Back atmospheric glow -->
-    <svg class="glow-back" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <filter id="f-outer" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
-          <feGaussianBlur stdDeviation="40"/>
-        </filter>
-        <filter id="f-mid" filterUnits="userSpaceOnUse" x="-110" y="-110" width="540" height="540">
-          <feGaussianBlur stdDeviation="26"/>
-        </filter>
-      </defs>
-      <!-- Extra-wide spill: moonlight bleeding into the black bg -->
-      <ellipse cx="160" cy="160" rx="148" ry="148" fill="#023e8a" opacity="0.55" filter="url(#f-outer)"/>
-      <ellipse cx="160" cy="160" rx="118" ry="118" fill="#0096c7" opacity="0.50" filter="url(#f-outer)"/>
-      <ellipse cx="160" cy="160" rx="88"  ry="88"  fill="#48cae4" opacity="0.55" filter="url(#f-mid)"/>
-    </svg>
 
     <!-- Real moon photo, teal-tinted, soft edges -->
     <div class="moon-wrap">
