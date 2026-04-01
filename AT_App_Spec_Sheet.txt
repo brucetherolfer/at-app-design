@@ -1,0 +1,101 @@
+AT REMINDER APP - PRODUCT SPEC SHEET
+Last updated: March 2026
+=====================================
+
+VERSION 1 (MVP - Current Focus)
+================================
+
+CORE FEATURES:
+- Background prompt delivery that works on locked/sleeping phone
+- Customizable frequency: set total prompts per day OR interval between prompts (e.g. every 7 minutes)
+- Random vs. Fixed interval toggle
+- Prompt libraries:
+    * Built-in full 100-prompt AT set
+    * Specialized AT subsets (user selects which)
+    * Custom list: users add/edit their own prompts
+    * Mix and match from multiple lists
+- Time blocking: set blackout windows by day
+- Audio options:
+    * Mute (vibration/notification only)
+    * Text-to-speech using built-in OS voices (multiple voice options)
+    * Pre-recorded voice samples (user records their own prompts)
+- Interrupt mode toggle:
+    * Foreground interrupt — app briefly surfaces to front of screen when prompt fires, then returns to previous app (harder to ignore, recommended for AT use)
+    * Background mode — prompt speaks without taking over the screen
+- Cross-platform: iOS and Android (React Native + Expo)
+
+DELIVERY MODES:
+- FREE MODE — ambient awareness throughout the day
+    * Random or fixed interval, any prompt from any list
+    * Fully customizable frequency
+    * Designed for: ongoing background AT awareness
+
+- SEQUENCE MODE — directed practice, prompts fire in rapid succession
+    * User sets how often a sequence triggers (e.g. once per hour, twice per day)
+    * Within the sequence, prompts come one after another every 5-10 seconds
+    * Designed for: users who prefer a few focused bursts rather than constant interruption
+    * Alexander's own description: "all together, one after another"
+    * Built-in sequences:
+        1. Primary Control — neck free, head forward and up, back lengthen and widen
+        2. Body Scan — head to toe awareness sweep
+        3. Pre-activity — quick set before sitting, standing, lifting etc.
+    * User-created sequences: build your own in any order
+
+SETTINGS SCREEN:
+- Delivery mode selection (Free or Sequence)
+- Daily prompt count or interval setting
+- Random/Fixed toggle (Free mode)
+- Sequence trigger frequency and sequence selection (Sequence mode)
+- Active prompt library selection
+- Time block management (add/edit blackout windows)
+- Voice selection and audio toggle
+- Interrupt mode toggle (Foreground / Background)
+
+MAIN SCREEN:
+- Current active mode and prompt library shown
+- Live countdown to next prompt or sequence
+- Manual trigger button (test/immediate prompt)
+- Quick access to settings
+
+
+VERSION 2 (Post-Launch)
+========================
+
+VOICE ENHANCEMENTS:
+- AI voice cloning: integrate ElevenLabs or similar
+    * User provides short voice sample
+    * App generates any prompt in cloned voice
+    * Custom user-written prompts also spoken in cloned voice
+    * Could use Bruce's voice as default option for app users
+- Multiple pre-trained voice options
+
+INFORMATION & LEARNING TAB:
+- Guidance content: how to apply AT thinking to daily activities
+- Mini-lessons on AT principles (primary control, inhibition, direction, end-gaining etc.)
+- Could be integrated into main app or built as separate companion app (TBD)
+
+
+VERSION 3 / SEPARATE APP (Future)
+===================================
+
+AI AT COACHING FEATURE:
+- Smart guide that talks users through applying AT thinking to any specific activity
+- Example: user says "I'm about to lift something heavy" -> AI gives real-time AT guidance
+- Voice-based interaction
+- Built on Claude API or similar
+- May work better as standalone app
+
+
+TECHNICAL NOTES:
+- Framework: React Native + Expo (cross-platform iOS/Android)
+- Background execution: native modules required for reliable background timer on iOS
+- Voice synthesis: built-in TTS + optional ElevenLabs API integration
+- Storage: local (prompt lists, settings, blackout schedules)
+- No account required for v1
+
+
+PRODUCT POSITIONING:
+- Unique value: purpose-built AT reminder app with customizable prompts, intelligent time blocking, and two distinct delivery modes
+- Gap in market: no existing app focuses purely on timed AT thinking prompts with this level of customization
+- Target users: AT practitioners, AT students, RMTs, somatic practitioners, anyone learning AT
+- Validation plan: test with small group of AT teachers and students before building full app
