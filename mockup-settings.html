@@ -23,15 +23,12 @@
   .phone {
     width: 375px;
     height: 812px;
-    background: radial-gradient(
-      ellipse 88% 80% at 50% 42%,
-      #162e44 0%, #0c1d2e 38%, #050e18 65%, #010508 100%
-    );
+    background: radial-gradient(ellipse at 50% 48%, #0d2137 0%, #071525 40%, #030c18 75%, #010508 100%);
     border-radius: 54px;
-    border: 1.5px solid #0a0a0a;
+    border: 1.5px solid #1a2a35;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 40px 120px rgba(0,0,0,0.92), inset 0 0 0 1px rgba(72,202,228,0.04);
+    box-shadow: 0 40px 120px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(72,202,228,0.04);
     flex-shrink: 0;
   }
 
@@ -40,7 +37,7 @@
     top: 0; left: 50%;
     transform: translateX(-50%);
     width: 126px; height: 34px;
-    background: #000;
+    background: #080c10;
     border-radius: 0 0 20px 20px;
     z-index: 30;
   }
@@ -50,19 +47,16 @@
     bottom: 10px; left: 50%;
     transform: translateX(-50%);
     width: 134px; height: 5px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.25);
     border-radius: 3px;
     z-index: 30;
   }
 
-  /* ── Main screen (background) ── */
+  /* ── Main screen (background layer) ── */
   .main-bg {
     position: absolute;
     inset: 0;
     z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     transition: filter 0.35s ease;
   }
   .main-bg.dimmed { filter: brightness(0.35); }
@@ -71,36 +65,43 @@
     position: absolute;
     top: 52px; left: 0; right: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 0 28px;
+    z-index: 5;
   }
   .app-name {
     font-size: 11px; font-weight: 300;
-    color: rgba(240,240,240,0.4);
-    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    text-align: center;
   }
   .settings-btn {
+    position: absolute;
+    right: 28px;
     width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; opacity: 0.4;
+    cursor: pointer; opacity: 0.35;
     transition: opacity 0.2s;
     background: none; border: none;
   }
-  .settings-btn:hover { opacity: 0.85; }
+  .settings-btn:hover { opacity: 0.75; }
 
-  .status-text {
+  .status {
     position: absolute;
     top: 86px; left: 0; right: 0;
     text-align: center;
+    z-index: 5;
+  }
+  .status-text {
     font-size: 10px; font-weight: 300;
-    color: rgba(72,202,228,0.45);
+    color: rgba(72,202,228,0.8);
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
-  /* ── Moon Night #2 orb ── */
+  /* ── SVG orb (day mode) ── */
   .orb-container {
     position: absolute;
     top: 102px; bottom: 228px;
@@ -109,64 +110,62 @@
     display: flex; align-items: center; justify-content: center;
     z-index: 2;
   }
-  .orb-anim {
-    position: relative;
-    width: 320px; height: 320px;
-    display: flex; align-items: center; justify-content: center;
-    animation: breathe 6s ease-in-out infinite;
-  }
-  .orb-anim.stopped { animation: none; opacity: 0.38; }
-  .moon-wrap {
+  .ripple {
     position: absolute;
-    width: 260px; height: 260px;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  .moon-glow {
-    position: absolute; inset: 0;
+    width: 200px; height: 200px;
     border-radius: 50%;
-    box-shadow:
-      0 0  50px 20px rgba(0,150,199,0.35),
-      0 0  95px 45px rgba(0,120,175,0.20),
-      0 0 160px 80px rgba(0,90,145,0.10),
-      0 0 240px 110px rgba(0,60,110,0.05);
-    z-index: 0;
+    border: 1px solid rgba(72,202,228,0.2);
+    opacity: 0;
+    pointer-events: none;
   }
-  .moon-img {
+  .orb {
+    width: 375px; height: 375px;
+    position: relative;
+    animation: breathe 5s ease-in-out infinite;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .orb.stopped { animation: none; opacity: 0.35; }
+  .orb-svg {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 260px; height: 260px;
-    filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.92);
-    mix-blend-mode: screen;
+    top: 0; left: 0;
+    width: 375px; height: 375px;
+    overflow: visible;
   }
   @keyframes breathe {
-    0%,100% { transform: scale(0.965); }
-    50%      { transform: scale(1.035); }
+    0%,100% { transform: scale(0.93); }
+    50%      { transform: scale(1.07); }
   }
+  @keyframes rippleOut {
+    0%   { transform: scale(1);   opacity: 0.45; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  .ripple.animating { animation: rippleOut 1.8s ease-out forwards; }
 
+  /* ── Countdown ── */
   .countdown-area {
     position: absolute;
     bottom: 185px; left: 0; right: 0;
-    text-align: center;
+    text-align: center; z-index: 5;
   }
   .countdown-label {
     font-size: 9px; font-weight: 300;
-    color: rgba(240,240,240,0.2);
+    color: rgba(240,240,240,0.55);
     letter-spacing: 0.16em; text-transform: uppercase;
     margin-bottom: 4px;
   }
   .countdown-value {
     font-size: 26px; font-weight: 200;
-    color: rgba(72,202,228,0.5);
+    color: rgba(72,202,228,0.85);
     letter-spacing: 0.04em;
   }
 
+  /* ── Controls ── */
   .controls {
     position: absolute;
     bottom: 50px; left: 0; right: 0;
     display: flex; flex-direction: column;
     align-items: center; gap: 18px;
+    z-index: 5;
   }
   .main-btn {
     width: 156px; height: 50px;
@@ -175,10 +174,8 @@
     background: transparent;
     color: rgba(240,240,240,0.8);
     font-size: 12px; font-weight: 300;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-family: inherit;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; font-family: inherit;
   }
   .secondary-controls { display: flex; gap: 28px; align-items: center; }
   .fire-btn {
@@ -197,22 +194,18 @@
   .fire-btn-label {
     font-size: 8px; font-weight: 300;
     letter-spacing: 0.12em; text-transform: uppercase;
-    color: rgba(240,240,240,0.4);
+    color: rgba(240,240,240,0.75);
   }
 
   /* ── Sheet backdrop ── */
   .sheet-backdrop {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     z-index: 20;
     border-radius: 54px;
     pointer-events: none;
     transition: background 0.35s ease;
   }
-  .sheet-backdrop.visible {
-    pointer-events: all;
-    cursor: pointer;
-  }
+  .sheet-backdrop.visible { pointer-events: all; cursor: pointer; }
 
   /* ── Settings sheet ── */
   .settings-sheet {
@@ -225,8 +218,7 @@
     z-index: 21;
     transform: translateY(100%);
     transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
   }
   .settings-sheet.visible { transform: translateY(0); }
 
@@ -237,11 +229,9 @@
     margin: 12px auto 0;
     flex-shrink: 0;
   }
-
   .sheet-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-between; align-items: center;
     padding: 14px 24px 10px;
     flex-shrink: 0;
   }
@@ -255,19 +245,14 @@
     border-radius: 50%;
     border: 1px solid rgba(255,255,255,0.1);
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    background: none;
-    opacity: 0.4;
-    transition: opacity 0.2s;
-    color: rgba(240,240,240,0.7);
-    font-size: 14px;
+    cursor: pointer; background: none;
+    opacity: 0.4; transition: opacity 0.2s;
+    color: rgba(240,240,240,0.7); font-size: 14px;
   }
   .sheet-close:hover { opacity: 0.85; }
 
-  /* ── Sheet scroll area ── */
   .sheet-scroll {
-    flex: 1;
-    overflow-y: auto;
+    flex: 1; overflow-y: auto;
     padding-bottom: 44px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -280,19 +265,16 @@
     font-size: 9px; font-weight: 300;
     color: rgba(72,202,228,0.35);
     letter-spacing: 0.2em; text-transform: uppercase;
-    margin-bottom: 10px;
-    padding-left: 4px;
+    margin-bottom: 10px; padding-left: 4px;
   }
   .section-body {
     border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 14px;
-    overflow: hidden;
+    border-radius: 14px; overflow: hidden;
   }
 
   /* ── Rows ── */
   .row {
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     justify-content: space-between;
     padding: 13px 16px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -302,47 +284,34 @@
   .row-left { display: flex; flex-direction: column; gap: 2px; }
   .row-label {
     font-size: 14px; font-weight: 300;
-    color: rgba(240,240,240,0.78);
-    letter-spacing: 0.01em;
+    color: rgba(240,240,240,0.78); letter-spacing: 0.01em;
   }
   .row-sub {
     font-size: 11px; font-weight: 300;
-    color: rgba(240,240,240,0.28);
-    letter-spacing: 0.02em;
+    color: rgba(240,240,240,0.28); letter-spacing: 0.02em;
   }
   .row-right { display: flex; align-items: center; gap: 8px; }
   .row-value {
     font-size: 13px; font-weight: 300;
-    color: rgba(72,202,228,0.6);
-    letter-spacing: 0.02em;
+    color: rgba(72,202,228,0.6); letter-spacing: 0.02em;
   }
-  .row-arrow {
-    opacity: 0.2;
-    display: flex; align-items: center;
-  }
+  .row-arrow { opacity: 0.2; display: flex; align-items: center; }
 
-  /* ── Full-width delivery toggle ── */
+  /* ── Delivery toggle ── */
   .delivery-seg {
     display: flex;
     background: rgba(255,255,255,0.04);
-    border-radius: 10px;
-    padding: 3px;
-    gap: 3px;
+    border-radius: 10px; padding: 3px; gap: 3px;
     margin: 0 16px 14px;
   }
   .delivery-btn {
-    flex: 1;
-    padding: 9px 0;
-    border-radius: 8px;
-    border: none;
+    flex: 1; padding: 9px 0;
+    border-radius: 8px; border: none;
     background: transparent;
     font-size: 13px; font-weight: 300;
-    color: rgba(240,240,240,0.35);
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-    text-align: center;
+    color: rgba(240,240,240,0.35); letter-spacing: 0.05em;
+    cursor: pointer; transition: all 0.2s;
+    font-family: inherit; text-align: center;
   }
   .delivery-btn.active {
     background: rgba(72,202,228,0.12);
@@ -354,22 +323,15 @@
   .seg {
     display: flex;
     background: rgba(255,255,255,0.05);
-    border-radius: 8px;
-    padding: 2px;
-    gap: 2px;
+    border-radius: 8px; padding: 2px; gap: 2px;
   }
   .seg-btn {
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: none;
+    padding: 5px 12px; border-radius: 6px; border: none;
     background: transparent;
     font-size: 12px; font-weight: 300;
-    color: rgba(240,240,240,0.35);
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-    white-space: nowrap;
+    color: rgba(240,240,240,0.35); letter-spacing: 0.05em;
+    cursor: pointer; transition: all 0.2s;
+    font-family: inherit; white-space: nowrap;
   }
   .seg-btn.active {
     background: rgba(72,202,228,0.13);
@@ -379,41 +341,31 @@
 
   /* ── Stepper ── */
   .stepper {
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-    overflow: hidden;
+    border-radius: 20px; overflow: hidden;
   }
   .stepper-btn {
     width: 32px; height: 30px;
     border: none; background: transparent;
-    color: rgba(240,240,240,0.45);
-    font-size: 18px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-    font-family: inherit;
+    color: rgba(240,240,240,0.45); font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s; font-family: inherit;
   }
   .stepper-btn:hover { background: rgba(72,202,228,0.08); color: rgba(72,202,228,0.7); }
   .stepper-val {
     font-size: 14px; font-weight: 300;
-    color: rgba(72,202,228,0.7);
-    min-width: 52px;
-    text-align: center;
-    letter-spacing: 0.04em;
+    color: rgba(72,202,228,0.7); min-width: 52px;
+    text-align: center; letter-spacing: 0.04em;
     border-left: 1px solid rgba(255,255,255,0.07);
     border-right: 1px solid rgba(255,255,255,0.07);
-    padding: 0 6px;
-    height: 30px;
+    padding: 0 6px; height: 30px;
     display: flex; align-items: center; justify-content: center;
   }
 
   /* ── Range sliders ── */
   .range-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; gap: 10px;
     padding: 10px 16px 14px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
@@ -426,14 +378,12 @@
   }
   input[type=range] {
     flex: 1; -webkit-appearance: none;
-    height: 2px;
-    background: rgba(72,202,228,0.15);
+    height: 2px; background: rgba(72,202,228,0.15);
     border-radius: 1px; outline: none;
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px; height: 16px;
-    border-radius: 50%;
+    width: 16px; height: 16px; border-radius: 50%;
     background: rgba(72,202,228,0.75);
     cursor: pointer;
     border: 2px solid rgba(4,12,22,0.9);
@@ -442,27 +392,19 @@
   .range-val {
     font-size: 12px; font-weight: 300;
     color: rgba(72,202,228,0.55);
-    min-width: 36px; text-align: right;
-    letter-spacing: 0.03em;
+    min-width: 36px; text-align: right; letter-spacing: 0.03em;
   }
 
-  /* ── Audio mode pills ── */
-  .audio-pills {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-  }
+  /* ── Audio pills ── */
+  .audio-pills { display: flex; gap: 5px; flex-wrap: wrap; }
   .audio-pill {
-    padding: 5px 11px;
-    border-radius: 20px;
+    padding: 5px 11px; border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.1);
     background: transparent;
     font-size: 11px; font-weight: 300;
     color: rgba(240,240,240,0.35);
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-    white-space: nowrap;
+    cursor: pointer; transition: all 0.2s;
+    font-family: inherit; white-space: nowrap;
   }
   .audio-pill.active {
     border-color: rgba(72,202,228,0.38);
@@ -476,51 +418,67 @@
     color: rgba(72,202,228,0.65);
     background: rgba(72,202,228,0.08);
     border: 1px solid rgba(72,202,228,0.18);
-    border-radius: 10px;
-    padding: 2px 8px;
-    letter-spacing: 0.05em;
+    border-radius: 10px; padding: 2px 8px; letter-spacing: 0.05em;
   }
 
-  /* ── Label used as page header in second phone ── */
   .page-label {
     font-size: 10px; font-weight: 300;
     color: rgba(240,240,240,0.3);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    text-align: center;
-    margin-top: 12px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    text-align: center; margin-top: 12px;
   }
 </style>
 </head>
 <body>
 
 <!-- ════════════════════════════════════════
-     PHONE 1 — MAIN SCREEN WITH SETTINGS BTN
+     PHONE 1 — INTERACTIVE (tap ⚙ to open)
      ════════════════════════════════════════ -->
 <div>
 <div class="phone" id="phone1">
   <div class="notch"></div>
 
-  <!-- Main screen content (dims when sheet opens) -->
   <div class="main-bg" id="mainBg">
     <div class="header">
       <span class="app-name">Alexander Technique</span>
-      <button class="settings-btn" id="settingsBtn" onclick="openSheet()">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
+      <button class="settings-btn" onclick="openSheet()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5" width="17" height="17">
           <circle cx="12" cy="12" r="3"/>
           <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
         </svg>
       </button>
     </div>
 
-    <div class="status-text">Free Mode · All Prompts</div>
+    <div class="status">
+      <div class="status-text">Free Mode · All Prompts</div>
+    </div>
 
     <div class="orb-container">
-      <div class="orb-anim">
-        <div class="moon-wrap">
-          <div class="moon-glow"></div>
-          <img class="moon-img" src="moon-sphere.png" alt="Moon"/>
-        </div>
+      <div class="ripple" id="r1"></div>
+      <div class="ripple" id="r2"></div>
+      <div class="ripple" id="r3"></div>
+      <div class="orb" id="orb1">
+        <svg class="orb-svg" viewBox="0 0 375 375" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="f-outer" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="40"/></filter>
+            <filter id="f-mid"   filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="28"/></filter>
+            <filter id="f-core"  filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="20"/></filter>
+            <filter id="f-bright" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="14"/></filter>
+            <filter id="f-tendril" filterUnits="userSpaceOnUse" x="-80" y="-80" width="535" height="535"><feGaussianBlur stdDeviation="5"/></filter>
+          </defs>
+          <g id="tendrils">
+            <path id="t0" fill="#90e0ef" filter="url(#f-tendril)"/>
+            <path id="t1" fill="#48cae4" filter="url(#f-tendril)"/>
+            <path id="t2" fill="#90e0ef" filter="url(#f-tendril)"/>
+            <path id="t3" fill="#48cae4" filter="url(#f-tendril)"/>
+            <path id="t4" fill="#90e0ef" filter="url(#f-tendril)"/>
+            <path id="t5" fill="#48cae4" filter="url(#f-tendril)"/>
+          </g>
+          <ellipse class="layer-outer" cx="187.5" cy="187.5" rx="119" ry="119" fill="#0096c7" opacity="0.6" filter="url(#f-outer)"/>
+          <ellipse class="layer-mid"   cx="187.5" cy="187.5" rx="90"  ry="90"  fill="#48cae4" opacity="0.7" filter="url(#f-mid)"/>
+          <ellipse class="layer-core"  cx="187.5" cy="187.5" rx="63"  ry="63"  fill="#90e0ef" opacity="0.65" filter="url(#f-core)"/>
+          <ellipse class="layer-bright" cx="187.5" cy="187.5" rx="49" ry="49"  fill="#caf0f8" opacity="0.45" filter="url(#f-bright)"/>
+        </svg>
       </div>
     </div>
 
@@ -554,7 +512,6 @@
     </div>
   </div><!-- /.main-bg -->
 
-  <!-- backdrop -->
   <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
 
   <!-- Settings sheet -->
@@ -564,22 +521,17 @@
       <span class="sheet-title">Settings</span>
       <button class="sheet-close" onclick="closeSheet()">✕</button>
     </div>
-
     <div class="sheet-scroll">
 
-      <!-- Delivery mode — full width at top -->
       <div style="padding: 4px 20px 0;">
         <div class="section-label">Delivery Mode</div>
         <div class="delivery-seg">
-          <button class="delivery-btn active" onclick="setDelivery(this, 'free')">Free Mode</button>
-          <button class="delivery-btn" onclick="setDelivery(this, 'seq')">Sequence</button>
+          <button class="delivery-btn active" onclick="setDelivery(this,'free')">Free Mode</button>
+          <button class="delivery-btn" onclick="setDelivery(this,'seq')">Sequence</button>
         </div>
       </div>
 
-      <!-- ── FREE MODE PANEL ── -->
       <div id="freePanel">
-
-        <!-- Interval -->
         <div class="section">
           <div class="section-label">Interval</div>
           <div class="section-body">
@@ -592,7 +544,6 @@
                 </div>
               </div>
             </div>
-            <!-- Fixed: stepper -->
             <div class="row" id="fixedRow">
               <div class="row-left">
                 <div class="row-label">Every</div>
@@ -606,7 +557,6 @@
                 </div>
               </div>
             </div>
-            <!-- Random: min/max sliders -->
             <div id="randomRows" style="display:none;">
               <div class="range-row">
                 <span class="range-label">Min</span>
@@ -622,7 +572,6 @@
           </div>
         </div>
 
-        <!-- Prompts -->
         <div class="section">
           <div class="section-label">Prompts</div>
           <div class="section-body">
@@ -647,10 +596,8 @@
             </div>
           </div>
         </div>
+      </div>
 
-      </div><!-- /#freePanel -->
-
-      <!-- ── SEQUENCE PANEL (hidden by default) ── -->
       <div id="seqPanel" style="display:none;">
         <div class="section">
           <div class="section-label">Sequence</div>
@@ -676,9 +623,8 @@
             </div>
           </div>
         </div>
-      </div><!-- /#seqPanel -->
+      </div>
 
-      <!-- Audio -->
       <div class="section">
         <div class="section-label">Audio</div>
         <div class="section-body">
@@ -693,7 +639,7 @@
               </div>
             </div>
           </div>
-          <div class="row" style="cursor:pointer;" id="chimeRow">
+          <div class="row" style="cursor:pointer; display:none;" id="chimeRow">
             <div class="row-label">Chime</div>
             <div class="row-right">
               <span class="row-value">Tibetan Bowl</span>
@@ -717,7 +663,6 @@
         </div>
       </div>
 
-      <!-- Schedule -->
       <div class="section">
         <div class="section-label">Schedule</div>
         <div class="section-body">
@@ -734,7 +679,6 @@
         </div>
       </div>
 
-      <!-- Manage -->
       <div class="section">
         <div class="section-label">Manage</div>
         <div class="section-body">
@@ -755,7 +699,7 @@
         </div>
       </div>
 
-    </div><!-- /.sheet-scroll -->
+    </div>
   </div><!-- /.settings-sheet -->
 
   <div class="home-indicator"></div>
@@ -765,30 +709,39 @@
 
 
 <!-- ════════════════════════════════════════
-     PHONE 2 — SETTINGS SHEET OPEN (static)
+     PHONE 2 — SHEET OPEN (static snapshot)
      ════════════════════════════════════════ -->
 <div>
 <div class="phone">
   <div class="notch"></div>
 
-  <!-- dimmed main bg -->
   <div class="main-bg dimmed">
     <div class="header">
       <span class="app-name">Alexander Technique</span>
       <button class="settings-btn" style="pointer-events:none;">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5" width="17" height="17">
           <circle cx="12" cy="12" r="3"/>
           <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
         </svg>
       </button>
     </div>
-    <div class="status-text">Free Mode · All Prompts</div>
+    <div class="status">
+      <div class="status-text">Free Mode · All Prompts</div>
+    </div>
     <div class="orb-container">
-      <div class="orb-anim">
-        <div class="moon-wrap">
-          <div class="moon-glow"></div>
-          <img class="moon-img" src="moon-sphere.png" alt="Moon"/>
-        </div>
+      <div class="orb stopped">
+        <svg class="orb-svg" viewBox="0 0 375 375" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="f-outer2" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="40"/></filter>
+            <filter id="f-mid2"   filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="28"/></filter>
+            <filter id="f-core2"  filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="20"/></filter>
+            <filter id="f-bright2" filterUnits="userSpaceOnUse" x="-120" y="-120" width="615" height="615"><feGaussianBlur stdDeviation="14"/></filter>
+          </defs>
+          <ellipse cx="187.5" cy="187.5" rx="119" ry="119" fill="#0096c7" opacity="0.6" filter="url(#f-outer2)"/>
+          <ellipse cx="187.5" cy="187.5" rx="90"  ry="90"  fill="#48cae4" opacity="0.7" filter="url(#f-mid2)"/>
+          <ellipse cx="187.5" cy="187.5" rx="63"  ry="63"  fill="#90e0ef" opacity="0.65" filter="url(#f-core2)"/>
+          <ellipse cx="187.5" cy="187.5" rx="49"  ry="49"  fill="#caf0f8" opacity="0.45" filter="url(#f-bright2)"/>
+        </svg>
       </div>
     </div>
     <div class="countdown-area">
@@ -938,12 +891,52 @@
 <script>
   let intervalMinutes = 20;
 
+  // ── Plasma tendril animation (phone 1 only) ──
+  const CX = 187.5, CY = 187.5, ORB_R = 92;
+  const tPaths = [0,1,2,3,4,5].map(i => document.getElementById('t'+i));
+  const TENDRILS = [
+    { baseAngle:  10, curlSpd: 0.00042, lenSpd: 0.00031, curlPh: 0.0,  lenPh: 0.0  },
+    { baseAngle:  70, curlSpd: 0.00038, lenSpd: 0.00027, curlPh: 1.1,  lenPh: 2.3  },
+    { baseAngle: 135, curlSpd: 0.00051, lenSpd: 0.00035, curlPh: 2.4,  lenPh: 0.8  },
+    { baseAngle: 195, curlSpd: 0.00033, lenSpd: 0.00044, curlPh: 3.6,  lenPh: 1.7  },
+    { baseAngle: 260, curlSpd: 0.00046, lenSpd: 0.00029, curlPh: 0.7,  lenPh: 3.1  },
+    { baseAngle: 318, curlSpd: 0.00039, lenSpd: 0.00038, curlPh: 2.0,  lenPh: 0.4  },
+  ];
+
+  function tendrilPath(t, time) {
+    const a = t.baseAngle * Math.PI / 180;
+    const perp = a + Math.PI / 2;
+    const len = 95 + 45 * Math.sin(time * t.lenSpd + t.lenPh);
+    const curl = 0.38 * Math.sin(time * t.curlSpd + t.curlPh);
+    const bw = 14;
+    const bx = CX + ORB_R * Math.cos(a), by = CY + ORB_R * Math.sin(a);
+    const b1x = bx + bw*Math.cos(perp), b1y = by + bw*Math.sin(perp);
+    const b2x = bx - bw*Math.cos(perp), b2y = by - bw*Math.sin(perp);
+    const tipAngle = a + curl;
+    const tx = CX + (ORB_R+len)*Math.cos(tipAngle), ty = CY + (ORB_R+len)*Math.sin(tipAngle);
+    const cp1x = CX+(ORB_R+len*0.35)*Math.cos(a+curl*0.3)+bw*0.6*Math.cos(perp);
+    const cp1y = CY+(ORB_R+len*0.35)*Math.sin(a+curl*0.3)+bw*0.6*Math.sin(perp);
+    const cp2x = CX+(ORB_R+len*0.35)*Math.cos(a+curl*0.3)-bw*0.6*Math.cos(perp);
+    const cp2y = CY+(ORB_R+len*0.35)*Math.sin(a+curl*0.3)-bw*0.6*Math.sin(perp);
+    const cp3x = CX+(ORB_R+len*0.72)*Math.cos(a+curl*0.7);
+    const cp3y = CY+(ORB_R+len*0.72)*Math.sin(a+curl*0.7);
+    return `M${b1x},${b1y} C${cp1x},${cp1y} ${cp3x},${cp3y} ${tx},${ty} C${cp3x},${cp3y} ${cp2x},${cp2y} ${b2x},${b2y} Z`;
+  }
+
+  function animateTendrils(time) {
+    TENDRILS.forEach((t, i) => {
+      tPaths[i].setAttribute('d', tendrilPath(t, time));
+      tPaths[i].setAttribute('opacity', '0');
+    });
+    requestAnimationFrame(animateTendrils);
+  }
+  requestAnimationFrame(animateTendrils);
+
   function openSheet() {
     document.getElementById('mainBg').classList.add('dimmed');
     document.getElementById('sheetBackdrop').classList.add('visible');
     document.getElementById('settingsSheet').classList.add('visible');
   }
-
   function closeSheet() {
     document.getElementById('mainBg').classList.remove('dimmed');
     document.getElementById('sheetBackdrop').classList.remove('visible');
@@ -951,44 +944,31 @@
   }
 
   function setDelivery(btn, mode) {
-    btn.closest('.delivery-seg').querySelectorAll('.delivery-btn')
-      .forEach(b => b.classList.remove('active'));
+    btn.closest('.delivery-seg').querySelectorAll('.delivery-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('freePanel').style.display = mode === 'free' ? '' : 'none';
     document.getElementById('seqPanel').style.display  = mode === 'seq'  ? '' : 'none';
   }
-
   function setIntervalType(btn, type) {
-    btn.closest('.seg').querySelectorAll('.seg-btn')
-      .forEach(b => b.classList.remove('active'));
+    btn.closest('.seg').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('fixedRow').style.display   = type === 'fixed'  ? '' : 'none';
     document.getElementById('randomRows').style.display = type === 'random' ? '' : 'none';
   }
-
   function toggleSeg(btn) {
-    btn.closest('.seg').querySelectorAll('.seg-btn')
-      .forEach(b => b.classList.remove('active'));
+    btn.closest('.seg').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   }
-
   function adjustInterval(delta) {
     intervalMinutes = Math.max(1, Math.min(120, intervalMinutes + delta));
     document.getElementById('intervalVal').textContent = intervalMinutes + ' min';
   }
-
   function setAudio(btn) {
-    btn.closest('.audio-pills').querySelectorAll('.audio-pill')
-      .forEach(b => b.classList.remove('active'));
+    btn.closest('.audio-pills').querySelectorAll('.audio-pill').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    // show/hide chime row based on mode
-    const chimeRow = document.getElementById('chimeRow');
     const label = btn.textContent.trim();
-    chimeRow.style.display = (label === 'Tone' || label === 'Tone + Voice') ? '' : 'none';
+    document.getElementById('chimeRow').style.display = (label === 'Tone' || label === 'Tone + Voice') ? '' : 'none';
   }
-
-  // initialize chime row visibility
-  document.getElementById('chimeRow').style.display = 'none';
 </script>
 </body>
 </html>
