@@ -326,25 +326,21 @@
     letter-spacing: 0.02em;
   }
 
-  /* Day toggles in form */
-  .day-toggles {
+  /* ── Inline day toggles ── */
+  .inline-days {
     display: flex;
     gap: 4px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
   }
-
   .day-toggle {
-    flex: 1;
-    height: 36px;
-    border-radius: 9px;
+    flex: 1; height: 34px;
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 300;
-    cursor: pointer;
-    transition: all 0.18s;
-    border: none;
-    font-family: inherit;
-    letter-spacing: 0.01em;
+    cursor: pointer; transition: all 0.18s;
+    border: none; font-family: inherit;
   }
   .day-toggle.on {
     background: rgba(72,202,228,0.16);
@@ -357,36 +353,103 @@
     color: rgba(240,240,240,0.22);
   }
 
-  /* Save button */
-  .save-btn {
-    width: 100%;
-    height: 50px;
-    border-radius: 25px;
-    border: 1.5px solid rgba(72,202,228,0.45);
-    background: transparent;
-    color: rgba(240,240,240,0.8);
-    font-size: 12px; font-weight: 300;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    cursor: pointer; font-family: inherit;
-    transition: all 0.2s;
-    margin-top: 8px;
+  /* ── Inline time drums ── */
+  .time-pickers {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px 12px;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
   }
-  .save-btn:hover {
-    border-color: rgba(72,202,228,0.85);
-    background: rgba(72,202,228,0.07);
-    color: #f0f0f0;
+  .time-picker-label {
+    font-size: 11px; font-weight: 300;
+    color: rgba(240,240,240,0.28);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    min-width: 36px;
+  }
+  .time-drum {
+    flex: 1;
+    height: 72px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: ns-resize;
+  }
+  /* fade overlay top & bottom */
+  .time-drum::before, .time-drum::after {
+    content: '';
+    position: absolute; left: 0; right: 0;
+    height: 22px; z-index: 2;
+    pointer-events: none;
+  }
+  .time-drum::before {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(5,14,24,0.9), transparent);
+  }
+  .time-drum::after {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(5,14,24,0.9), transparent);
+  }
+  /* selection band */
+  .drum-selection {
+    position: absolute;
+    left: 6px; right: 6px;
+    height: 26px;
+    border-top: 1px solid rgba(72,202,228,0.22);
+    border-bottom: 1px solid rgba(72,202,228,0.22);
+    border-radius: 4px;
+    z-index: 1;
+  }
+  .drum-item {
+    font-size: 11px; font-weight: 300;
+    line-height: 1;
+    padding: 4px 0;
+    text-align: center; width: 100%;
+    position: relative; z-index: 3;
+    letter-spacing: 0.03em;
+  }
+  .drum-item.above { color: rgba(240,240,240,0.18); font-size: 11px; }
+  .drum-item.selected { color: rgba(72,202,228,0.88); font-size: 13px; }
+  .drum-item.below { color: rgba(240,240,240,0.18); font-size: 11px; }
+
+  .time-sep-inline {
+    font-size: 11px; font-weight: 300;
+    color: rgba(240,240,240,0.18);
+    flex-shrink: 0;
   }
 
-  .delete-link {
-    text-align: center;
-    margin-top: 16px;
-    font-size: 12px; font-weight: 300;
-    color: rgba(255,80,80,0.4);
-    letter-spacing: 0.06em;
+  /* ── Expanded card delete row ── */
+  .card-delete-row {
+    display: flex; align-items: center; justify-content: center;
+    padding: 11px 16px;
     cursor: pointer;
+    gap: 6px;
+    font-size: 12px; font-weight: 300;
+    color: rgba(255,80,80,0.35);
+    letter-spacing: 0.06em; text-transform: uppercase;
     transition: color 0.2s;
   }
-  .delete-link:hover { color: rgba(255,80,80,0.7); }
+  .card-delete-row:hover { color: rgba(255,80,80,0.65); }
+
+  /* expanded card border highlight */
+  .window-card.expanded {
+    border-color: rgba(72,202,228,0.2);
+  }
+
+  /* editable title */
+  .window-label-input {
+    background: none; border: none; outline: none;
+    font-size: 14px; font-weight: 300;
+    color: rgba(255,255,255,0.88);
+    font-family: inherit; letter-spacing: 0.01em;
+    flex: 1;
+    border-bottom: 1px solid rgba(72,202,228,0.25);
+    padding-bottom: 1px;
+  }
 
   .page-label {
     font-size: 10px; font-weight: 300;
@@ -505,7 +568,7 @@
 
 
 <!-- ════════════════════════════════════════
-     PHONE 2 — ADD / EDIT FORM
+     PHONE 2 — INLINE EXPANDED CARD
      ════════════════════════════════════════ -->
 <div>
 <div class="phone">
@@ -514,23 +577,32 @@
   <div class="nav-bar">
     <button class="nav-back">
       <svg width="8" height="13" viewBox="0 0 8 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 1L1 6.5 7 12"/></svg>
-      Windows
+      Settings
     </button>
-    <div class="nav-title">Edit Window</div>
+    <div class="nav-title">Blackout Windows</div>
+    <button class="nav-add">+</button>
   </div>
 
   <div class="screen-scroll">
 
-    <div class="section-label" style="margin-top:4px;">Label</div>
-    <div class="form-field">
-      <div class="field-row">
-        <input class="field-input" type="text" value="Massage Sessions" style="text-align:left;">
-      </div>
-    </div>
+    <div class="section-label">Active Windows</div>
 
-    <div class="section-label">Days</div>
-    <div class="form-field">
-      <div class="day-toggles">
+    <!-- Blackouts card — expanded/editing inline -->
+    <div class="window-card expanded">
+      <div class="window-header">
+        <input class="window-label-input" type="text" value="Blackouts">
+        <button class="window-delete" style="opacity:0.18;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Day toggles inline -->
+      <div class="inline-days">
         <button class="day-toggle on"  onclick="this.classList.toggle('on');this.classList.toggle('off')">M</button>
         <button class="day-toggle on"  onclick="this.classList.toggle('on');this.classList.toggle('off')">T</button>
         <button class="day-toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')">W</button>
@@ -539,38 +611,72 @@
         <button class="day-toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')">S</button>
         <button class="day-toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')">S</button>
       </div>
+
+      <!-- Time scroll drums inline -->
+      <div class="time-pickers">
+        <span class="time-picker-label">Start</span>
+        <div class="time-drum">
+          <div class="drum-selection"></div>
+          <div class="drum-item above">8:45 AM</div>
+          <div class="drum-item selected">9:00 AM</div>
+          <div class="drum-item below">9:15 AM</div>
+        </div>
+        <span class="time-sep-inline">to</span>
+        <div class="time-drum">
+          <div class="drum-selection"></div>
+          <div class="drum-item above">4:45 PM</div>
+          <div class="drum-item selected">5:00 PM</div>
+          <div class="drum-item below">5:15 PM</div>
+        </div>
+      </div>
+
+      <div class="card-delete-row">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        Delete window
+      </div>
     </div>
 
-    <div class="section-label">Time</div>
-    <div class="form-field">
-      <div class="field-row" style="cursor:pointer;">
-        <span class="field-label">Start</span>
-        <span class="field-value">9:00 AM</span>
-      </div>
-      <div class="field-row" style="cursor:pointer;">
-        <span class="field-label">End</span>
-        <span class="field-value">5:00 PM</span>
-      </div>
+    <div style="padding: 0 16px; margin-top: -4px; margin-bottom: 12px;">
+      <button class="add-btn">+ Add Window</button>
     </div>
 
-    <div class="section-label">Preview</div>
-    <div class="form-field">
-      <div class="field-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
-        <div style="font-size:12px; font-weight:300; color:rgba(240,240,240,0.35); letter-spacing:0.02em; line-height:1.5;">
-          No prompts on <span style="color:rgba(72,202,228,0.65);">Mon, Tue, Thu, Fri</span><br>
-          between <span style="color:rgba(72,202,228,0.65);">9:00 AM – 5:00 PM</span>
+    <!-- Sleep card — collapsed -->
+    <div class="window-card">
+      <div class="window-header">
+        <span class="window-label">Sleep</span>
+        <button class="window-delete">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.5">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="window-body">
+        <div class="day-row">
+          <div class="day-pip on">M</div><div class="day-pip on">T</div>
+          <div class="day-pip on">W</div><div class="day-pip on">T</div>
+          <div class="day-pip on">F</div><div class="day-pip on">S</div>
+          <div class="day-pip on">S</div>
+        </div>
+        <div class="time-range">
+          <div class="time-chip">10:00 PM</div>
+          <span class="time-sep">to</span>
+          <div class="time-chip">7:00 AM</div>
         </div>
       </div>
     </div>
 
-    <button class="save-btn">Save Window</button>
-    <div class="delete-link">Delete this window</div>
+    <div class="info-note">
+      Prompts will not fire during blackout windows, even if the app is running.
+    </div>
 
   </div>
 
   <div class="home-indicator"></div>
 </div>
-<p class="page-label" style="margin-top:16px;">Blackout Windows · edit view</p>
+<p class="page-label" style="margin-top:16px;">Blackout Windows · card expanded inline</p>
 </div>
 
 </body>
