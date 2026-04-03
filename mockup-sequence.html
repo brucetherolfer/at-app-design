@@ -256,6 +256,37 @@
     display: flex; align-items: center; justify-content: center;
   }
 
+  /* ── Toggle ── */
+  .toggle-wrap {
+    display: flex; align-items: center;
+    gap: 8px;
+  }
+  .toggle {
+    width: 40px; height: 24px;
+    border-radius: 12px;
+    background: rgba(72,202,228,0.15);
+    border: 1px solid rgba(72,202,228,0.2);
+    position: relative; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on {
+    background: rgba(72,202,228,0.35);
+    border-color: rgba(72,202,228,0.5);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(240,240,240,0.35);
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle.on .toggle-thumb {
+    transform: translateX(16px);
+    background: rgba(72,202,228,0.95);
+  }
+
   /* ── Fire sequence button ── */
   .fire-seq-btn {
     width: 100%; height: 50px;
@@ -446,6 +477,23 @@
         </div>
       </div>
 
+      <div class="gap-row" id="autoFireRow">
+        <div class="gap-label">
+          <span class="gap-title">Auto-fire</span>
+          <span class="gap-sub" id="autoFireSub">disabled</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="stepper" id="autoStepper" style="opacity:0.3; pointer-events:none;">
+            <button class="stepper-btn" onclick="adjustAutoFire(-1)">−</button>
+            <div class="stepper-val" id="autoVal">1 hr</div>
+            <button class="stepper-btn" onclick="adjustAutoFire(1)">+</button>
+          </div>
+          <div class="toggle" id="autoToggle" onclick="toggleAutoFire()">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <button class="add-prompt-btn">+ Add Prompt</button>
@@ -467,6 +515,26 @@
   function adjustGap(delta) {
     gap = Math.max(1, Math.min(10, gap + delta));
     document.getElementById('gapVal').textContent = gap + ' sec';
+  }
+
+  let autoOn = false;
+  let autoHrs = 1;
+  function toggleAutoFire() {
+    autoOn = !autoOn;
+    const toggle = document.getElementById('autoToggle');
+    const stepper = document.getElementById('autoStepper');
+    const sub = document.getElementById('autoFireSub');
+    toggle.classList.toggle('on', autoOn);
+    stepper.style.opacity = autoOn ? '1' : '0.3';
+    stepper.style.pointerEvents = autoOn ? 'auto' : 'none';
+    sub.textContent = autoOn ? 'fires every ' + autoHrs + (autoHrs === 1 ? ' hr' : ' hrs') : 'disabled';
+  }
+  function adjustAutoFire(delta) {
+    autoHrs = Math.max(1, Math.min(12, autoHrs + delta));
+    document.getElementById('autoVal').textContent = autoHrs + ' hr';
+    if (autoOn) {
+      document.getElementById('autoFireSub').textContent = 'fires every ' + autoHrs + (autoHrs === 1 ? ' hr' : ' hrs');
+    }
   }
 </script>
 
