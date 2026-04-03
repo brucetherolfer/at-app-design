@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AT App — Settings Sheet</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    gap: 48px;
+    flex-wrap: wrap;
+    padding: 40px;
+  }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: radial-gradient(
+      ellipse 88% 80% at 50% 42%,
+      #162e44 0%, #0c1d2e 38%, #050e18 65%, #010508 100%
+    );
+    border-radius: 54px;
+    border: 1.5px solid #0a0a0a;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.92), inset 0 0 0 1px rgba(72,202,228,0.04);
+    flex-shrink: 0;
+  }
+
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    z-index: 30;
+  }
+
+  .home-indicator {
+    position: absolute;
+    bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    width: 134px; height: 5px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    z-index: 30;
+  }
+
+  /* ── Main screen (background) ── */
+  .main-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: filter 0.35s ease;
+  }
+  .main-bg.dimmed { filter: brightness(0.35); }
+
+  .header {
+    position: absolute;
+    top: 52px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 28px;
+  }
+  .app-name {
+    font-size: 11px; font-weight: 300;
+    color: rgba(240,240,240,0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .settings-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0.4;
+    transition: opacity 0.2s;
+    background: none; border: none;
+  }
+  .settings-btn:hover { opacity: 0.85; }
+
+  .status-text {
+    position: absolute;
+    top: 86px; left: 0; right: 0;
+    text-align: center;
+    font-size: 10px; font-weight: 300;
+    color: rgba(72,202,228,0.45);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* simplified orb for background */
+  .orb-bg {
+    position: absolute;
+    top: 102px; bottom: 228px;
+    left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .orb-glow {
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(30,80,120,0.5) 0%, transparent 70%);
+    box-shadow:
+      0 0 50px 20px rgba(0,150,199,0.2),
+      0 0 95px 45px rgba(0,120,175,0.10);
+    animation: breathe 6s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%,100% { transform: scale(0.965); }
+    50%      { transform: scale(1.035); }
+  }
+
+  .countdown-area {
+    position: absolute;
+    bottom: 185px; left: 0; right: 0;
+    text-align: center;
+  }
+  .countdown-label {
+    font-size: 9px; font-weight: 300;
+    color: rgba(240,240,240,0.2);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .countdown-value {
+    font-size: 26px; font-weight: 200;
+    color: rgba(72,202,228,0.5);
+    letter-spacing: 0.04em;
+  }
+
+  .controls {
+    position: absolute;
+    bottom: 50px; left: 0; right: 0;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 18px;
+  }
+  .main-btn {
+    width: 156px; height: 50px;
+    border-radius: 25px;
+    border: 1.5px solid rgba(72,202,228,0.45);
+    background: transparent;
+    color: rgba(240,240,240,0.8);
+    font-size: 12px; font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .secondary-controls { display: flex; gap: 28px; align-items: center; }
+  .fire-btn {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 5px;
+    cursor: pointer; opacity: 0.5;
+    background: none; border: none;
+    font-family: inherit;
+  }
+  .fire-btn-circle {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(240,240,240,0.25);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fire-btn-label {
+    font-size: 8px; font-weight: 300;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(240,240,240,0.4);
+  }
+
+  /* ── Sheet backdrop ── */
+  .sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    border-radius: 54px;
+    pointer-events: none;
+    transition: background 0.35s ease;
+  }
+  .sheet-backdrop.visible {
+    pointer-events: all;
+    cursor: pointer;
+  }
+
+  /* ── Settings sheet ── */
+  .settings-sheet {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 87%;
+    background: rgba(4, 12, 22, 0.98);
+    border-top: 1px solid rgba(72,202,228,0.13);
+    border-radius: 24px 24px 54px 54px;
+    z-index: 21;
+    transform: translateY(100%);
+    transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-sheet.visible { transform: translateY(0); }
+
+  .sheet-handle {
+    width: 36px; height: 4px;
+    background: rgba(72,202,228,0.18);
+    border-radius: 2px;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+  }
+
+  .sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px 10px;
+    flex-shrink: 0;
+  }
+  .sheet-title {
+    font-size: 11px; font-weight: 300;
+    color: rgba(240,240,240,0.45);
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .sheet-close {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    background: none;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+    color: rgba(240,240,240,0.7);
+    font-size: 14px;
+  }
+  .sheet-close:hover { opacity: 0.85; }
+
+  /* ── Sheet scroll area ── */
+  .sheet-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 44px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sheet-scroll::-webkit-scrollbar { display: none; }
+
+  /* ── Sections ── */
+  .section { padding: 18px 20px 0; }
+  .section-label {
+    font-size: 9px; font-weight: 300;
+    color: rgba(72,202,228,0.35);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+  .section-body {
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  /* ── Rows ── */
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    min-height: 50px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row-left { display: flex; flex-direction: column; gap: 2px; }
+  .row-label {
+    font-size: 14px; font-weight: 300;
+    color: rgba(240,240,240,0.78);
+    letter-spacing: 0.01em;
+  }
+  .row-sub {
+    font-size: 11px; font-weight: 300;
+    color: rgba(240,240,240,0.28);
+    letter-spacing: 0.02em;
+  }
+  .row-right { display: flex; align-items: center; gap: 8px; }
+  .row-value {
+    font-size: 13px; font-weight: 300;
+    color: rgba(72,202,228,0.6);
+    letter-spacing: 0.02em;
+  }
+  .row-arrow {
+    opacity: 0.2;
+    display: flex; align-items: center;
+  }
+
+  /* ── Full-width delivery toggle ── */
+  .delivery-seg {
+    display: flex;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+    margin: 0 16px 14px;
+  }
+  .delivery-btn {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-size: 13px; font-weight: 300;
+    color: rgba(240,240,240,0.35);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    text-align: center;
+  }
+  .delivery-btn.active {
+    background: rgba(72,202,228,0.12);
+    color: rgba(72,202,228,0.9);
+    border: 1px solid rgba(72,202,228,0.22);
+  }
+
+  /* ── Mini segmented ── */
+  .seg {
+    display: flex;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .seg-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    font-size: 12px; font-weight: 300;
+    color: rgba(240,240,240,0.35);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .seg-btn.active {
+    background: rgba(72,202,228,0.13);
+    color: rgba(72,202,228,0.88);
+    border: 1px solid rgba(72,202,228,0.22);
+  }
+
+  /* ── Stepper ── */
+  .stepper {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .stepper-btn {
+    width: 32px; height: 30px;
+    border: none; background: transparent;
+    color: rgba(240,240,240,0.45);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+  .stepper-btn:hover { background: rgba(72,202,228,0.08); color: rgba(72,202,228,0.7); }
+  .stepper-val {
+    font-size: 14px; font-weight: 300;
+    color: rgba(72,202,228,0.7);
+    min-width: 52px;
+    text-align: center;
+    letter-spacing: 0.04em;
+    border-left: 1px solid rgba(255,255,255,0.07);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    padding: 0 6px;
+    height: 30px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Range sliders ── */
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .range-row:last-child { border-bottom: none; }
+  .range-label {
+    font-size: 10px; font-weight: 300;
+    color: rgba(240,240,240,0.3);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    min-width: 28px;
+  }
+  input[type=range] {
+    flex: 1; -webkit-appearance: none;
+    height: 2px;
+    background: rgba(72,202,228,0.15);
+    border-radius: 1px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(72,202,228,0.75);
+    cursor: pointer;
+    border: 2px solid rgba(4,12,22,0.9);
+    box-shadow: 0 0 6px rgba(72,202,228,0.35);
+  }
+  .range-val {
+    font-size: 12px; font-weight: 300;
+    color: rgba(72,202,228,0.55);
+    min-width: 36px; text-align: right;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Audio mode pills ── */
+  .audio-pills {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .audio-pill {
+    padding: 5px 11px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    font-size: 11px; font-weight: 300;
+    color: rgba(240,240,240,0.35);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .audio-pill.active {
+    border-color: rgba(72,202,228,0.38);
+    color: rgba(72,202,228,0.85);
+    background: rgba(72,202,228,0.07);
+  }
+
+  /* ── Badge ── */
+  .badge {
+    font-size: 10px; font-weight: 300;
+    color: rgba(72,202,228,0.65);
+    background: rgba(72,202,228,0.08);
+    border: 1px solid rgba(72,202,228,0.18);
+    border-radius: 10px;
+    padding: 2px 8px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Label used as page header in second phone ── */
+  .page-label {
+    font-size: 10px; font-weight: 300;
+    color: rgba(240,240,240,0.3);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     PHONE 1 — MAIN SCREEN WITH SETTINGS BTN
+     ════════════════════════════════════════ -->
+<div>
+<div class="phone" id="phone1">
+  <div class="notch"></div>
+
+  <!-- Main screen content (dims when sheet opens) -->
+  <div class="main-bg" id="mainBg">
+    <div class="header">
+      <span class="app-name">Alexander Technique</span>
+      <button class="settings-btn" id="settingsBtn" onclick="openSheet()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="status-text">Free Mode · All Prompts</div>
+
+    <div class="orb-bg">
+      <div class="orb-glow"></div>
+    </div>
+
+    <div class="countdown-area">
+      <div class="countdown-label">Next prompt in</div>
+      <div class="countdown-value">14:22</div>
+    </div>
+
+    <div class="controls">
+      <button class="main-btn">Stop</button>
+      <div class="secondary-controls">
+        <!-- skip back -->
+        <button class="fire-btn">
+          <div class="fire-btn-circle">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5">
+              <polygon points="19,3 5,12 19,21"/>
+            </svg>
+          </div>
+          <span class="fire-btn-label">Back</span>
+        </button>
+        <!-- fire now -->
+        <button class="fire-btn">
+          <div class="fire-btn-circle" style="width:46px;height:46px;border-color:rgba(72,202,228,0.3);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(72,202,228,0.75)" stroke-width="1.5">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+          </div>
+          <span class="fire-btn-label">Fire now</span>
+        </button>
+        <!-- skip forward -->
+        <button class="fire-btn">
+          <div class="fire-btn-circle">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
+          </div>
+          <span class="fire-btn-label">Skip</span>
+        </button>
+      </div>
+    </div>
+  </div><!-- /.main-bg -->
+
+  <!-- backdrop -->
+  <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+
+  <!-- Settings sheet -->
+  <div class="settings-sheet" id="settingsSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">Settings</span>
+      <button class="sheet-close" onclick="closeSheet()">✕</button>
+    </div>
+
+    <div class="sheet-scroll">
+
+      <!-- Delivery mode — full width at top -->
+      <div style="padding: 4px 20px 0;">
+        <div class="section-label">Delivery Mode</div>
+        <div class="delivery-seg">
+          <button class="delivery-btn active" onclick="setDelivery(this, 'free')">Free Mode</button>
+          <button class="delivery-btn" onclick="setDelivery(this, 'seq')">Sequence</button>
+        </div>
+      </div>
+
+      <!-- ── FREE MODE PANEL ── -->
+      <div id="freePanel">
+
+        <!-- Interval -->
+        <div class="section">
+          <div class="section-label">Interval</div>
+          <div class="section-body">
+            <div class="row">
+              <div class="row-label">Type</div>
+              <div class="row-right">
+                <div class="seg">
+                  <button class="seg-btn active" onclick="setIntervalType(this,'fixed')">Fixed</button>
+                  <button class="seg-btn" onclick="setIntervalType(this,'random')">Random</button>
+                </div>
+              </div>
+            </div>
+            <!-- Fixed: stepper -->
+            <div class="row" id="fixedRow">
+              <div class="row-left">
+                <div class="row-label">Every</div>
+                <div class="row-sub">minutes between prompts</div>
+              </div>
+              <div class="row-right">
+                <div class="stepper">
+                  <button class="stepper-btn" onclick="adjustInterval(-5)">−</button>
+                  <div class="stepper-val" id="intervalVal">20 min</div>
+                  <button class="stepper-btn" onclick="adjustInterval(5)">+</button>
+                </div>
+              </div>
+            </div>
+            <!-- Random: min/max sliders -->
+            <div id="randomRows" style="display:none;">
+              <div class="range-row">
+                <span class="range-label">Min</span>
+                <input type="range" min="5" max="60" value="10" oninput="this.nextElementSibling.textContent=this.value+' m'">
+                <span class="range-val">10 m</span>
+              </div>
+              <div class="range-row">
+                <span class="range-label">Max</span>
+                <input type="range" min="5" max="120" value="45" oninput="this.nextElementSibling.textContent=this.value+' m'">
+                <span class="range-val">45 m</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prompts -->
+        <div class="section">
+          <div class="section-label">Prompts</div>
+          <div class="section-body">
+            <div class="row">
+              <div class="row-label">Order</div>
+              <div class="row-right">
+                <div class="seg">
+                  <button class="seg-btn active" onclick="toggleSeg(this)">Random</button>
+                  <button class="seg-btn" onclick="toggleSeg(this)">Sequential</button>
+                </div>
+              </div>
+            </div>
+            <div class="row" style="cursor:pointer;">
+              <div class="row-left">
+                <div class="row-label">Library</div>
+                <div class="row-sub">Tap to change active library</div>
+              </div>
+              <div class="row-right">
+                <span class="row-value">All Prompts</span>
+                <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /#freePanel -->
+
+      <!-- ── SEQUENCE PANEL (hidden by default) ── -->
+      <div id="seqPanel" style="display:none;">
+        <div class="section">
+          <div class="section-label">Sequence</div>
+          <div class="section-body">
+            <div class="row" style="cursor:pointer;">
+              <div class="row-left">
+                <div class="row-label">Active Sequence</div>
+                <div class="row-sub">Plays in order</div>
+              </div>
+              <div class="row-right">
+                <span class="row-value">Primary Control</span>
+                <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-label">Trigger</div>
+              <div class="row-right">
+                <div class="seg">
+                  <button class="seg-btn active" onclick="toggleSeg(this)">On demand</button>
+                  <button class="seg-btn" onclick="toggleSeg(this)">Timer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /#seqPanel -->
+
+      <!-- Audio -->
+      <div class="section">
+        <div class="section-label">Audio</div>
+        <div class="section-body">
+          <div class="row">
+            <div class="row-label">Mode</div>
+            <div class="row-right">
+              <div class="audio-pills">
+                <button class="audio-pill" onclick="setAudio(this)">Silent</button>
+                <button class="audio-pill" onclick="setAudio(this)">Tone</button>
+                <button class="audio-pill active" onclick="setAudio(this)">Voice</button>
+                <button class="audio-pill" onclick="setAudio(this)">Tone + Voice</button>
+              </div>
+            </div>
+          </div>
+          <div class="row" style="cursor:pointer;" id="chimeRow">
+            <div class="row-label">Chime</div>
+            <div class="row-right">
+              <span class="row-value">Tibetan Bowl</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+          <div class="row" style="cursor:pointer;">
+            <div class="row-label">Voice</div>
+            <div class="row-right">
+              <span class="row-value">Samantha</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="row-label">Speech Rate</div>
+            <div class="row-right" style="gap:10px; min-width:160px;">
+              <input type="range" min="0" max="100" value="55" style="width:100px;" oninput="this.nextElementSibling.textContent=this.value+'%'">
+              <span class="range-val" style="min-width:32px;">55%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="section">
+        <div class="section-label">Schedule</div>
+        <div class="section-body">
+          <div class="row" style="cursor:pointer;">
+            <div class="row-left">
+              <div class="row-label">Blackout Windows</div>
+              <div class="row-sub">Block prompts by day &amp; time</div>
+            </div>
+            <div class="row-right">
+              <span class="badge">2 active</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage -->
+      <div class="section">
+        <div class="section-label">Manage</div>
+        <div class="section-body">
+          <div class="row" style="cursor:pointer;">
+            <div class="row-label">Library Manager</div>
+            <div class="row-right">
+              <span class="row-value">5 libraries</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+          <div class="row" style="cursor:pointer;">
+            <div class="row-label">Sequence Manager</div>
+            <div class="row-right">
+              <span class="row-value">3 sequences</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.sheet-scroll -->
+  </div><!-- /.settings-sheet -->
+
+  <div class="home-indicator"></div>
+</div>
+<p class="page-label" style="margin-top:16px;">Tap ⚙ to open settings</p>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     PHONE 2 — SETTINGS SHEET OPEN (static)
+     ════════════════════════════════════════ -->
+<div>
+<div class="phone">
+  <div class="notch"></div>
+
+  <!-- dimmed main bg -->
+  <div class="main-bg dimmed">
+    <div class="header">
+      <span class="app-name">Alexander Technique</span>
+      <button class="settings-btn" style="pointer-events:none;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.7)" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="status-text">Free Mode · All Prompts</div>
+    <div class="orb-bg"><div class="orb-glow"></div></div>
+    <div class="countdown-area">
+      <div class="countdown-label">Next prompt in</div>
+      <div class="countdown-value">14:22</div>
+    </div>
+    <div class="controls">
+      <button class="main-btn" style="pointer-events:none;">Stop</button>
+    </div>
+  </div>
+
+  <!-- Static settings sheet (open) -->
+  <div class="settings-sheet visible">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title">Settings</span>
+      <button class="sheet-close" style="pointer-events:none;">✕</button>
+    </div>
+    <div class="sheet-scroll">
+
+      <div style="padding: 4px 20px 0;">
+        <div class="section-label">Delivery Mode</div>
+        <div class="delivery-seg">
+          <button class="delivery-btn active">Free Mode</button>
+          <button class="delivery-btn">Sequence</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Interval</div>
+        <div class="section-body">
+          <div class="row">
+            <div class="row-label">Type</div>
+            <div class="row-right">
+              <div class="seg">
+                <button class="seg-btn">Fixed</button>
+                <button class="seg-btn active">Random</button>
+              </div>
+            </div>
+          </div>
+          <div class="range-row">
+            <span class="range-label">Min</span>
+            <input type="range" min="5" max="60" value="10">
+            <span class="range-val">10 m</span>
+          </div>
+          <div class="range-row" style="border-bottom:none;">
+            <span class="range-label">Max</span>
+            <input type="range" min="5" max="120" value="45">
+            <span class="range-val">45 m</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Prompts</div>
+        <div class="section-body">
+          <div class="row">
+            <div class="row-label">Order</div>
+            <div class="row-right">
+              <div class="seg">
+                <button class="seg-btn active">Random</button>
+                <button class="seg-btn">Sequential</button>
+              </div>
+            </div>
+          </div>
+          <div class="row" style="cursor:pointer;">
+            <div class="row-left">
+              <div class="row-label">Library</div>
+              <div class="row-sub">Tap to change active library</div>
+            </div>
+            <div class="row-right">
+              <span class="row-value">All Prompts</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Audio</div>
+        <div class="section-body">
+          <div class="row">
+            <div class="row-label">Mode</div>
+            <div class="row-right">
+              <div class="audio-pills">
+                <button class="audio-pill">Silent</button>
+                <button class="audio-pill">Tone</button>
+                <button class="audio-pill active">Voice</button>
+                <button class="audio-pill">Tone + Voice</button>
+              </div>
+            </div>
+          </div>
+          <div class="row" style="cursor:pointer;">
+            <div class="row-label">Voice</div>
+            <div class="row-right">
+              <span class="row-value">Samantha</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Schedule</div>
+        <div class="section-body">
+          <div class="row" style="cursor:pointer;">
+            <div class="row-left">
+              <div class="row-label">Blackout Windows</div>
+              <div class="row-sub">Block prompts by day &amp; time</div>
+            </div>
+            <div class="row-right">
+              <span class="badge">2 active</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Manage</div>
+        <div class="section-body">
+          <div class="row" style="cursor:pointer;">
+            <div class="row-label">Library Manager</div>
+            <div class="row-right">
+              <span class="row-value">5 libraries</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+          <div class="row" style="cursor:pointer;">
+            <div class="row-label">Sequence Manager</div>
+            <div class="row-right">
+              <span class="row-value">3 sequences</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div>
+<p class="page-label" style="margin-top:16px;">Settings sheet · Random interval state</p>
+</div>
+
+<script>
+  let intervalMinutes = 20;
+
+  function openSheet() {
+    document.getElementById('mainBg').classList.add('dimmed');
+    document.getElementById('sheetBackdrop').classList.add('visible');
+    document.getElementById('settingsSheet').classList.add('visible');
+  }
+
+  function closeSheet() {
+    document.getElementById('mainBg').classList.remove('dimmed');
+    document.getElementById('sheetBackdrop').classList.remove('visible');
+    document.getElementById('settingsSheet').classList.remove('visible');
+  }
+
+  function setDelivery(btn, mode) {
+    btn.closest('.delivery-seg').querySelectorAll('.delivery-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('freePanel').style.display = mode === 'free' ? '' : 'none';
+    document.getElementById('seqPanel').style.display  = mode === 'seq'  ? '' : 'none';
+  }
+
+  function setIntervalType(btn, type) {
+    btn.closest('.seg').querySelectorAll('.seg-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('fixedRow').style.display   = type === 'fixed'  ? '' : 'none';
+    document.getElementById('randomRows').style.display = type === 'random' ? '' : 'none';
+  }
+
+  function toggleSeg(btn) {
+    btn.closest('.seg').querySelectorAll('.seg-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function adjustInterval(delta) {
+    intervalMinutes = Math.max(1, Math.min(120, intervalMinutes + delta));
+    document.getElementById('intervalVal').textContent = intervalMinutes + ' min';
+  }
+
+  function setAudio(btn) {
+    btn.closest('.audio-pills').querySelectorAll('.audio-pill')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // show/hide chime row based on mode
+    const chimeRow = document.getElementById('chimeRow');
+    const label = btn.textContent.trim();
+    chimeRow.style.display = (label === 'Tone' || label === 'Tone + Voice') ? '' : 'none';
+  }
+
+  // initialize chime row visibility
+  document.getElementById('chimeRow').style.display = 'none';
+</script>
+</body>
+</html>
