@@ -100,21 +100,45 @@
     text-transform: uppercase;
   }
 
-  /* simplified orb for background */
-  .orb-bg {
+  /* ── Moon Night #2 orb ── */
+  .orb-container {
     position: absolute;
     top: 102px; bottom: 228px;
     left: 50%; transform: translateX(-50%);
+    width: 375px;
     display: flex; align-items: center; justify-content: center;
+    z-index: 2;
   }
-  .orb-glow {
-    width: 260px; height: 260px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(30,80,120,0.5) 0%, transparent 70%);
-    box-shadow:
-      0 0 50px 20px rgba(0,150,199,0.2),
-      0 0 95px 45px rgba(0,120,175,0.10);
+  .orb-anim {
+    position: relative;
+    width: 320px; height: 320px;
+    display: flex; align-items: center; justify-content: center;
     animation: breathe 6s ease-in-out infinite;
+  }
+  .orb-anim.stopped { animation: none; opacity: 0.38; }
+  .moon-wrap {
+    position: absolute;
+    width: 260px; height: 260px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .moon-glow {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    box-shadow:
+      0 0  50px 20px rgba(0,150,199,0.35),
+      0 0  95px 45px rgba(0,120,175,0.20),
+      0 0 160px 80px rgba(0,90,145,0.10),
+      0 0 240px 110px rgba(0,60,110,0.05);
+    z-index: 0;
+  }
+  .moon-img {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 260px; height: 260px;
+    filter: sepia(1) hue-rotate(150deg) saturate(2.2) brightness(0.92);
+    mix-blend-mode: screen;
   }
   @keyframes breathe {
     0%,100% { transform: scale(0.965); }
@@ -491,8 +515,13 @@
 
     <div class="status-text">Free Mode · All Prompts</div>
 
-    <div class="orb-bg">
-      <div class="orb-glow"></div>
+    <div class="orb-container">
+      <div class="orb-anim">
+        <div class="moon-wrap">
+          <div class="moon-glow"></div>
+          <img class="moon-img" src="moon-sphere.png" alt="Moon"/>
+        </div>
+      </div>
     </div>
 
     <div class="countdown-area">
@@ -503,30 +532,21 @@
     <div class="controls">
       <button class="main-btn">Stop</button>
       <div class="secondary-controls">
-        <!-- skip back -->
         <button class="fire-btn">
           <div class="fire-btn-circle">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5">
-              <polygon points="19,3 5,12 19,21"/>
-            </svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5"><polygon points="19,3 5,12 19,21"/></svg>
           </div>
           <span class="fire-btn-label">Back</span>
         </button>
-        <!-- fire now -->
         <button class="fire-btn">
           <div class="fire-btn-circle" style="width:46px;height:46px;border-color:rgba(72,202,228,0.3);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(72,202,228,0.75)" stroke-width="1.5">
-              <polygon points="5,3 19,12 5,21"/>
-            </svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(72,202,228,0.75)" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg>
           </div>
           <span class="fire-btn-label">Fire now</span>
         </button>
-        <!-- skip forward -->
         <button class="fire-btn">
           <div class="fire-btn-circle">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5">
-              <polygon points="5,3 19,12 5,21"/>
-            </svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(240,240,240,0.75)" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg>
           </div>
           <span class="fire-btn-label">Skip</span>
         </button>
@@ -763,7 +783,14 @@
       </button>
     </div>
     <div class="status-text">Free Mode · All Prompts</div>
-    <div class="orb-bg"><div class="orb-glow"></div></div>
+    <div class="orb-container">
+      <div class="orb-anim">
+        <div class="moon-wrap">
+          <div class="moon-glow"></div>
+          <img class="moon-img" src="moon-sphere.png" alt="Moon"/>
+        </div>
+      </div>
+    </div>
     <div class="countdown-area">
       <div class="countdown-label">Next prompt in</div>
       <div class="countdown-value">14:22</div>
