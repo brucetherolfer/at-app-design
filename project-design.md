@@ -30,6 +30,53 @@ A cross-platform mobile app (iOS, Android, web) built in Flutter that delivers A
 - Notification banner animation (OS-controlled, not possible)
 - Google/Apple Calendar integration
 - Push notification server (all scheduling is client-side)
+- Posture detection via camera or headphone spatial tracking (v3 — see Future Explorations)
+- Desktop/Mac version (v3 — see Future Explorations)
+
+---
+
+## 3b. Future Explorations (v3+)
+
+### Desktop App with Posture Detection
+Inspired by **Dorso** (Mac app using front camera or headphone spatial tracking to detect slouching). A Mac/desktop companion app that:
+- Monitors head/neck position passively in the background
+- Fires AT prompts reactively when poor use is detected (vs. on a fixed timer)
+- Could use: front camera via Vision framework, or AirPods head tracking via CoreMotion
+
+**Headphone spatial tracking — what's realistic:**
+AirPods Pro and AirPods Max contain IMU sensors (accelerometer + gyroscope) — the same hardware used for spatial audio head tracking. Apple exposes this data via `CMHeadphoneMotionManager` (CoreMotion). What it can detect:
+- **Head pitch** (forward/back tilt) — reliable, ~±1-2° resolution. Good for detecting forward head posture.
+- **Head roll** (side tilt) and **yaw** (left/right turn) — also available
+- **What it can't do:** absolute position in space — it tracks *orientation* (angles), not *location* (xyz coordinates)
+
+For AT purposes, pitch is the money metric — forward head carriage shows up clearly. A threshold like "head pitched forward more than 15° for 30+ seconds" is feasible and meaningful. This could also work as a **phone version feature** (phone worn or held, detects posture via its own IMU — though less elegant than headphone tracking).
+
+**Camera-based posture detection — how it works:**
+Apple's **Vision framework** can detect:
+- **Face position in frame** — if you slump, your face moves lower and/or closer (appears larger in frame). Set a baseline when the session starts, trigger when you've drifted significantly.
+- **Head pose** (pitch/yaw/roll) — extracted from facial landmarks, no accessory needed
+- **Body pose** (`VNDetectHumanBodyPoseRequest`) — can see shoulder position relative to ears. Forward head carriage literally shows as ears moving in front of shoulders.
+
+The camera catches what headphones can't — sliding down in a chair shows as the whole face moving lower/larger, not just a tilt. A compound signal like "face 20% larger than baseline AND pitched forward" is a robust slouch detector. All processing happens on-device via Vision — no frames sent anywhere (same approach Dorso uses).
+
+**Cross-platform desktop — is it possible?**
+Yes. The Mac-specific Vision framework has a strong cross-platform equivalent:
+
+| Platform | Computer Vision Option |
+|---|---|
+| **macOS** | Apple Vision framework — most capable, fully local, native |
+| **Windows** | **MediaPipe** (Google, open source, runs fully local) |
+| **Linux** | MediaPipe — same library, same API |
+| **All platforms** | **MediaPipe** — face mesh, pose estimation, hand tracking; works on Mac/Win/Linux |
+
+**MediaPipe** is the key cross-platform path. It's open source, runs entirely on-device (no cloud), and provides the same face position + head pose + body pose data as Apple Vision. Flutter has desktop support (Mac, Windows, Linux) and MediaPipe has a Flutter plugin — so in theory the whole desktop app could be Flutter, consistent with the mobile codebase.
+
+**Implementation path (v3, not now):**
+- **Mac-first**: Swift/SwiftUI or Flutter desktop using Apple Vision + `CMHeadphoneMotionManager`
+- **Cross-platform stretch**: Flutter desktop + MediaPipe plugin for Windows/Linux parity
+- Flutter plugin for AirPods head motion: not mature yet — likely needs a native Swift module
+- Android headphones: no equivalent standard API to AirPods; Apple-specific for now
+- A desktop version was not originally planned but is worth exploring — the posture detection angle makes it genuinely useful and differentiated from the mobile app
 
 ---
 
@@ -388,6 +435,31 @@ flutter build apk --flavor at -t lib/main_at.dart   # AT Android release
 6. **Chime audio files** — 3+ chime options needed (soft bell, Tibetan bowl, simple tone). Source/record before audio implementation begins.
 
 7. **Web background limitation** — Web cannot reliably run background timers (tab must stay open). Decide whether to include a visible disclaimer in the web version or deprioritize web to a "preview/test" platform only.
+
+---
+
+## 16. Visual Design — Future Explorations
+
+### Glass Orb / Crystal Ball (v2 / General Public Flavor)
+
+A visual alternative to the current teal plasma orb for the general public flavor or a v2 design refresh. Instead of the glowing energy orb, the centrepiece becomes a **glass orb with water inside** or a **crystal ball** — a more universal, less AT-specific visual that could appeal to somatic wellness and general mindfulness audiences.
+
+**Design directions to explore:**
+- **Water-filled glass orb** — light refracts through a sphere of water; subtle ripple or wave animation on prompt fire; conveys fluidity, body awareness, ease
+- **Crystal ball** — clear or slightly smoky glass sphere with internal light/depth; mystical but grounded; pulsing inner glow on prompt delivery
+- **Shared visual language** — both concepts can inherit the same breathing/pulse animation rhythm as the current orb; the difference is the surface material and the light behaviour
+
+**Why this works for General Public:**
+- Less abstract than an energy orb — a glass object is immediately legible
+- Water/crystal imagery resonates with body awareness, stillness, clarity — all relevant to somatic wellness audiences
+- Distinct enough from the AT flavor to feel like a genuinely different product
+
+**Technical notes:**
+- Achievable in Flutter using custom `CustomPainter` with radial gradients, specular highlights, and refraction simulation
+- Water animation: layered sine-wave distortion on a circular clip, very low amplitude
+- Crystal: static sphere with a moving internal light source (animated radial gradient offset)
+
+**Status:** Concept only. Explore as a mockup before v2 design spec is written.
 
 ---
 
