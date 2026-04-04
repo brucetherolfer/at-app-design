@@ -401,7 +401,36 @@ Content padding:       20px horizontal (inner screens), 28px (main screen)
 
 ---
 
-## 18. Attribution
+## 18. Alternating Library Mode
+
+Free Mode supports strict alternation between two libraries. Each prompt fires from a different library than the previous one.
+
+**Settings rows (under Prompts section):**
+
+```
+Library          [All Prompts ▾]          — primary library, always present
+Alternate with   [toggle]  Bruce's 23     — toggle off = disabled, toggle on = reveals alternate library row
+Alternate library [Bruce's 23 ▾]          — only visible when Alternate with is ON
+```
+
+**Data model:**
+- `primaryLibraryId: String`
+- `alternateLibraryId: String?` — null when off
+- `lastFiredFrom: LibrarySlot` — `.primary` or `.alternate`, persisted across prompts
+
+**Scheduling logic:**
+1. On each prompt fire, check `lastFiredFrom`
+2. Fire from the other library
+3. Update `lastFiredFrom`
+4. Pick prompt from that library (random or sequential, per Order setting)
+
+Works with both Fixed and Random interval modes. The two libraries alternate regardless of interval.
+
+**Status text when active:** `Free Mode · All Prompts ↔ Bruce's 23`
+
+---
+
+## 19. Attribution
 
 Moon photo credit (required in app's About screen or credits):
 **"Moon" by Gregory H. Revera, Wikimedia Commons, CC BY-SA 3.0**

@@ -333,6 +333,22 @@
     cursor: pointer; transition: all 0.2s;
     font-family: inherit; white-space: nowrap;
   }
+  .toggle {
+    width: 36px; height: 22px; border-radius: 11px;
+    background: rgba(72,202,228,0.15);
+    border: 1px solid rgba(72,202,228,0.20);
+    position: relative; cursor: pointer; flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .toggle.on { background: rgba(72,202,228,0.35); border-color: rgba(72,202,228,0.50); }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(240,240,240,0.35);
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle.on .toggle-thumb { transform: translateX(14px); background: rgba(72,202,228,0.95); }
+
   .seg-btn.active {
     background: rgba(72,202,228,0.13);
     color: rgba(72,202,228,0.88);
@@ -594,6 +610,27 @@
                 <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
               </div>
             </div>
+            <div class="row">
+              <div class="row-left">
+                <div class="row-label">Alternate with</div>
+                <div class="row-sub" id="altSub1">Strict alternation between two libraries</div>
+              </div>
+              <div class="row-right" style="gap:8px;">
+                <span class="row-value" id="altVal1" style="display:none;">Bruce's 23</span>
+                <div class="toggle" id="altToggle1" onclick="toggleAlt()" style="width:36px;height:22px;border-radius:11px;">
+                  <div class="toggle-thumb" style="width:14px;height:14px;top:3px;left:3px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row" id="altLibRow1" style="display:none; cursor:pointer;">
+              <div class="row-left">
+                <div class="row-label" style="color:rgba(72,202,228,0.7);">Alternate library</div>
+              </div>
+              <div class="row-right">
+                <span class="row-value">Bruce's 23</span>
+                <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -817,6 +854,27 @@
               <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
             </div>
           </div>
+          <div class="row">
+            <div class="row-left">
+              <div class="row-label">Alternate with</div>
+              <div class="row-sub">Strict alternation between two libraries</div>
+            </div>
+            <div class="row-right" style="gap:8px;">
+              <span class="row-value">Bruce's 23</span>
+              <div class="toggle on" style="width:36px;height:22px;border-radius:11px;">
+                <div class="toggle-thumb" style="width:14px;height:14px;top:3px;left:3px;transform:translateX(14px);background:rgba(72,202,228,0.95);"></div>
+              </div>
+            </div>
+          </div>
+          <div class="row" style="cursor:pointer;">
+            <div class="row-left">
+              <div class="row-label" style="color:rgba(72,202,228,0.7);">Alternate library</div>
+            </div>
+            <div class="row-right">
+              <span class="row-value">Bruce's 23</span>
+              <span class="row-arrow"><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="rgba(240,240,240,0.6)" stroke-width="1.5"><path d="M1 1l5 5-5 5"/></svg></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -958,6 +1016,17 @@
   function toggleSeg(btn) {
     btn.closest('.seg').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+  }
+
+  let altOn = false;
+  function toggleAlt() {
+    altOn = !altOn;
+    const toggle = document.getElementById('altToggle1');
+    const libRow = document.getElementById('altLibRow1');
+    const val    = document.getElementById('altVal1');
+    toggle.classList.toggle('on', altOn);
+    libRow.style.display = altOn ? '' : 'none';
+    val.style.display    = altOn ? '' : 'none';
   }
   function adjustInterval(delta) {
     intervalMinutes = Math.max(1, Math.min(120, intervalMinutes + delta));
