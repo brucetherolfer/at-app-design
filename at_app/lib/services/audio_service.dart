@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:just_audio/just_audio.dart';
@@ -46,7 +47,9 @@ class AudioService {
         await _speak(text, voiceName, speechRate, speechPitch);
         break;
       case AudioMode.toneAndVoice:
-        await _playChime(chimeAsset);
+        // Chime starts immediately (non-blocking), voice enters after decay delay
+        unawaited(_playChime(chimeAsset));
+        await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
         await _speak(text, voiceName, speechRate, speechPitch);
         break;
     }
@@ -98,12 +101,22 @@ class AudioService {
   String _chimeAssetPath(String key) {
     switch (key) {
       case 'bowl':
-        return 'assets/audio/tibetan_bowl.mp3';
+        return 'assets/audio/tibetan_bowl.m4a';
       case 'tone':
-        return 'assets/audio/simple_tone.mp3';
+        return 'assets/audio/simple_tone.m4a';
       case 'bell':
       default:
-        return 'assets/audio/soft_bell.mp3';
+        return 'assets/audio/soft_bell.m4a';
     }
   }
+
+  /// How long to wait after the chime starts before the voice begins.
+  /// Tune these once you hear the actual sounds — just change the ms values.
+  static const Map<String, int> _chimeVoiceDelayMs = {
+    'bell':  800,   // medium decay — voice enters as bell fades
+    'bowl':  1600,  // long sustain — let it bloom before speaking
+    'tone':  400,   // short/punchy — voice enters quickly
+  };
+
+  int _voiceDelayFor(String key) => _chimeVoiceDelayMs[key] ?? 800;
 }
