@@ -1,0 +1,52 @@
+name: at_app
+description: Alexander Technique awareness prompt timer
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Local database
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+
+  # Navigation
+  go_router: ^14.2.0
+
+  # Audio / TTS
+  flutter_tts: ^4.0.2
+  just_audio: ^0.9.38
+
+  # Notifications
+  flutter_local_notifications: ^17.2.2
+
+  # Background execution
+  flutter_background_service: ^5.0.5
+
+  # Utilities
+  uuid: ^4.4.0
+  path_provider: ^2.1.3
+  collection: ^1.18.0
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.12
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/audio/

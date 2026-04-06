@@ -1,0 +1,193 @@
+import 'dart:async';
+import 'dart:math';
+import 'package:flutter/foundation.dart';
+import '../models/app_settings.dart';
+import '../models/blackout_window.dart';
+import '../models/prompt.dart';
+import '../repositories/prompt_repository.dart';
+import '../repositories/blackout_repository.dart';
+import '../repositories/settings_repository.dart';
+import 'notification_service.dart';
+import 'audio_service.dart';
+
+class PromptTimerService {
+  static final PromptTimerService _instance = PromptTimerService._internal();
+  factory PromptTimerService() => _instance;
+  PromptTimerService._internal();
+
+  Timer? _timer;
+  final _countdownController = StreamController<Duration>.broadcast();
+  Duration _remaining = Duration.zero;
+  bool _isRunning = false;
+  bool _isPaused = false;
+
+  final _promptFiredController = StreamController<String>.broadcast();
+
+  Stream<Duration> get countdownStream => _countdownController.stream;
+  Stream<String> get promptFiredStream => _promptFiredController.stream;
+  bool get isRunning => _isRunning;
+  bool get isPaused => _isPaused;
+  Duration get remaining => _remaining;
+
+  final _random = Random();
+  final _promptRepo = PromptRepository();
+  final _blackoutRepo = BlackoutRepository();
+  final _settingsRepo = SettingsRepository();
+
+  /// Start the timer from settings.
+  Future<void> start() async {
+    if (_isRunning && !_isPaused) return;
+    _isRunning = true;
+    _isPaused = false;
+
+    final settings = await _settingsRepo.load();
+    _remaining = _intervalFor(settings);
+    _scheduleCountdown(settings);
+  }
+
+  /// Pause — suspends without resetting.
+  void pause() {
+    if (!_isRunning || _isPaused) return;
+    _isPaused = true;
+    _timer?.cancel();
+  }
+
+  /// Resume after pause.
+  Future<void> resume() async {
+    if (!_isRunning || !_isPaused) return;
+    _isPaused = false;
+    final settings = await _settingsRepo.load();
+    _scheduleCountdown(settings);
+  }
+
+  /// Stop and reset.
+  void stop() {
+    _timer?.cancel();
+    _isRunning = false;
+    _isPaused = false;
+    _remaining = Duration.zero;
+    _countdownController.add(_remaining);
+  }
+
+  /// Fire the next prompt immediately, then reschedule.
+  Future<void> fireNow() async {
+    _timer?.cancel();
+    final settings = await _settingsRepo.load();
+    await _firePrompt(settings);
+    _remaining = _intervalFor(settings);
+    _scheduleCountdown(settings);
+  }
+
+  /// Skip back — reset countdown to full interval without firing.
+  Future<void> skipBack() async {
+    _timer?.cancel();
+    final settings = await _settingsRepo.load();
+    _remaining = _intervalFor(settings);
+    _scheduleCountdown(settings);
+  }
+
+  void _scheduleCountdown(AppSettings settings) {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) async {
+      if (_remaining <= Duration.zero) {
+        t.cancel();
+        if (await _isInBlackout()) {
+          // Skip this tick — reschedule
+          _remaining = _intervalFor(settings);
+          _scheduleCountdown(settings);
+          return;
+        }
+        await _firePrompt(settings);
+        _remaining = _intervalFor(settings);
+        _scheduleCountdown(settings);
+      } else {
+        _remaining -= const Duration(seconds: 1);
+        _countdownController.add(_remaining);
+      }
+    });
+  }
+
+  Future<bool> _isInBlackout() async {
+    final now = DateTime.now();
+    final windows = await _blackoutRepo.getAll();
+    final dayOfWeek = now.weekday; // 1=Mon, 7=Sun
+    final nowMinutes = now.hour * 60 + now.minute;
+
+    for (final w in windows) {
+      if (!w.daysOfWeek.contains(dayOfWeek)) continue;
+      final start = _parseTime(w.startTime);
+      final end = _parseTime(w.endTime);
+      if (nowMinutes >= start && nowMinutes < end) return true;
+    }
+    return false;
+  }
+
+  int _parseTime(String hhmm) {
+    final parts = hhmm.split(':');
+    return int.parse(parts[0]) * 60 + int.parse(parts[1]);
+  }
+
+  Future<void> _firePrompt(AppSettings settings) async {
+    final prompt = await _pickPrompt(settings);
+    if (prompt == null) return;
+
+    _promptFiredController.add(prompt.text);
+
+    // Notification
+    await NotificationService.showPrompt(prompt.text);
+
+    // Audio
+    await AudioService().playPrompt(
+      text: prompt.text,
+      mode: settings.audioMode,
+      chimeAsset: settings.selectedChime,
+      voiceName: settings.selectedVoiceName,
+      speechRate: settings.speechRate,
+      speechPitch: settings.speechPitch,
+    );
+  }
+
+  Future<Prompt?> _pickPrompt(AppSettings settings) async {
+    // Alternating library mode
+    final useAlternate = settings.alternateLibraryUid != null &&
+        settings.lastFiredFrom == LibrarySlot.primary;
+
+    final libraryUid = useAlternate
+        ? settings.alternateLibraryUid!
+        : settings.primaryLibraryUid;
+
+    // Update lastFiredFrom
+    final newSlot = useAlternate ? LibrarySlot.alternate : LibrarySlot.primary;
+    settings.lastFiredFrom = newSlot;
+    await _settingsRepo.save(settings);
+
+    final prompts = await _promptRepo.getByLibrary(libraryUid);
+    if (prompts.isEmpty) return null;
+
+    if (settings.promptOrder == PromptOrder.sequential) {
+      final index = settings.lastFiredSequentialIndex % prompts.length;
+      settings.lastFiredSequentialIndex = index + 1;
+      await _settingsRepo.save(settings);
+      return prompts[index];
+    } else {
+      return prompts[_random.nextInt(prompts.length)];
+    }
+  }
+
+  Duration _intervalFor(AppSettings settings) {
+    if (settings.intervalType == IntervalType.fixed) {
+      return Duration(minutes: settings.fixedIntervalMinutes);
+    } else {
+      final min = settings.minIntervalMinutes;
+      final max = settings.maxIntervalMinutes;
+      final minutes = min + _random.nextInt(max - min + 1);
+      return Duration(minutes: minutes);
+    }
+  }
+
+  void dispose() {
+    _timer?.cancel();
+    _countdownController.close();
+    _promptFiredController.close();
+  }
+}
