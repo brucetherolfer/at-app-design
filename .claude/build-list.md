@@ -1,42 +1,78 @@
 # AT App — Build List
 
-Things remaining before App Store submission, tracked here as they come up.
+Things remaining before App Store submission.
 
 ---
 
 ## Must-have before submission
 
-- [ ] **About / Credits screen** — Required for moon photo attribution (Gregory H. Revera, CC BY-SA 3.0). One screen, accessible from Settings. One line of credit text.
-- [ ] **Background execution validation** — Must test on a physical iPhone. Confirm prompts fire when app is backgrounded for 30+ minutes, screen is locked, and audio plays on locked screen.
-- [ ] **AppDelegate.swift** — Configure AVAudioSession for locked-screen audio playback (playback category).
-- [ ] **Sequence prompt content** — Built-in sequences (Primary Control, Body Scan, Pre-Activity) have empty `promptUids`. Assign actual prompts before Sequence Mode is usable.
-- [ ] **Blackout window seed data** — Confirm Bruce's massage schedule times (Mon/Tue/Thu/Fri) and pre-populate as defaults on first launch.
+- [ ] **Bug fixing** — app first launched on simulator, bugs being identified and fixed
+- [ ] **About / Credits screen** — Required for moon photo attribution (Gregory H. Revera, CC BY-SA 3.0). One screen, accessible from Settings.
+- [ ] **AppDelegate.swift** — Configure AVAudioSession for locked-screen audio playback (`.playback` category).
+- [ ] **Background execution validation** — Test on physical iPhone. Confirm prompts fire when app is backgrounded 30+ min, screen locked, audio plays on locked screen.
+- [ ] **Primary Control sequence** — `promptUids` is empty. Bruce to provide the prompt text/order.
+- [ ] **Blackout window seed data** — Confirm Bruce's massage schedule (Mon/Tue/Thu/Fri times) and pre-populate on first launch.
 - [ ] **App name — final decision** — Working name "Alexander Technique App". Confirm before App Store submission (check trademark).
-- [ ] **App icon** — Replace default Flutter icon with AT-flavored icon for both flavors.
-- [ ] **iOS flavor schemes** — Xcode schemes for AT and General flavors (currently Android-only flavors are configured).
+- [ ] **App icon** — Replace default Flutter icon with AT-flavored icon.
+- [ ] **iOS flavor schemes** — Xcode schemes for `at` and `general` flavors (needs Debug-at/Release-at/Profile-at build configs added to Xcode pbxproj).
 
 ## Nice to have before v1
 
-- [ ] **Voice picker UI** — Settings row to browse and select TTS voice from available device voices.
+- [ ] **Voice picker UI** — Settings row to browse and select TTS voice from device voices.
 - [ ] **Chime preview** — Tap a chime in Settings to hear it before selecting.
-- [ ] **Onboarding flow** — First-launch screen explaining the app and requesting notification permissions gracefully.
-- [ ] **Web background disclaimer** — Banner on web version noting that prompts require the tab to stay open.
+- [ ] **Onboarding flow** — First-launch screen explaining the app, requesting notification permissions gracefully.
+- [ ] **Web background disclaimer** — Banner on web version noting prompts require the tab to stay open.
 
 ## Deferred to v2
 
 - [ ] General Public flavor — second flavor build after AT v1 ships
-- [ ] Prompt categories (Lying / Sitting / Walking / General) — data not yet assigned
+- [ ] Prompt categories (Lying / Sitting / Walking / General) — data not yet assigned from spreadsheet
 - [ ] ElevenLabs voice cloning / AI voice
 - [ ] Custom sound file import
 - [ ] Gamification, streaks, progress tracking
 
 ---
 
-## Audio ✅
-All three chimes processed and committed:
-- `tibetan_bowl.m4a` — 44s, Pixabay (no attribution required)
-- `soft_bell.m4a` — 24s, Pixabay (no attribution required)
-- `simple_tone.m4a` — 0.5s, Mixkit (no attribution required)
+## Done ✅
 
-Moon photo — **attribution required** in About screen:
+### Audio
+- [x] `tibetan_bowl.m4a` — 44s, trimmed leading silence, loudnorm -16 LUFS, AAC 128k (Pixabay, no attribution)
+- [x] `soft_bell.m4a` — 24s, aggressive denoise nf=-40, trimmed, loudnorm, AAC 128k (Pixabay, no attribution)
+- [x] `simple_tone.m4a` — 1.58s cooking bell, loudnorm, AAC 128k (Mixkit, no attribution)
+
+### Seed data (all real AT content from Bruce's spreadsheets)
+- [x] All Prompts library (197 prompts)
+- [x] Bruce's Prompts library (44 prompts)
+- [x] MIO Prompts library (16 prompts)
+- [x] Classic AT — FM's library (6 prompts)
+- [x] Classic AT — Modified library (13 prompts)
+- [x] Bodyscan Full library + sequence (48 prompts, 4s gap)
+- [x] Bodyscan Joints Anatomical library + sequence (29 prompts)
+- [x] Bodyscan Joints Plain Language library + sequence (29 prompts)
+
+### App scaffold
+- [x] Full Flutter project with two-flavor architecture (at + general)
+- [x] All 5 screens (Main, Settings, Library, Sequence, Blackout)
+- [x] Isar DB, Riverpod state, GoRouter navigation
+- [x] AudioService with Pavlov chime+voice overlap (per-sound delay map)
+- [x] NotificationService (system sound default — user's own iOS chime)
+- [x] PromptTimerService (background delivery)
+- [x] Day orb + Night orb + ripple rings animations
+- [x] First build deployed to Bruce's iPhone (wireless)
+
+---
+
+## Notes
+
+**Moon photo attribution (required in About screen):**
 > "Moon" by Gregory H. Revera, Wikimedia Commons, CC BY-SA 3.0
+
+**Flutter run command (always use this — pod not in default PATH):**
+```bash
+cd "AT APP/at_app"
+PATH="/opt/homebrew/bin:$PATH" LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+  flutter run -t lib/main_at.dart --dart-define=FLAVOR=at -d <device_id>
+```
+
+**iPhone 17 Pro simulator ID:** `7B432A2D-308A-4126-A2B4-8E55AF3FFF38`
+**Bruce's iPhone device ID:** `00008110-001A60A11A9B601E` (wireless)
