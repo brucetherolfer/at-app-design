@@ -5,6 +5,12 @@ import '../models/sequence.dart';
 
 const _uuid = Uuid();
 
+// Deterministic UID helpers for bodyscan sequence prompts.
+// These must be stable so sequences can reference them by UID.
+String _bsFullUid(int n) => 'bs_full_${n.toString().padLeft(3, '0')}';
+String _bsJaUid(int n) => 'bs_ja_${n.toString().padLeft(3, '0')}';
+String _bsJpUid(int n) => 'bs_jp_${n.toString().padLeft(3, '0')}';
+
 // ── Libraries ──────────────────────────────────────────────────────────────
 
 Library get allPromptsLibrary => Library()
@@ -28,294 +34,243 @@ Library get mioLibrary => Library()
   ..sortOrder = 2
   ..createdAt = DateTime(2024);
 
-// ── MIO 9 prompts ──────────────────────────────────────────────────────────
+Library get fmsLibrary => Library()
+  ..uid = 'builtin_fms'
+  ..name = "Classic AT — FM's"
+  ..isBuiltIn = true
+  ..sortOrder = 3
+  ..createdAt = DateTime(2024);
 
-List<Prompt> get mioPrompts {
-  final texts = [
-    'Notice where you are holding tension right now.',
-    'Allow your neck to be free.',
-    'Let your head balance lightly on top of your spine.',
-    'Allow your back to lengthen and widen.',
-    'Let your knees release forward and away.',
-    'Feel the ground supporting you.',
-    'Soften your eyes and jaw.',
-    'Allow your breathing to be easy.',
-    'Pause — and begin again with fresh attention.',
-  ];
-  return texts.asMap().entries.map((e) {
-    return Prompt()
-      ..uid = _uuid.v4()
-      ..text = e.value
-      ..libraryUid = 'builtin_mio'
-      ..sortOrder = e.key
-      ..isBuiltIn = true
-      ..createdAt = DateTime(2024);
-  }).toList();
-}
+Library get modifiedClassicLibrary => Library()
+  ..uid = 'builtin_modified'
+  ..name = 'Classic AT — Modified'
+  ..isBuiltIn = true
+  ..sortOrder = 4
+  ..createdAt = DateTime(2024);
 
-// ── Bruce's 23 prompts ─────────────────────────────────────────────────────
+Library get bodyscanFullLibrary => Library()
+  ..uid = 'builtin_bs_full'
+  ..name = 'Bodyscan — Full'
+  ..isBuiltIn = true
+  ..sortOrder = 5
+  ..createdAt = DateTime(2024);
 
-List<Prompt> get brucesPrompts {
-  final texts = [
-    'Allow your neck to be free so that your head can go forward and up.',
-    'Let your back lengthen and widen.',
-    'Notice the contact of your feet with the floor.',
-    'Allow your knees to release forward and away.',
-    'Let your shoulders release out to the sides.',
-    'Soften the muscles around your eyes.',
-    'Allow your jaw to release.',
-    'Notice any unnecessary effort and let it go.',
-    'Let your breath come and go without interference.',
-    'Allow your whole torso to lengthen upward.',
-    'Notice the weight of your head — and allow it to float.',
-    'Let your hips release and widen.',
-    'Allow your arms to hang freely from your shoulder joints.',
-    'Notice the space behind you as well as in front.',
-    'Let your ribs move freely with each breath.',
-    'Allow your ankles to be free.',
-    'Notice the relationship between your head, neck, and back.',
-    'Let unnecessary holding in your chest release.',
-    'Allow your whole body to be supported by the ground.',
-    'Notice what is happening in your hands right now.',
-    'Let your lower back release and lengthen.',
-    'Allow your gaze to soften and widen.',
-    'Take a moment to inhibit — and then choose your direction.',
-  ];
-  return texts.asMap().entries.map((e) {
-    return Prompt()
-      ..uid = _uuid.v4()
-      ..text = e.value
-      ..libraryUid = 'builtin_bruces'
-      ..sortOrder = e.key
-      ..isBuiltIn = true
-      ..createdAt = DateTime(2024);
-  }).toList();
-}
+Library get bodyscanJointsAnatLibrary => Library()
+  ..uid = 'builtin_bs_joints_anat'
+  ..name = 'Bodyscan — Joints (Anatomical)'
+  ..isBuiltIn = true
+  ..sortOrder = 6
+  ..createdAt = DateTime(2024);
 
-// ── All Prompts (200) ──────────────────────────────────────────────────────
-// Full set of AT awareness prompts. Sourced from Alexander Technique tradition.
+Library get bodyscanJointsPlainLibrary => Library()
+  ..uid = 'builtin_bs_joints_plain'
+  ..name = 'Bodyscan — Joints (Plain Language)'
+  ..isBuiltIn = true
+  ..sortOrder = 7
+  ..createdAt = DateTime(2024);
+
+// ── All Prompts (197) ──────────────────────────────────────────────────────
+// Source: All_Prompts spreadsheet. Full AT awareness prompt set.
 
 List<Prompt> get allPrompts {
   final texts = [
-    // Primary Control & Core Directions
-    'Allow your neck to be free.',
-    'Let your head go forward and up.',
-    'Allow your back to lengthen.',
-    'Allow your back to widen.',
+    'Let the neck be free.',
+    'Allow the head to go forward and up.',
+    'Let the back lengthen.',
+    'Let the back widen.',
+    'Allow the shoulders to release out to the sides.',
+    'Soften the jaw.',
+    'Let the tongue rest wide in the mouth.',
+    'Release the eyes in their sockets.',
+    'Allow breath to come and go.',
+    'Pause before you move.',
+    'Notice unnecessary effort.',
+    'Stop trying to fix yourself.',
+    'Let the floor support you.',
+    'Let the chair take your weight.',
+    'Allow the sit bones to release downward.',
+    'Let the ribs move freely.',
+    'Think space between vertebrae.',
+    'Allow the head to balance easily.',
+    'Let gravity do the work.',
+    'Widen across the collarbones.',
+    'Let the arms hang from the back.',
+    'Allow the hands to be light.',
+    'Soften the neck before speaking.',
+    'Let the head lead the movement.',
+    'Allow length through the whole spine.',
+    'Let the knees go forward and away.',
+    'Release the hips without pushing.',
+    'Think up without stiffening.',
+    'Allow ease, not effort.',
+    'Notice where you are holding.',
+    'Choose not to tighten.',
+    'Let go of good posture.',
+    'Allow coordination to happen.',
+    'Let movement emerge.',
+    'Let the back stay wide as you sit.',
+    'Allow the head to float.',
+    'Trust the support beneath you.',
+    'Let your breathing organize itself.',
+    'Pause at the start of action.',
+    'Allow length before movement.',
+    'Reduce excess muscle tone.',
+    'Let the chest be soft.',
+    'Allow the spine to be springy.',
+    'Think direction, not position.',
+    'Let the body be curious.',
+    'Release downward without collapsing.',
+    'Allow balance, not control.',
+    'Let the neck release when stressed.',
+    'Widen your awareness beyond yourself.',
+    'Include the whole room.',
+    'Let your weight distribute evenly.',
+    'Think of the head as light.',
+    'Let effort drain out.',
+    'Allow your body to organize.',
+    'Soften the front of the neck.',
+    'Let the back breathe.',
+    'Choose ease over habit.',
+    'Let the spine lengthen upward.',
+    'Allow width through the pelvis.',
+    'Release the shoulders down and wide.',
+    'Let the feet rest on the ground.',
+    'Allow the knees to unlock.',
+    'Let the neck lead all movement.',
+    'Think up without strain.',
+    'Stop forcing alignment.',
+    'Let coordination replace control.',
+    'Allow stillness inside movement.',
+    'Pause, then proceed.',
+    'Let go of end-gaining.',
+    'Allow means to matter.',
+    'Think freedom first.',
+    'Let the body respond.',
+    'Soften before you act.',
+    'Allow space in the joints.',
+    'Let tension dissolve downward.',
+    'Keep the head free as you walk.',
+    'Allow the back to support the limbs.',
+    'Reduce effort in the neck.',
+    'Let the torso widen as you breathe.',
+    'Allow the spine to lengthen naturally.',
+    'Notice and release gripping.',
+    'Let the body feel supported.',
+    'Allow balance to be dynamic.',
+    'Think ease through transitions.',
+    'Let your attention be wide.',
+    'Allow movement to be simple.',
+    'Trust natural coordination.',
+    'Let go of over-doing.',
+    'Allow clarity instead of force.',
+    'Keep direction; drop tension.',
+    'Let your weight flow downward.',
+    'Allow the head to lead forward and up.',
+    'Choose softness over stiffness.',
+    'Let the back widen again.',
+    'Release, then move.',
+    'Allow less effort, more length.',
+    'Stop. Think. Direct.',
+    'Is your neck free?',
+    'Let your head float up.',
+    'Are your shoulders dropping away from your ears?',
+    'Notice the weight of your head.',
+    'Is your jaw clenched?',
     'Let your back lengthen and widen.',
-    'Allow your neck to be free so that your head can go forward and up, and your back can lengthen and widen.',
-    'Notice the relationship between your head and your spine.',
-    'Allow your head to float upward from your spine.',
-    'Let the back of your neck be long.',
-    'Allow your head to balance lightly on top of your spine.',
-    // Sitting awareness
-    'Notice how you are sitting right now.',
-    'Allow your sitting bones to release downward into the chair.',
-    'Let your spine lengthen upward from your sitting bones.',
-    'Notice if you are gripping anywhere while sitting.',
-    'Allow your hips to widen on the chair.',
-    'Let your feet rest flat on the floor.',
-    'Notice the contact of your thighs with the seat.',
-    'Allow your lower back to lengthen.',
-    'Let your chest be open and easy.',
-    'Notice if you are leaning to one side.',
-    // Standing awareness
-    'Notice how you are standing right now.',
-    'Allow your weight to be evenly distributed on both feet.',
-    'Let your knees release — not locked, not bent.',
-    'Notice the tripod of each foot on the ground.',
-    'Allow your ankles to be free and easy.',
-    'Let your hips be level.',
-    'Notice the length of your spine in standing.',
-    'Allow your whole body to be supported by the ground.',
-    'Let your centre of gravity drop.',
-    'Notice the space between your ears and your shoulders.',
-    // Walking awareness
-    'Notice how you are walking right now.',
-    'Allow your head to lead the movement.',
-    'Let each step be a fall and a catch.',
-    'Notice how your arms move as you walk.',
-    'Allow your gaze to be forward and wide.',
-    'Let your pelvis release as you walk.',
-    'Notice the rhythm of your footfall.',
-    'Allow ease in your movement.',
-    'Let your shoulders stay wide as you walk.',
-    'Notice if you are rushing or straining.',
-    // Breathing
-    'Allow your breath to come and go without interference.',
-    'Notice the movement of your ribs as you breathe.',
-    'Let your belly be soft.',
-    'Allow your back to breathe.',
-    'Notice if you are holding your breath.',
-    'Let the out-breath be complete before the next in-breath.',
-    'Allow the breath to breathe you.',
-    'Notice the rhythm of your breathing right now.',
-    'Let your collarbone move freely with your breath.',
-    'Allow your entire torso to participate in breathing.',
-    // Eyes & Face
-    'Soften your eyes.',
-    'Allow your gaze to widen.',
-    'Let your forehead smooth.',
-    'Notice any tension around your eyes.',
-    'Allow your jaw to release.',
-    'Let your tongue rest gently in your mouth.',
-    'Notice the muscles around your mouth.',
-    'Allow your face to be easy.',
-    'Let your eyes look without effort.',
-    'Notice the space around you as you look.',
-    // Hands & Arms
-    'Notice what your hands are doing right now.',
-    'Allow your fingers to uncurl.',
-    'Let your wrists be free.',
-    'Notice any gripping in your hands.',
-    'Allow your arms to hang from your shoulder joints.',
-    'Let your elbows be soft.',
-    'Notice the weight of your arms.',
-    'Allow your shoulders to release downward and outward.',
-    'Let your shoulder blades slide down your back.',
-    'Notice if you are pulling your shoulders forward.',
-    // Feet & Legs
-    'Notice the contact of your feet with the ground.',
-    'Allow your toes to spread.',
-    'Let your arches lift gently.',
-    'Notice any gripping in your feet.',
-    'Allow your calves to be soft.',
-    'Let your knees track over your toes.',
-    'Notice the length of your legs.',
-    'Allow your hip joints to be free.',
-    'Let your inner thighs release.',
-    'Notice the connection from your feet to your head.',
-    // Inhibition
-    'Before you move — pause.',
-    'Notice the impulse to do — and wait.',
-    'Allow a moment of non-doing.',
-    'What would happen if you did less?',
-    'Notice the habit — and choose differently.',
-    'Allow the pause between stimulus and response.',
-    'Let the doing wait for a moment.',
-    'Notice what you are about to do — and do nothing for now.',
-    'Inhibit the habitual response.',
-    'Allow yourself not to know what comes next.',
-    // Direction
-    'Send your awareness to the top of your head.',
-    'Allow your whole self to lengthen upward.',
-    'Direct your back to widen.',
-    'Allow your knees to go forward and away from your hips.',
-    'Direct your elbows away from each other.',
-    'Allow your head to lead, your body to follow.',
-    'Direct your gaze to the horizon.',
-    'Allow expansion in all directions.',
-    'Direct your attention to the present moment.',
-    'Allow your intentions to guide you lightly.',
-    // General body awareness
-    'Do a quick scan — where is there unnecessary tension?',
-    'Notice the overall quality of your use right now.',
-    'Allow whatever needs to release to release.',
-    'Notice the relationship between ease and effort.',
-    'Allow your body to be the size it is.',
-    'Notice what is comfortable right now.',
-    'Allow your posture to be dynamic, not fixed.',
-    'Notice the alive quality of your body.',
-    'Allow movement to be possible in any direction.',
-    'Notice the intelligence in your body.',
-    // Emotional & mental tone
-    'Notice the quality of your attention right now.',
-    'Allow your mind to settle.',
-    'Let go of the last moment.',
-    'Notice if you are bracing for the next moment.',
-    'Allow a sense of ease and spaciousness.',
-    'Notice what is actually happening, not what you fear.',
-    'Allow your nervous system to calm.',
-    'Let your thoughts pass like clouds.',
-    'Notice the quality of the present moment.',
-    'Allow kindness toward your own use.',
-    // Hands-on / lesson reminders
-    'Remember a moment of lightness and allow it now.',
-    'Notice when you begin to tighten — and stop.',
-    'Allow the chair to support you completely.',
-    'Let the floor take your full weight.',
-    'Notice the support beneath you.',
-    'Allow your body to trust the support.',
-    'Let your joints be oiled and easy.',
-    'Notice how little effort is actually required.',
-    'Allow the body to be surprised by ease.',
-    'Let it be simpler than you think.',
-    // Voice & speaking
-    'Allow your throat to be open and free.',
-    'Let your voice come from your whole body.',
-    'Notice if you are tightening to speak.',
-    'Allow your breath to power your voice.',
-    'Let your lips and tongue be nimble and free.',
-    'Notice the resonance of your voice.',
-    'Allow your speaking to be effortless.',
-    'Let each word have space around it.',
-    'Notice if you are holding your breath before speaking.',
-    'Allow your voice to carry without pushing.',
-    // Computer / desk work
-    'Notice how you are holding your arms at the keyboard.',
-    'Allow your wrists to be level.',
-    'Let your screen be at eye level.',
-    'Notice if you are reaching forward with your head.',
-    'Allow your back to be supported.',
-    'Let your shoulders not hold up the ceiling.',
-    'Notice the distance between your eyes and the screen.',
-    'Allow regular pauses from screen work.',
-    'Let your eyes rest by looking into the distance.',
-    'Notice the overall quality of your setup.',
-    // Movement transitions
-    'Before you stand — notice how you plan to do it.',
-    'Allow the movement to be initiated from your head.',
-    'Let sitting-to-standing be easy.',
-    'Notice any bracing as you prepare to move.',
-    'Allow the transition to be smooth and uncontrived.',
-    'Let your head lead as you bend forward.',
-    'Notice the moment between intention and action.',
-    'Allow movements to be complete before the next one.',
-    'Let reaching be from your whole arm, not just your hand.',
-    'Notice how you return to stillness after movement.',
-    // Advanced / integration
-    'Allow primary control to organise your whole self.',
-    'Notice the reciprocal relationship of your parts.',
-    'Allow the directions to work together simultaneously.',
-    'Let the means whereby be your guide.',
-    'Notice the unity of your psycho-physical self.',
-    'Allow your use to improve in all activities.',
-    'Let inhibition come first, direction follow.',
-    'Notice the way your thinking affects your body.',
-    'Allow a constructive conscious awareness.',
-    'Let the work of the lesson carry through your day.',
-    // Closing / settling
-    'Take a moment to notice where you are.',
-    'Allow a sense of appreciation for this pause.',
-    'Let your body settle into the present.',
-    'Notice the quiet intelligence available to you.',
-    'Allow this moment to be enough.',
-    'Let yourself arrive in your own body.',
-    'Notice the stillness available beneath the activity.',
-    'Allow your whole self to be here.',
-    'Let this be a moment of genuine rest.',
-    'Notice — and allow — and begin again.',
-    // Additional prompts to reach 200
-    'Allow your pelvis to be neutral.',
-    'Let your tailbone release downward.',
-    'Notice the curve of your lower back.',
-    'Allow your thoracic spine to lengthen.',
-    'Let your sternum be free and easy.',
+    'Where is your weight right now?',
+    'Is your breathing restricted anywhere?',
+    'Let your knees go forward and away.',
+    'Notice your contact with the ground.',
+    'Is your chest collapsed?',
+    'Let your spine decompress.',
+    'Are you gripping with your hands?',
+    'Notice the space behind your eyes.',
+    'Is your tongue pressed to the roof of your mouth?',
+    'Let your shoulders widen.',
+    'Are you bracing your legs?',
+    'Notice your lower back — is it compressed?',
+    'Let your head lead, body follow.',
+    'Are you holding your breath?',
+    'Notice the width of your upper back.',
+    'Is your pelvis tucked or tilted?',
+    'Let your arms hang freely.',
+    'Are you squinting?',
+    'Notice the length of your spine.',
+    'Is your neck shortening?',
+    'Let your ribs move with your breath.',
+    'Are you pulling your head back?',
+    'Notice the softness behind your knees.',
+    'Is your belly gripping?',
+    'Let your face soften.',
+    'Are your toes curled?',
+    'Notice the relationship between your head and atlas.',
+    'Is your sternum lifting?',
+    'Let your sitting bones drop.',
+    'Are you leaning into one hip?',
     'Notice the space between your vertebrae.',
-    'Allow your cranium to be light.',
-    'Let your atlas and axis be free.',
-    'Notice the tone of your muscles — not too much, not too little.',
-    'Allow proprioception to guide you.',
-    'Let your eyes lead and your head follow.',
-    'Notice the horizon and let your spine lengthen toward the sky.',
-    'Allow the top of your head to move away from your heels.',
-    'Let gravity be your ally.',
-    'Notice how you use yourself in this moment.',
-    'Allow your body to make its own adjustments.',
-    'Let your nervous system do its work.',
-    'Notice the quality of ease in your movement.',
-    'Allow release without collapse.',
-    'Let length without tension guide you.',
+    'Is your chin jutting forward?',
+    'Let your eyes soften and widen.',
+    'Are you rushing?',
+    'Notice the weight dropping through your heels.',
+    'Is your upper chest tight?',
+    'Let your neck be long.',
+    'Are your hands tense?',
+    'Notice the horizon line of your eyes.',
+    'Is your head tipped to one side?',
+    'Let your breath come to you.',
+    'Are you end-gaining right now?',
+    'Notice the primary control.',
+    'Is your back narrowing?',
+    'Let your ankles be free.',
+    'Are you over-efforting?',
+    'Notice the ease available to you.',
+    'Is your head balanced on your spine?',
+    'Let your lower back soften.',
+    'Are you bracing your core?',
+    'Notice the length from crown to tailbone.',
+    'Is your throat constricted?',
+    'Let your hips release.',
+    'Are you pulling down?',
+    'Notice inhibition — pause before acting.',
+    'Are your neck muscles tight?',
+    'Let your weight be supported.',
+    'Are you lifting your chest unnecessarily?',
+    'Notice if you\'re anticipating the next thing.',
+    'Is your head free to nod?',
+    'Let your shoulder blades slide down your back.',
+    'Are you contracting to stay upright?',
+    'Notice the direction of your gaze.',
+    'Is your lower jaw hanging free?',
+    'Let your whole back breathe.',
+    'Are you gripping the floor with your feet?',
+    'Notice where effort is unnecessary.',
+    'Is your sternum compressed?',
+    'Let your arms lengthen from your back.',
+    'Are you pulling your shoulders forward?',
+    'Notice the relationship of your ears to your shoulders.',
+    'Is your breathing shallow?',
+    'Let your neck release forward and up.',
+    'Are you holding tension in your forehead?',
+    'Notice your head as a weight balanced on your spine.',
+    'Is your mid-back collapsing?',
+    'Let your entire spine be involved in movement.',
+    'Are you fixing your gaze too hard?',
+    'Notice the ease in your peripheral vision.',
+    'Is your weight forward on your toes?',
+    'Let your skull float away from your atlas.',
+    'Are you bracing for something that isn\'t happening?',
+    'Notice the space between your shoulder blades.',
+    'Is your neck shortening as you think?',
+    'Let your whole self be taller.',
+    'Are you compressing downward as you sit?',
+    'Notice the relationship between your eyes and your neck.',
+    'Is your upper arm rotating inward?',
+    'Let your ribs be free to expand sideways.',
+    'Are you rushing through this moment?',
+    'Notice the quality of your attention right now.',
+    'Is your sacrum tucked under?',
+    'Let your whole back surface widen and lengthen.',
+    'Pause. Inhibit. Direct. Move.',
   ];
   return texts.asMap().entries.map((e) {
     return Prompt()
@@ -328,35 +283,347 @@ List<Prompt> get allPrompts {
   }).toList();
 }
 
+// ── Bruce's Prompts (44) ───────────────────────────────────────────────────
+// Source: Bruce's Prompts spreadsheet.
+
+List<Prompt> get brucesPrompts {
+  final texts = [
+    'Let your gaze be soft.',
+    'Practice all-inclusive awareness.',
+    'Let your ribs be soft as you breathe.',
+    'Let your front be long from your pubic bone to your supersternal notch.',
+    'Let your shoulders be wide all the way across your collarbones.',
+    'Let your neck be free.',
+    'Let your neck be free so your head can move forward and up.',
+    'Let your neck be free so your head can move forward and up, your back can lengthen and widen, and your legs and arms can lengthen through your fingers and toes.',
+    'Let your ribs be free.',
+    'Let your eyes be free.',
+    'Let your face be free.',
+    'Let your jaw be free.',
+    'Are you gripping the floor?',
+    'Are you compressing your abdomen?',
+    'Are you bending at your waist?',
+    'Notice the space behind your head.',
+    'Notice the space above your head.',
+    'Notice the hair on the back of your head.',
+    'Notice the hair on the top of your head.',
+    'Notice the space behind your neck.',
+    'Notice the hair on the back of your neck.',
+    'Let your breath move.',
+    'Let your body move.',
+    'Notice the space all around you.',
+    'Notice what you can see in your periphery.',
+    'How can I pay attention that will make me release just a little bit?',
+    'What can I pay attention to that will make me release just a little bit?',
+    'What way of paying attention makes me more whole and complete and easier and more flexible?',
+    'What\'s the least amount of effort I can use to initiate some easing?',
+    'What place am I tightening?',
+    'What place is getting easier?',
+    'Whisper the directions.',
+    'What\'s the least amount I can ease or let go?',
+    'Can you notice in such a way that you get easier?',
+    'If you catch yourself noticing tension, move awareness to the space above your head or to an easier place.',
+    'Where else do I seem to be easing a bit?',
+    'Are you pushing your pelvis forward?',
+    'Are you drawing your shoulders together?',
+    'Are you letting your feet rest on the ground?',
+    'Are you leaning your pelvis to one side?',
+    'Are you pushing your knees back?',
+    'Are your shoulders lifted up or down?',
+    'Anything you do you\'ll eventually have to undo.',
+    'Anything you do you\'ll eventually have to stop doing.',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _uuid.v4()
+      ..text = e.value
+      ..libraryUid = 'builtin_bruces'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
+// ── MIO Prompts (16) ──────────────────────────────────────────────────────
+// Source: MIO Prompts spreadsheet.
+
+List<Prompt> get mioPrompts {
+  final texts = [
+    'Where are you easing a little bit?',
+    'What is happening to the ease in your body?',
+    'Notice the ease in your body.',
+    'Notice a little bit of ease.',
+    'Notice if anything is easing a little bit.',
+    'Notice a place that feels relatively better.',
+    'Notice, think, notice, move, notice.',
+    'Your feet are a long way away.',
+    'Sharks have no shoulders.',
+    'Legs and hips far away.',
+    'Where are you getting a little easier?',
+    'Inhibit responding to your thoughts.',
+    'Above.',
+    'Where do you notice ease?',
+    'You can only do it right now.',
+    'Where else do you seem to be easing a bit?',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _uuid.v4()
+      ..text = e.value
+      ..libraryUid = 'builtin_mio'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
+// ── Classic AT — FM's Prompts (6) ─────────────────────────────────────────
+// Source: Classic AT - FM's Prompts spreadsheet. Original FM Alexander directions.
+
+List<Prompt> get fmsPrompts {
+  final texts = [
+    'Let the neck be free.',
+    'So the head can go forward and up.',
+    'The back can lengthen.',
+    'And widen.',
+    'And the knees can go forward and away.',
+    'Let the neck be free, so the head can go forward and up, the back can lengthen and widen, and the knees can go forward and away.',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _uuid.v4()
+      ..text = e.value
+      ..libraryUid = 'builtin_fms'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
+// ── Classic AT — Modified Prompts (13) ────────────────────────────────────
+// Source: Classic AT - Modified Prompts spreadsheet. Contemporary adaptations.
+
+List<Prompt> get modifiedClassicPrompts {
+  final texts = [
+    'Let your neck be free.',
+    'So your head can move forward and up.',
+    'Your back can lengthen.',
+    'And widen.',
+    'And your knees can go forward and away.',
+    'And your legs and arms can lengthen through your fingers and toes.',
+    'Let your neck be free, so your head can move forward and up, your back can lengthen and widen, your knees can go forward and away, and your legs and arms can lengthen through your fingers and toes.',
+    'Let your neck be free so your head can go forward and up and your back can lengthen and widen and your arms and legs can lengthen through your elbows, knees, fingers and toes.',
+    'Let your neck free, let your head forward and up, let your back lengthen and widen.',
+    'Let your neck be free, let your head forward and up a tiny bit.',
+    'Let your head go forward and up imperceptibly.',
+    'Head leads, body follows.',
+    'Let your neck be free, your back lengthen and widen out your shoulders, elbows and fingers, out your hips, knees, ankles and toes.',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _uuid.v4()
+      ..text = e.value
+      ..libraryUid = 'builtin_modified'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
+// ── Bodyscan Full (48) ────────────────────────────────────────────────────
+// Source: Bodyscan Full spreadsheet.
+// Uses deterministic UIDs so the bodyscanFullSequence can reference them.
+
+List<Prompt> get bodyscanFullPrompts {
+  final texts = [
+    'Let the top of your head be free.',
+    'Let your forehead be free.',
+    'Let the back of your head be free.',
+    'Let the sides of your head be free.',
+    'Let your eyebrows be free.',
+    'Let your ears be free.',
+    'Let your eyes be free.',
+    'Let your nose be free.',
+    'Let your temples be free.',
+    'Let your cheeks be free.',
+    'Let your lips and mouth be free.',
+    'Let your jaw be free.',
+    'Let the front, back, and sides of your neck be free.',
+    'Let your shoulders be free.',
+    'Let your sternum and chest be free.',
+    'Let your shoulder blades and mid back be free.',
+    'Let your upper arms be free.',
+    'Let your elbows be free.',
+    'Let your forearms be free.',
+    'Let your wrists be free.',
+    'Let your hands, thumbs, index, middle, ring, and pinky fingers be free.',
+    'Let your solar plexus be free.',
+    'Let your armpits be free.',
+    'Let your abdomen be free.',
+    'Let your diaphragm be free.',
+    'Let your lower back be free.',
+    'Let your sides be free.',
+    'Let your pubic bone be free.',
+    'Let your groin be free.',
+    'Let your hips be free.',
+    'Let your glutes be free.',
+    'Let your perineum, anus, and private parts be free.',
+    'Let your sit bones be free.',
+    'Let the front, back, and sides of your thighs be free.',
+    'Let your knees, kneecaps, and the back and sides of your knees be free.',
+    'Let your shins be free.',
+    'Let your calves be free.',
+    'Let your Achilles be free.',
+    'Let the inside, outside, front, and back of your ankles be free.',
+    'Let the tops of your feet be free.',
+    'Let the bottoms of your feet be free.',
+    'Let your heels be free — the edges, the back, and all sides.',
+    'Let the balls of your feet be free, from the big toe to the pinky.',
+    'Let your big toe be free.',
+    'Let your second toe be free.',
+    'Let your middle toe be free.',
+    'Let your fourth toe be free.',
+    'Let your little toe be free.',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _bsFullUid(e.key + 1)
+      ..text = e.value
+      ..libraryUid = 'builtin_bs_full'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
+// ── Bodyscan Joints — Anatomical (29) ─────────────────────────────────────
+// Source: Bodyscan Joints spreadsheet, anatomical language column.
+// Uses deterministic UIDs for sequence cross-referencing.
+
+List<Prompt> get bodyscanJointsAnatPrompts {
+  final texts = [
+    'Let your atlanto-occipital joint be free.',
+    'Let your atlantoaxial joint be free.',
+    'Let your jaw be free.',
+    'Let your cervical spine joints be free.',
+    'Let your thoracic spine joints be free.',
+    'Let your rib joints be free.',
+    'Let your sternocostal joints be free.',
+    'Let your sternoclavicular joints be free.',
+    'Let your AC joints be free.',
+    'Let your shoulder joints be free.',
+    'Let your shoulder blades be free.',
+    'Let your elbows be free.',
+    'Let your forearm joints be free.',
+    'Let your wrists be free.',
+    'Let your knuckles be free.',
+    'Let your finger joints be free.',
+    'Let your thumb joint be free.',
+    'Let your lumbar spine joints be free.',
+    'Let your lumbosacral joint be free.',
+    'Let your SI joints be free.',
+    'Let your pubic symphysis be free.',
+    'Let your hip joints be free.',
+    'Let your knee joints be free.',
+    'Let your kneecaps be free.',
+    'Let your ankles be free.',
+    'Let your subtalar joints be free.',
+    'Let your midfoot joints be free.',
+    'Let the balls of your feet be free.',
+    'Let your toe joints be free.',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _bsJaUid(e.key + 1)
+      ..text = e.value
+      ..libraryUid = 'builtin_bs_joints_anat'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
+// ── Bodyscan Joints — Plain Language (29) ─────────────────────────────────
+// Source: Bodyscan Joints spreadsheet, plain language column.
+// Uses deterministic UIDs for sequence cross-referencing.
+
+List<Prompt> get bodyscanJointsPlainPrompts {
+  final texts = [
+    'Let the joint between your neck and head, the space between your ears, be free.',
+    'Let the joint that lets you shake your head no be free.',
+    'Let your jaw be free.',
+    'Let your neck joints be free.',
+    'Let your thoracic spine joints be free.',
+    'Let the rib joints be free at the back where they attach to the spine.',
+    'Let the rib joints be free at the front where they attach to the sternum.',
+    'Let the collarbone be free at the sternum and the shoulder blade.',
+    'Let the collarbone be free at the shoulder blade.',
+    'Let the upper arm be free at the shoulder joint.',
+    'Let your shoulder blades be free.',
+    'Let the elbow be free.',
+    'Let the forearm joints be free.',
+    'Let the wrist be free.',
+    'Let the joints of the palm and fingers be free.',
+    'Let the finger joints be free.',
+    'Let the thumb joint be free.',
+    'Let your lower back joints be free.',
+    'Let the joint between the rib vertebra and the low back vertebra be free.',
+    'Let your SI joints be free.',
+    'Let your pubic symphysis be free.',
+    'Let the hip joints be free.',
+    'Let the knee joints be free.',
+    'Let the kneecaps be free.',
+    'Let the ankles be free.',
+    'Let the joints of the foot and heel be free.',
+    'Let the midfoot joints be free.',
+    'Let the joints of the foot and toes be free.',
+    'Let the toe joints be free.',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _bsJpUid(e.key + 1)
+      ..text = e.value
+      ..libraryUid = 'builtin_bs_joints_plain'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
 // ── Built-in Sequences ─────────────────────────────────────────────────────
 
-Sequence get primaryControlSequence {
-  // Placeholder prompt UIDs — will be replaced with real prompt UIDs after seeding
-  return Sequence()
-    ..uid = 'builtin_seq_primary_control'
-    ..name = 'Primary Control'
-    ..promptUids = [] // populated during seeding from allPrompts
-    ..gapSeconds = 2
-    ..isBuiltIn = true
-    ..createdAt = DateTime(2024);
-}
+/// Primary Control — promptUids populated by user once final prompt text is confirmed.
+Sequence get primaryControlSequence => Sequence()
+  ..uid = 'builtin_seq_primary_control'
+  ..name = 'Primary Control'
+  ..promptUids = []
+  ..gapSeconds = 2
+  ..isBuiltIn = true
+  ..createdAt = DateTime(2024);
 
-Sequence get bodyScanSequence {
-  return Sequence()
-    ..uid = 'builtin_seq_body_scan'
-    ..name = 'Body Scan'
-    ..promptUids = []
-    ..gapSeconds = 2
-    ..isBuiltIn = true
-    ..createdAt = DateTime(2024);
-}
+/// Bodyscan Full — 48 prompts, head to toe.
+Sequence get bodyscanFullSequence => Sequence()
+  ..uid = 'builtin_seq_bs_full'
+  ..name = 'Bodyscan — Full'
+  ..promptUids = List.generate(48, (i) => _bsFullUid(i + 1))
+  ..gapSeconds = 4
+  ..isBuiltIn = true
+  ..createdAt = DateTime(2024);
 
-Sequence get preActivitySequence {
-  return Sequence()
-    ..uid = 'builtin_seq_pre_activity'
-    ..name = 'Pre-Activity'
-    ..promptUids = []
-    ..gapSeconds = 2
-    ..isBuiltIn = true
-    ..createdAt = DateTime(2024);
-}
+/// Bodyscan Joints — Anatomical (29 prompts).
+Sequence get bodyscanJointsAnatSequence => Sequence()
+  ..uid = 'builtin_seq_bs_joints_anat'
+  ..name = 'Bodyscan — Joints (Anatomical)'
+  ..promptUids = List.generate(29, (i) => _bsJaUid(i + 1))
+  ..gapSeconds = 4
+  ..isBuiltIn = true
+  ..createdAt = DateTime(2024);
+
+/// Bodyscan Joints — Plain Language (29 prompts).
+Sequence get bodyscanJointsPlainSequence => Sequence()
+  ..uid = 'builtin_seq_bs_joints_plain'
+  ..name = 'Bodyscan — Joints (Plain Language)'
+  ..promptUids = List.generate(29, (i) => _bsJpUid(i + 1))
+  ..gapSeconds = 4
+  ..isBuiltIn = true
+  ..createdAt = DateTime(2024);

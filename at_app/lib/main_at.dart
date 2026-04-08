@@ -24,19 +24,33 @@ Future<void> _seedIfNeeded() async {
   final libs = await libRepo.getAll();
   if (libs.isNotEmpty) return;
 
+  // Seed all built-in libraries
   await libRepo.save(allPromptsLibrary);
   await libRepo.save(brucesLibrary);
   await libRepo.save(mioLibrary);
+  await libRepo.save(fmsLibrary);
+  await libRepo.save(modifiedClassicLibrary);
+  await libRepo.save(bodyscanFullLibrary);
+  await libRepo.save(bodyscanJointsAnatLibrary);
+  await libRepo.save(bodyscanJointsPlainLibrary);
 
+  // Seed all built-in prompts
   final promptRepo = PromptRepository();
   await promptRepo.saveAll(allPrompts);
   await promptRepo.saveAll(brucesPrompts);
   await promptRepo.saveAll(mioPrompts);
+  await promptRepo.saveAll(fmsPrompts);
+  await promptRepo.saveAll(modifiedClassicPrompts);
+  await promptRepo.saveAll(bodyscanFullPrompts);
+  await promptRepo.saveAll(bodyscanJointsAnatPrompts);
+  await promptRepo.saveAll(bodyscanJointsPlainPrompts);
 
+  // Seed built-in sequences
   final seqRepo = SequenceRepository();
   await seqRepo.save(primaryControlSequence);
-  await seqRepo.save(bodyScanSequence);
-  await seqRepo.save(preActivitySequence);
+  await seqRepo.save(bodyscanFullSequence);
+  await seqRepo.save(bodyscanJointsAnatSequence);
+  await seqRepo.save(bodyscanJointsPlainSequence);
 
   // Load settings to trigger default creation
   await SettingsRepository().load();
