@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -206,12 +205,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       await notifier.setRunning(false);
       await notifier.setPaused(false);
     } else {
-      // Flip UI to STOP immediately so the button feels responsive.
-      // The timer service starts in the background — first prompt fires
-      // async without blocking the button redraw.
+      // _StartStopPill already flipped its local appearance on pointer-down,
+      // so the visual is instant. Await start() properly here — unawaited
+      // was silently swallowing errors and leaving the button locked.
       await notifier.setRunning(true);
       await notifier.setPaused(false);
-      unawaited(PromptTimerService().start());
+      await PromptTimerService().start();
     }
   }
 
