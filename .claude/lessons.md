@@ -29,3 +29,9 @@ Mistakes made and rules to follow. Updated after corrections.
 - [2026-04-08] **`Navigator.push(MaterialPageRoute(...))` inside a GoRouter app breaks `context.pop()`.** GoRouter's pop operates on its own page stack. Routes pushed imperatively via `Navigator.push` aren't in GoRouter's stack — calling `context.pop()` from those screens pops the wrong level. Always use `context.push('/route', extra: data)` + a matching GoRouter route entry instead of `Navigator.push`.
 
 - [2026-04-08] **Don't reuse a widget with a hardcoded label string when it'll be used in two contexts.** `_AddLibraryButton` hardcoded `'+ ADD LIBRARY'` then was reused for adding prompts. Add a `label` parameter from the start any time a button label might differ by context.
+
+- [2026-04-09] **`unawaited()` silently swallows exceptions — never use for critical service calls.** `unawaited(start())` left `_isRunning=true` with no running timer when `start()` threw. The button locked forever with no visible error. Always `await` critical service calls and wrap in try/catch that resets state on failure.
+
+- [2026-04-09] **`Listener.onPointerDown` is unreliable on iOS — use `GestureDetector.onTapDown` instead.** iOS native gesture recognizers can cancel pointer events mid-gesture, causing `onPointerDown` to fire but the touch to disappear, leaving the button in a broken locked state. `GestureDetector.onTapDown` fires within Flutter's own gesture pipeline and is not subject to native cancellation.
+
+- [2026-04-09] **All async timer/service methods need `if (!_isRunning) return` after every `await`.** If `stop()` is called while `start()` is mid-await, the coroutine continues after the await resumes and re-arms the timer. Every async method that modifies shared timer state must guard after every await: `if (!_isRunning) return;` (and `|| _isPaused` where relevant).

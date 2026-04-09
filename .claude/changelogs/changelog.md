@@ -32,6 +32,25 @@
 - **Control bar accessibility scaling** — `MainControls.build()` wraps in `MediaQuery(textScaler: noScaling)`; large/bold accessibility fonts no longer reflow the control bar
 
 ### Fixed
+- **START button lockup** — `unawaited(start())` silently swallowed exceptions leaving `_isRunning=true` with no running timer; button locked forever. Fixed: `await start()` with try/catch that calls `setRunning(false)` + `setPaused(false)` on error
+- **Prompts firing after STOP** — `start()` had no cancellation checks after awaits; if `stop()` was called mid-await, `start()` continued and re-armed the timer. Fixed: `if (!_isRunning) return` guard after every `await` in `start()` and `_scheduleCountdown()`
+- **Prompts firing after PAUSE / timer counting while paused** — same async race in `_scheduleCountdown()` tick callback. Fixed: `if (!_isRunning || _isPaused)` check at top of every tick and after every await
+- **Pause button glow not visible** — pause icon button had no active visual state. Fixed: `active: bool` param on `_IconButton`; when active shows 28% teal fill, solid border, BoxShadow glow, teal icon at full opacity
+- **Random interval stepper overflowing on accessibility fonts** — `_Stepper` was missing `MediaQuery.noScaling`. Fixed: wrapped same as `_IntervalStepper`
+- **Duration picker overflowing on small screens** — added `SingleChildScrollView` + `insetPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 40)` to duration picker dialog; wrapped in `MediaQuery.noScaling`
+- **START button gesture unreliable on iOS** — `Listener.onPointerDown` could be cancelled by native gesture recognizers leaving button in bad state. Fixed: `GestureDetector.onTapDown` (fires in Flutter's pipeline before lift) + `_localRunning` local optimistic state + 700ms time-based debounce
+- **Settings label "Chime" → "Sound"** — renamed in row label, picker title, and audio mode sublabels ("Sound only", "Sound + voice")
+- **Live sound switching required stop/restart** — audio service now switches immediately on settings change without requiring a stop/start cycle
+- **Settings gear overlapping app name** — replaced Stack/Positioned gear with Row layout: `SizedBox(22)` left spacer + `Expanded` title + gear on right; gear no longer overlaps title text
+- **Long prompts shrinking the moon orb** — prompt text was in Column below Expanded orb, stealing height. Fixed: moved prompt text INSIDE Expanded as `Positioned(bottom: 8)` overlay; orb never shrinks
+- **Status text scaling on phone with accessibility fonts** — wrapped in `MediaQuery(textScaler: TextScaler.noScaling)` with `maxLines:1` + `overflow: ellipsis`
+
+### Added
+- **Time-sensitive notifications** — `InterruptionLevel.timeSensitive` in `DarwinNotificationDetails`; breaks through Focus modes like Apple Reminders. Entitlement file (`Runner.entitlements`) created with `com.apple.developer.usernotifications.time-sensitive`. *Awaiting one-time Xcode capability registration to activate.*
+
+---
+
+### Fixed (earlier)
 - **Skip back replays last prompt** — BACK button now re-fires the last played prompt (notification + audio) instead of just resetting the countdown. If no prompt has fired yet in the session, resets countdown only. `_lastFiredPrompt` cleared on Stop.
 - **Chime button non-functional** — row had chevron but no `onTap`; now opens picker
 - **Settings sheet live-update** — converted `SettingsSheet` to `ConsumerStatefulWidget` with local shadow state; toggles and steppers now update instantly without waiting for Isar → Riverpod → modal propagation

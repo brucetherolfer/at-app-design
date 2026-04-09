@@ -287,6 +287,30 @@ Added `bool isEnabled = true` to `BlackoutWindow` model (Isar schema regenerated
 
 ---
 
+## Session 9 — Button lockup, race conditions, time-sensitive notifications
+
+### Root cause of START button lockup
+`unawaited(PromptTimerService().start())` was silently swallowing any exception thrown inside `start()`. If `AudioService().startSilentLoop()` or `_settingsRepo.load()` threw, the service's `_isRunning` was already set to `true` but no timer ever started. Worse, `_StartStopPill._locked` only released via `didUpdateWidget` (when Riverpod `isRunning` changed) — but if the exception left Riverpod in a stuck state, `_locked` stayed `true` forever, making the button completely unresponsive.
+
+**Fix**: reverted to `await PromptTimerService().start()` with `try/catch` that resets `setRunning(false)` on error. `_StartStopPill._localRunning` already gives instant visual feedback, so `unawaited` wasn't needed for responsiveness.
+
+### Listener.onPointerDown replaced with GestureDetector.onTapDown
+`Listener.onPointerDown` bypasses Flutter's gesture recognizer pipeline. On iOS, native gesture recognizers (UIKit-level) can cancel pointer events mid-stream, causing the handler to fire then the touch to be lost. `GestureDetector.onTapDown` participates in Flutter's pipeline correctly and is the right tool here. Added 700ms time-based debounce (not rebuild-based) to prevent double-fire — simpler and more reliable than the previous `didUpdateWidget` approach.
+
+### Stop/pause async race conditions
+All async methods in `PromptTimerService` (`start()`, `_scheduleCountdown()` callback, `fireNow()`, `skipBack()`) now check `if (!_isRunning) return` (or `|| _isPaused`) after every `await`. Without these guards: calling `stop()` or `pause()` while a method is mid-await was ignored — the method continued executing, rescheduled the countdown, and fired prompts even after STOP was pressed.
+
+### Pause button glow
+The teal tint was 12% opacity — barely visible on the dark background. Increased to 28% fill, solid full-opacity border, added BoxShadow glow. Also unified all enabled icon buttons to full opacity (was 0.7).
+
+### Accessibility fixes — random interval stepper
+`_Stepper` (used for random min/max interval) was missing `MediaQuery.noScaling`. On large-font phones the +/- and value text would overflow the fixed-width container. Added same noScaling wrapper as `_IntervalStepper`.
+
+### Time-sensitive notifications
+Code complete: `InterruptionLevel.timeSensitive` set in `NotificationService.showPrompt()`. `ios/Runner/Runner.entitlements` created with `com.apple.developer.usernotifications.time-sensitive = true`. However, `CODE_SIGN_ENTITLEMENTS` was NOT added to `project.pbxproj` — the build failed because the existing provisioning profile (auto-managed) doesn't include this capability. The entitlement needs to be added through Xcode GUI: Runner target → Signing & Capabilities → + → "Time Sensitive Notifications". Xcode then registers the capability with the Apple Developer portal and regenerates the profile. Until that step, notifications work at `active` level (not time-sensitive, doesn't break Focus modes).
+
+---
+
 ## What's next
 
 See `build-list.md` for full tracking. Top priorities:
