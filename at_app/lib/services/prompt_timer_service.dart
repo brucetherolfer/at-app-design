@@ -131,7 +131,14 @@ class PromptTimerService {
           _scheduleCountdown();
           return;
         }
-        await _firePrompt(settings);
+        try {
+          await _firePrompt(settings);
+        } catch (e) {
+          debugPrint('⚠️ PromptTimerService countdown fire error: $e');
+          // Don't stop the timer — keep scheduling even if one prompt fails.
+          // The user will see the on-screen error the first time (from start()),
+          // subsequent misses are logged only.
+        }
         if (!_isRunning || _isPaused) return; // cancelled while awaiting
         _remaining = _intervalFor(settings);
         _scheduleCountdown();
@@ -170,8 +177,12 @@ class PromptTimerService {
 
   Future<void> _firePrompt(AppSettings settings) async {
     final prompt = await _pickPrompt(settings);
-    if (prompt == null) return;
+    if (prompt == null) {
+      debugPrint('⚠️ PromptTimerService: no prompts in library "${settings.primaryLibraryUid}" — cannot fire');
+      throw StateError('No prompts found in library "${settings.primaryLibraryUid}". Open Settings and check your active library.');
+    }
     _lastFiredPrompt = prompt;
+    debugPrint('🔔 PromptTimerService: firing "${prompt.text}"');
     await _deliverPrompt(prompt, settings);
   }
 

@@ -216,6 +216,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         debugPrint('PromptTimerService.start() failed: $e');
         await notifier.setRunning(false);
         await notifier.setPaused(false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e is StateError ? e.message : 'Could not start: $e'),
+              backgroundColor: Colors.red.shade800,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
       }
     }
   }

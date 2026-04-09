@@ -96,9 +96,12 @@ class _StartStopPillState extends State<_StartStopPill> {
   @override
   void didUpdateWidget(_StartStopPill old) {
     super.didUpdateWidget(old);
-    // Only sync display state — never release lock here (race condition risk).
-    // Lock is released on a timer after the action completes.
-    if (old.isRunning != widget.isRunning) {
+    // Sync local display state whenever it diverges from the real state.
+    // Comparing against _localRunning (not old.isRunning) is critical:
+    // if Riverpod batches setRunning(true)+setRunning(false) into one rebuild,
+    // old.isRunning==widget.isRunning==false so the old check never fired,
+    // leaving _localRunning stuck at true. This comparison always corrects it.
+    if (_localRunning != widget.isRunning) {
       setState(() => _localRunning = widget.isRunning);
     }
   }
