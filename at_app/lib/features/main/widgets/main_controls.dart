@@ -49,6 +49,7 @@ class MainControls extends StatelessWidget {
           icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
           label: isPaused ? 'RESUME' : 'PAUSE',
           onTap: isRunning ? onPauseResume : null,
+          active: isPaused, // highlight the button while paused
         ),
         const SizedBox(width: 20),
         // Start / Stop pill
@@ -83,29 +84,35 @@ class _StartStopPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // onTapDown fires the moment the finger touches — no waiting for lift.
+    // This makes the button feel instant rather than requiring a deliberate press.
     return GestureDetector(
-      onTap: onTap,
+      onTapDown: (_) => onTap(),
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: 156,
-        height: 50,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
+      child: Container(
+        // Extra vertical padding increases the tap target without changing
+        // the visual pill size.
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Container(
+          width: 156,
+          height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(
+              color: isRunning
+                  ? AppColors.tealPrimary.withOpacity(0.60)
+                  : AppColors.tealPrimary.withOpacity(0.45),
+              width: 1.5,
+            ),
             color: isRunning
-                ? AppColors.tealPrimary.withOpacity(0.60)
-                : AppColors.tealPrimary.withOpacity(0.45),
-            width: 1.5,
+                ? AppColors.tealPrimary.withOpacity(0.08)
+                : Colors.transparent,
           ),
-          color: isRunning
-              ? AppColors.tealPrimary.withOpacity(0.08)
-              : Colors.transparent,
-        ),
-        child: Center(
-          child: Text(
-            isRunning ? 'STOP' : 'START',
-            style: AppTextStyles.pillLabel,
+          child: Center(
+            child: Text(
+              isRunning ? 'STOP' : 'START',
+              style: AppTextStyles.pillLabel,
+            ),
           ),
         ),
       ),
@@ -117,21 +124,32 @@ class _IconButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
+  /// When true (e.g. while paused), the button glows teal to show active state.
+  final bool active;
 
   const _IconButton({
     required this.icon,
     required this.label,
     this.onTap,
+    this.active = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
+    final iconColor = active ? AppColors.tealPrimary : Colors.white;
+    final borderColor = active
+        ? AppColors.tealPrimary.withOpacity(0.65)
+        : Colors.white.withOpacity(0.25);
+    final bgColor = active
+        ? AppColors.tealPrimary.withOpacity(0.12)
+        : Colors.transparent;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Opacity(
-        opacity: enabled ? 0.7 : 0.25,
+        opacity: enabled ? (active ? 1.0 : 0.7) : 0.25,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -140,21 +158,18 @@ class _IconButton extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.25),
-                ),
+                color: bgColor,
+                border: Border.all(color: borderColor),
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 18,
-              ),
+              child: Icon(icon, color: iconColor, size: 18),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: AppTextStyles.fireButtonLabel.copyWith(
-                color: Colors.white.withOpacity(0.75),
+                color: active
+                    ? AppColors.tealPrimary.withOpacity(0.85)
+                    : Colors.white.withOpacity(0.75),
               ),
             ),
           ],

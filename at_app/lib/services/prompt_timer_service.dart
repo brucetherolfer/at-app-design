@@ -45,9 +45,14 @@ class PromptTimerService {
     // Silent loop keeps AVAudioSession active so iOS doesn't suspend the app
     // when the screen locks or another app comes to the foreground.
     await AudioService().startSilentLoop();
+    if (!_isRunning) return; // stop() called while awaiting
 
     final settings = await _settingsRepo.load();
+    if (!_isRunning) return; // stop() called while awaiting
+
     await _firePrompt(settings);
+    if (!_isRunning) return; // stop() called while awaiting
+
     _remaining = _intervalFor(settings);
     _scheduleCountdown();
   }
@@ -82,20 +87,26 @@ class PromptTimerService {
 
   /// Fire the next prompt immediately, then reschedule.
   Future<void> fireNow() async {
+    if (!_isRunning) return;
     _timer?.cancel();
     final settings = await _settingsRepo.load();
+    if (!_isRunning) return;
     await _firePrompt(settings);
+    if (!_isRunning) return;
     _remaining = _intervalFor(settings);
     _scheduleCountdown();
   }
 
   /// Skip back — replay the last fired prompt (if any) and reset the countdown.
   Future<void> skipBack() async {
+    if (!_isRunning) return;
     _timer?.cancel();
     final settings = await _settingsRepo.load();
+    if (!_isRunning) return;
     if (_lastFiredPrompt != null) {
       await _replayPrompt(_lastFiredPrompt!, settings);
     }
+    if (!_isRunning) return;
     _remaining = _intervalFor(settings);
     _scheduleCountdown();
   }
@@ -103,18 +114,25 @@ class PromptTimerService {
   void _scheduleCountdown() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (t) async {
+      // Check at every tick — stop() or pause() may have been called
+      if (!_isRunning || _isPaused) {
+        t.cancel();
+        return;
+      }
       if (_remaining <= Duration.zero) {
         t.cancel();
-        // Reload settings fresh on each prompt fire so changes to audio mode,
-        // sound, voice, interval etc. take effect immediately without restart.
+        // Reload settings fresh so changes to audio mode, sound, interval etc.
+        // take effect immediately without requiring a stop/start.
         final settings = await _settingsRepo.load();
+        if (!_isRunning || _isPaused) return; // cancelled while awaiting
         if (await _isInBlackout()) {
-          // Skip this tick — reschedule
+          if (!_isRunning || _isPaused) return; // cancelled while awaiting
           _remaining = _intervalFor(settings);
           _scheduleCountdown();
           return;
         }
         await _firePrompt(settings);
+        if (!_isRunning || _isPaused) return; // cancelled while awaiting
         _remaining = _intervalFor(settings);
         _scheduleCountdown();
       } else {

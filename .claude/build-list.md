@@ -30,6 +30,7 @@ Things remaining before App Store submission.
 - [ ] ElevenLabs voice cloning / AI voice
 - [ ] Custom sound file import
 - [ ] Gamification, streaks, progress tracking
+- [ ] **Prompt text placement** — on phone, the prompt text at the bottom of the orb area is large. Consider moving it to the row where the skip forward/back/pause buttons sit, replacing or above those labels. This frees the orb for the visual and keeps the text within the control zone.
 - [ ] **Audio ducking** — lower music volume during prompts. iOS supports this via `AVAudioSessionCategoryOptionDuckOthers` (instead of or alongside `mixWithOthers`). Trade-off: Spotify/music dips briefly every prompt interval, which may feel annoying during casual use but useful in focused practice. Make it a user toggle.
 - [ ] **Consider removing skip forward/back from main screen** — Bruce raised this. The controls may be clutter for typical use (interval fires, just let it run). Evaluate after real-world testing. If removed, keep the fire-now button. Skip logic can remain in the timer service for programmatic use.
 

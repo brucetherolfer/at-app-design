@@ -606,46 +606,65 @@ class _DurationPickerDialogState extends State<_DurationPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final teal = const Color(0xFF48CAE4);
-    final bodyStyle = TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 14);
-
-    return AlertDialog(
-      backgroundColor: const Color(0xFF0C1D2E),
-      title: const Text('Set Interval',
-          style: TextStyle(color: Colors.white70, fontSize: 16)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _UnitRow(label: 'hr', value: _hours, min: 0, max: 23,
-              onChanged: (v) => setState(() => _hours = v)),
-          const SizedBox(height: 8),
-          _UnitRow(label: 'min', value: _minutes, min: 0, max: 59,
-              onChanged: (v) => setState(() => _minutes = v)),
-          const SizedBox(height: 8),
-          _UnitRow(label: 'sec', value: _seconds, min: 0, max: 59,
-              onChanged: (v) => setState(() => _seconds = v)),
-          if (_total < 5)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text('Minimum interval is 5 seconds',
-                  style: TextStyle(
-                      color: Colors.redAccent.withOpacity(0.75), fontSize: 12)),
-            ),
+    const teal = Color(0xFF48CAE4);
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: AlertDialog(
+        backgroundColor: const Color(0xFF0C1D2E),
+        insetPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        title: const Text('Set Interval',
+            style: TextStyle(color: Colors.white70, fontSize: 16)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _UnitRow(
+                  label: 'hr',
+                  value: _hours,
+                  min: 0,
+                  max: 23,
+                  onChanged: (v) => setState(() => _hours = v)),
+              const SizedBox(height: 8),
+              _UnitRow(
+                  label: 'min',
+                  value: _minutes,
+                  min: 0,
+                  max: 59,
+                  onChanged: (v) => setState(() => _minutes = v)),
+              const SizedBox(height: 8),
+              _UnitRow(
+                  label: 'sec',
+                  value: _seconds,
+                  min: 0,
+                  max: 59,
+                  onChanged: (v) => setState(() => _seconds = v)),
+              if (_total < 5)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text('Minimum interval is 5 seconds',
+                      style: TextStyle(
+                          color: Colors.redAccent.withOpacity(0.75),
+                          fontSize: 12)),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel',
+                style: TextStyle(color: teal.withOpacity(0.55))),
+          ),
+          TextButton(
+            onPressed:
+                _total >= 5 ? () => Navigator.pop(context, _total) : null,
+            child: Text('Set',
+                style: TextStyle(
+                    color: _total >= 5 ? teal : teal.withOpacity(0.25))),
+          ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text('Cancel',
-              style: TextStyle(color: teal.withOpacity(0.55))),
-        ),
-        TextButton(
-          onPressed: _total >= 5 ? () => Navigator.pop(context, _total) : null,
-          child: Text('Set',
-              style: TextStyle(
-                  color: _total >= 5 ? teal : teal.withOpacity(0.25))),
-        ),
-      ],
     );
   }
 }
