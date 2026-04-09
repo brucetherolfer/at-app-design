@@ -129,10 +129,16 @@ class PromptTimerService {
     final nowMinutes = now.hour * 60 + now.minute;
 
     for (final w in windows) {
+      if (!w.isEnabled) continue;
       if (!w.daysOfWeek.contains(dayOfWeek)) continue;
       final start = _parseTime(w.startTime);
       final end = _parseTime(w.endTime);
-      if (nowMinutes >= start && nowMinutes < end) return true;
+      // Handle overnight windows (e.g. 22:00–07:00)
+      if (start <= end) {
+        if (nowMinutes >= start && nowMinutes < end) return true;
+      } else {
+        if (nowMinutes >= start || nowMinutes < end) return true;
+      }
     }
     return false;
   }

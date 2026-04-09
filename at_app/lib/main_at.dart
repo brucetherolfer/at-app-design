@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
+import 'repositories/blackout_repository.dart';
 import 'repositories/isar_service.dart';
 import 'repositories/seed_data.dart';
 import 'repositories/settings_repository.dart';
@@ -14,6 +15,8 @@ void main() async {
 
   await IsarService.open();
   await _seedIfNeeded();
+  await _seedBlackoutsIfNeeded();
+  await _migrateFmsPrompts();
   await _resetRunState();
   await NotificationService.init();
 
@@ -67,4 +70,36 @@ Future<void> _seedIfNeeded() async {
 
   // Load settings to trigger default creation
   await SettingsRepository().load();
+}
+
+/// Seeds the default Sleep blackout window on first launch.
+/// Runs on every launch but only writes if the window doesn't exist yet.
+Future<void> _seedBlackoutsIfNeeded() async {
+  final repo = BlackoutRepository();
+  final existing = await repo.getAll();
+  final hasSleep = existing.any((w) => w.uid == 'builtin_blackout_sleep');
+  if (!hasSleep) {
+    await repo.save(sleepBlackoutWindow);
+  }
+}
+
+/// Updates FM's prompt texts in existing installs to the canonical wording.
+/// Safe to run on every launch — only writes when text differs.
+Future<void> _migrateFmsPrompts() async {
+  final repo = PromptRepository();
+  final migrations = {
+    'fms_dir_001':
+        'Let your neck be free. So your head can go forward and up. The back can lengthen and widen and your knees go forward and away.',
+    'fms_seq_001': 'Let your neck be free.',
+    'fms_seq_002': 'So your head can go forward and up.',
+    'fms_seq_003': 'The back can lengthen and widen.',
+    'fms_seq_004': 'And your knees go forward and away.',
+  };
+  for (final entry in migrations.entries) {
+    final prompt = await repo.getByUid(entry.key);
+    if (prompt != null && prompt.text != entry.value) {
+      prompt.text = entry.value;
+      await repo.save(prompt);
+    }
+  }
 }

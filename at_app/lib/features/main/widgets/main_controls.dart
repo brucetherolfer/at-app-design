@@ -24,6 +24,15 @@ class MainControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Clamp text scaling so accessibility font sizes don't reflow the
+    // control bar. Buttons are UI chrome — their labels don't need to grow.
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: _buildControls(),
+    );
+  }
+
+  Widget _buildControls() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -76,6 +85,7 @@ class _StartStopPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         width: 156,
@@ -119,6 +129,7 @@ class _IconButton extends StatelessWidget {
     final enabled = onTap != null;
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Opacity(
         opacity: enabled ? 0.7 : 0.25,
         child: Column(

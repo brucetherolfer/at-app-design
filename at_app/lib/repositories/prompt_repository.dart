@@ -21,6 +21,10 @@ class PromptRepository {
         .watch(fireImmediately: true);
   }
 
+  Future<Prompt?> getByUid(String uid) async {
+    return _db.prompts.filter().uidEqualTo(uid).findFirst();
+  }
+
   Future<void> save(Prompt prompt) async {
     await _db.writeTxn(() async {
       await _db.prompts.put(prompt);

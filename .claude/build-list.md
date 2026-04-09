@@ -11,7 +11,7 @@ Things remaining before App Store submission.
 - [x] **AppDelegate.swift** — AVAudioSession `.playback` + `.mixWithOthers`. Chimes/TTS play on locked/silent screen.
 - [ ] **Background execution validation** — Test on physical iPhone. Confirm prompts fire when app is backgrounded 30+ min, screen locked, audio plays on locked screen.
 - [ ] **Primary Control sequence** — `promptUids` is empty. Bruce to provide the prompt text/order.
-- [ ] **Blackout windows** — No pre-seeded data. Bruce will add his own windows to verify the feature works correctly from a fresh-user perspective.
+- [x] **Blackout windows** — Sleep window seeded (10pm–7am, all days, disabled by default). Enable/disable toggle added to each row. Overnight window logic fixed.
 - [ ] **App name — final decision** — Working name "Alexander Technique App". Confirm before App Store submission (check trademark).
 - [ ] **App icon** — Replace default Flutter icon with AT-flavored icon.
 - [ ] **iOS flavor schemes** — Xcode schemes for `at` and `general` flavors (needs Debug-at/Release-at/Profile-at build configs added to Xcode pbxproj).
@@ -30,6 +30,8 @@ Things remaining before App Store submission.
 - [ ] ElevenLabs voice cloning / AI voice
 - [ ] Custom sound file import
 - [ ] Gamification, streaks, progress tracking
+- [ ] **Audio ducking** — lower music volume during prompts. iOS supports this via `AVAudioSessionCategoryOptionDuckOthers` (instead of or alongside `mixWithOthers`). Trade-off: Spotify/music dips briefly every prompt interval, which may feel annoying during casual use but useful in focused practice. Make it a user toggle.
+- [ ] **Consider removing skip forward/back from main screen** — Bruce raised this. The controls may be clutter for typical use (interval fires, just let it run). Evaluate after real-world testing. If removed, keep the fire-now button. Skip logic can remain in the timer service for programmatic use.
 
 ---
 

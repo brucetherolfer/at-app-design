@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- **Blackout window enable/disable toggle** — each row in Blackout Windows screen now has a mini toggle switch; disabled windows are skipped by the timer without deleting them
+- **Sleep blackout window seeded** — first launch creates a "Sleep" window (10pm–7am, all days) in disabled state; users can enable it without having to create it manually
+- **Overnight blackout window support** — `_isInBlackout()` now correctly handles windows that span midnight (e.g. 22:00–07:00)
+- **`PromptRepository.getByUid()`** — new method for direct UID lookup
+- **FM's prompt text migration** — `_migrateFmsPrompts()` in `main_at.dart` updates FM's Directions and FM's Sequence prompt texts on every launch (no-op when already correct)
 - **Background execution — silent audio loop** — plays silence.m4a at volume 0 on loop while timer is running; keeps AVAudioSession active so iOS doesn't suspend the app on lock/background
 - **audio_session package** — properly configures AVAudioSession `.playback` + `.mixWithOthers` so the setting survives just_audio/flutter_tts session reinitialisation; handles interruption recovery (Spotify pause → re-activate session)
 - **About & Credits screen** (`/about`) — app description, legally-required moon photo attribution (Gregory H. Revera, CC BY-SA 3.0), audio credits, accessible from Settings → About & Credits
@@ -19,6 +24,12 @@
 - **First-run defaults** — FM's Directions library + 7-minute interval (was All Prompts + 20 min)
 - **Start fires prompt immediately** — first prompt fires on tap of Start, countdown then begins for the next
 - Removed "Classic AT — FM's" library (replaced by FM's Directions)
+
+### Changed
+- **FM's Directions prompt text** — updated to exact wording: *"Let your neck be free. So your head can go forward and up. The back can lengthen and widen and your knees go forward and away."*
+- **FM's Sequence prompt texts** — seq_003: "The back can lengthen and widen." / seq_004: "And your knees go forward and away."
+- **Start button hit area** — `_StartStopPill` GestureDetector now uses `HitTestBehavior.opaque`; the full pill area responds to touch regardless of transparency
+- **Control bar accessibility scaling** — `MainControls.build()` wraps in `MediaQuery(textScaler: noScaling)`; large/bold accessibility fonts no longer reflow the control bar
 
 ### Fixed
 - **Skip back replays last prompt** — BACK button now re-fires the last played prompt (notification + audio) instead of just resetting the countdown. If no prompt has fired yet in the session, resets countdown only. `_lastFiredPrompt` cleared on Stop.

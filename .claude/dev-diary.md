@@ -260,6 +260,33 @@ Added `audio_session: ^0.1.21`. This is the proper companion to `just_audio` —
 
 ---
 
+## Session 8 — FM's text, blackout toggle, Sleep seed, hit area + accessibility fixes
+
+### FM's prompt text update
+User provided the exact canonical wording for FM's Directions. Updated in `seed_data.dart` and added `_migrateFmsPrompts()` to `main_at.dart` — runs on every launch, updates existing installs by UID, no-ops if text already matches. Also corrected seq_003 ("The back can lengthen and widen.") and seq_004 ("And your knees go forward and away.").
+
+### Sleep blackout window
+Seeded a "Sleep" window (22:00–07:00, all 7 days, `isEnabled=false`) via `sleepBlackoutWindow` getter in `seed_data.dart`. `_seedBlackoutsIfNeeded()` in `main_at.dart` checks for `builtin_blackout_sleep` on every launch and creates it only if missing — separate guard from the library seed so it runs independently. The window shows up immediately in the Blackout Windows screen, toggle off, as a ready-to-use template.
+
+### Blackout window enable/disable toggle
+Added `bool isEnabled = true` to `BlackoutWindow` model (Isar schema regenerated). `_isInBlackout()` now skips disabled windows. Added `toggleEnabled(String uid)` to `BlackoutNotifier`. `_BlackoutRow` now renders a custom mini toggle switch (36×20, animated thumb, teal when on) alongside the existing delete × button.
+
+### Overnight blackout window fix
+`_isInBlackout()` previously used `nowMinutes >= start && nowMinutes < end` which breaks when start > end (e.g. 22:00–07:00 = 1320–420). Fixed: when `start > end`, use `nowMinutes >= start || nowMinutes < end`.
+
+### Hit area and accessibility fixes
+- `_StartStopPill` GestureDetector: added `HitTestBehavior.opaque` → full pill area tappable, not just the text
+- `_IconButton` GestureDetector: same fix
+- `MainControls.build()`: wraps in `MediaQuery(textScaler: TextScaler.noScaling)` → accessibility Large Text / Bold Text settings don't reflow or clip the control bar
+
+### Build notes
+- Added `PromptRepository.getByUid()` for the migration function
+- `BlackoutWindow` Isar schema regenerated with `isEnabled` field
+- Build: `flutter build ios -t lib/main_at.dart --release` → 25.2MB
+- Installed via `xcrun devicectl device install app` to Bruce's iPhone (`00008110-001A60A11A9B601E`)
+
+---
+
 ## What's next
 
 See `build-list.md` for full tracking. Top priorities:

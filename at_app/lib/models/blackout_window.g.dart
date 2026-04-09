@@ -27,18 +27,23 @@ const BlackoutWindowSchema = CollectionSchema(
       name: r'endTime',
       type: IsarType.string,
     ),
-    r'label': PropertySchema(
+    r'isEnabled': PropertySchema(
       id: 2,
+      name: r'isEnabled',
+      type: IsarType.bool,
+    ),
+    r'label': PropertySchema(
+      id: 3,
       name: r'label',
       type: IsarType.string,
     ),
     r'startTime': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'startTime',
       type: IsarType.string,
     ),
     r'uid': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'uid',
       type: IsarType.string,
     )
@@ -93,9 +98,10 @@ void _blackoutWindowSerialize(
 ) {
   writer.writeLongList(offsets[0], object.daysOfWeek);
   writer.writeString(offsets[1], object.endTime);
-  writer.writeString(offsets[2], object.label);
-  writer.writeString(offsets[3], object.startTime);
-  writer.writeString(offsets[4], object.uid);
+  writer.writeBool(offsets[2], object.isEnabled);
+  writer.writeString(offsets[3], object.label);
+  writer.writeString(offsets[4], object.startTime);
+  writer.writeString(offsets[5], object.uid);
 }
 
 BlackoutWindow _blackoutWindowDeserialize(
@@ -108,9 +114,10 @@ BlackoutWindow _blackoutWindowDeserialize(
   object.daysOfWeek = reader.readLongList(offsets[0]) ?? [];
   object.endTime = reader.readString(offsets[1]);
   object.id = id;
-  object.label = reader.readString(offsets[2]);
-  object.startTime = reader.readString(offsets[3]);
-  object.uid = reader.readString(offsets[4]);
+  object.isEnabled = reader.readBool(offsets[2]);
+  object.label = reader.readString(offsets[3]);
+  object.startTime = reader.readString(offsets[4]);
+  object.uid = reader.readString(offsets[5]);
   return object;
 }
 
@@ -126,10 +133,12 @@ P _blackoutWindowDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
+      return (reader.readString(offset)) as P;
+    case 5:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -669,6 +678,16 @@ extension BlackoutWindowQueryFilter
   }
 
   QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterFilterCondition>
+      isEnabledEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isEnabled',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterFilterCondition>
       labelEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1098,6 +1117,19 @@ extension BlackoutWindowQuerySortBy
     });
   }
 
+  QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterSortBy> sortByIsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterSortBy>
+      sortByIsEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterSortBy> sortByLabel() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'label', Sort.asc);
@@ -1163,6 +1195,19 @@ extension BlackoutWindowQuerySortThenBy
     });
   }
 
+  QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterSortBy> thenByIsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isEnabled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterSortBy>
+      thenByIsEnabledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isEnabled', Sort.desc);
+    });
+  }
+
   QueryBuilder<BlackoutWindow, BlackoutWindow, QAfterSortBy> thenByLabel() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'label', Sort.asc);
@@ -1217,6 +1262,13 @@ extension BlackoutWindowQueryWhereDistinct
     });
   }
 
+  QueryBuilder<BlackoutWindow, BlackoutWindow, QDistinct>
+      distinctByIsEnabled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isEnabled');
+    });
+  }
+
   QueryBuilder<BlackoutWindow, BlackoutWindow, QDistinct> distinctByLabel(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1257,6 +1309,12 @@ extension BlackoutWindowQueryProperty
   QueryBuilder<BlackoutWindow, String, QQueryOperations> endTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'endTime');
+    });
+  }
+
+  QueryBuilder<BlackoutWindow, bool, QQueryOperations> isEnabledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isEnabled');
     });
   }
 

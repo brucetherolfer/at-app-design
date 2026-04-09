@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import '../models/blackout_window.dart';
 import '../models/library.dart';
 import '../models/prompt.dart';
 import '../models/sequence.dart';
@@ -389,7 +390,7 @@ List<Prompt> get mioPrompts {
 List<Prompt> get fmsDirectionsPrompts => [
   Prompt()
     ..uid = 'fms_dir_001'
-    ..text = "Let your neck be free, so your head can go forward and up, and your back lengthen and widen, and your knees can go forward and away."
+    ..text = "Let your neck be free. So your head can go forward and up. The back can lengthen and widen and your knees go forward and away."
     ..libraryUid = 'builtin_fms_directions'
     ..sortOrder = 0
     ..isBuiltIn = true
@@ -415,14 +416,14 @@ List<Prompt> get fmsSequencePrompts => [
     ..createdAt = DateTime(2024),
   Prompt()
     ..uid = 'fms_seq_003'
-    ..text = "And your back lengthen and widen."
+    ..text = "The back can lengthen and widen."
     ..libraryUid = 'builtin_fms_sequence'
     ..sortOrder = 2
     ..isBuiltIn = true
     ..createdAt = DateTime(2024),
   Prompt()
     ..uid = 'fms_seq_004'
-    ..text = "And your knees can go forward and away."
+    ..text = "And your knees go forward and away."
     ..libraryUid = 'builtin_fms_sequence'
     ..sortOrder = 3
     ..isBuiltIn = true
@@ -656,3 +657,15 @@ Sequence get bodyscanJointsPlainSequence => Sequence()
   ..gapSeconds = 4
   ..isBuiltIn = true
   ..createdAt = DateTime(2024);
+
+// ── Default Blackout Windows ──────────────────────────────────────────────
+
+/// Sleep window — 10pm to 7am, all days, disabled by default.
+/// Shows up in Blackout Windows on first launch as a shell the user can enable.
+BlackoutWindow get sleepBlackoutWindow => BlackoutWindow()
+  ..uid = 'builtin_blackout_sleep'
+  ..label = 'Sleep'
+  ..daysOfWeek = [1, 2, 3, 4, 5, 6, 7]
+  ..startTime = '22:00'
+  ..endTime = '07:00'
+  ..isEnabled = false;

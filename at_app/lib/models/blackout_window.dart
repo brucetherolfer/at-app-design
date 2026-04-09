@@ -16,4 +16,6 @@ class BlackoutWindow {
   late String startTime; // "HH:mm"
 
   late String endTime; // "HH:mm"
+
+  bool isEnabled = true;
 }

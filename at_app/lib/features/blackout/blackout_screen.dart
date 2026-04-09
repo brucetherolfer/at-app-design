@@ -34,6 +34,9 @@ class BlackoutScreen extends ConsumerWidget {
                   children: windows
                       .map((w) => _BlackoutRow(
                             window: w,
+                            onToggle: () => ref
+                                .read(blackoutNotifierProvider.notifier)
+                                .toggleEnabled(w.uid),
                             onDelete: () => ref
                                 .read(blackoutNotifierProvider.notifier)
                                 .deleteWindow(w.uid),
@@ -80,9 +83,14 @@ class BlackoutScreen extends ConsumerWidget {
 
 class _BlackoutRow extends StatelessWidget {
   final BlackoutWindow window;
+  final VoidCallback onToggle;
   final VoidCallback onDelete;
 
-  const _BlackoutRow({required this.window, required this.onDelete});
+  const _BlackoutRow({
+    required this.window,
+    required this.onToggle,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +100,58 @@ class _BlackoutRow extends StatelessWidget {
     return ATRow(
       label: window.label,
       sublabel: '$days · ${window.startTime} – ${window.endTime}',
-      trailing: GestureDetector(
-        onTap: onDelete,
-        child:
-            Icon(Icons.close, size: 16, color: Colors.white.withOpacity(0.28)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: onToggle,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 36,
+              height: 20,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: window.isEnabled
+                    ? AppColors.tealPrimary.withOpacity(0.55)
+                    : Colors.white.withOpacity(0.10),
+                border: Border.all(
+                  color: window.isEnabled
+                      ? AppColors.tealPrimary.withOpacity(0.70)
+                      : Colors.white.withOpacity(0.18),
+                  width: 1,
+                ),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                alignment: window.isEnabled
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  width: 14,
+                  height: 14,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: window.isEnabled
+                        ? Colors.white.withOpacity(0.90)
+                        : Colors.white.withOpacity(0.35),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: onDelete,
+            behavior: HitTestBehavior.opaque,
+            child: Icon(
+              Icons.close,
+              size: 16,
+              color: Colors.white.withOpacity(0.28),
+            ),
+          ),
+        ],
       ),
     );
   }

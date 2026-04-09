@@ -37,6 +37,14 @@ class BlackoutNotifier extends AsyncNotifier<List<BlackoutWindow>> {
   Future<void> deleteWindow(String uid) async {
     await ref.read(blackoutRepositoryProvider).delete(uid);
   }
+
+  Future<void> toggleEnabled(String uid) async {
+    final repo = ref.read(blackoutRepositoryProvider);
+    final windows = await repo.getAll();
+    final w = windows.firstWhere((w) => w.uid == uid);
+    w.isEnabled = !w.isEnabled;
+    await repo.save(w);
+  }
 }
 
 final blackoutNotifierProvider =
