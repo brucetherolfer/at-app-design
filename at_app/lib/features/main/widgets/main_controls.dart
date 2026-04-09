@@ -24,74 +24,104 @@ class MainControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Clamp text scaling so accessibility font sizes don't reflow the
-    // control bar. Buttons are UI chrome — their labels don't need to grow.
+    // Clamp text scaling so accessibility font sizes don't reflow the control bar.
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-      child: _buildControls(),
-    );
-  }
-
-  Widget _buildControls() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        // Skip back
-        _IconButton(
-          icon: Icons.skip_previous_rounded,
-          label: 'BACK',
-          onTap: isRunning ? onSkipBack : null,
-        ),
-        const SizedBox(width: 16),
-        // Pause / Resume
-        _IconButton(
-          icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-          label: isPaused ? 'RESUME' : 'PAUSE',
-          onTap: isRunning ? onPauseResume : null,
-          active: isPaused, // highlight the button while paused
-        ),
-        const SizedBox(width: 20),
-        // Start / Stop pill
-        _StartStopPill(
-          isRunning: isRunning,
-          onTap: onStartStop,
-        ),
-        const SizedBox(width: 20),
-        // Fire Now
-        _IconButton(
-          icon: Icons.bolt_rounded,
-          label: 'FIRE',
-          onTap: isRunning ? onFireNow : null,
-        ),
-        const SizedBox(width: 16),
-        // Skip forward
-        _IconButton(
-          icon: Icons.skip_next_rounded,
-          label: 'SKIP',
-          onTap: isRunning ? onSkipForward : null,
-        ),
-      ],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _IconButton(
+            icon: Icons.skip_previous_rounded,
+            label: 'BACK',
+            onTap: isRunning ? onSkipBack : null,
+          ),
+          const SizedBox(width: 16),
+          _IconButton(
+            icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+            label: isPaused ? 'RESUME' : 'PAUSE',
+            onTap: isRunning ? onPauseResume : null,
+            active: isPaused,
+          ),
+          const SizedBox(width: 20),
+          _StartStopPill(
+            isRunning: isRunning,
+            onTap: onStartStop,
+          ),
+          const SizedBox(width: 20),
+          _IconButton(
+            icon: Icons.bolt_rounded,
+            label: 'FIRE',
+            onTap: isRunning ? onFireNow : null,
+          ),
+          const SizedBox(width: 16),
+          _IconButton(
+            icon: Icons.skip_next_rounded,
+            label: 'SKIP',
+            onTap: isRunning ? onSkipForward : null,
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _StartStopPill extends StatelessWidget {
+// ── Start / Stop pill ─────────────────────────────────────────────────────
+//
+// StatefulWidget so it can flip its own visual state the instant the pointer
+// touches — without waiting for the Riverpod rebuild. This makes START feel
+// as snappy as STOP. didUpdateWidget syncs back to the real state once
+// Riverpod propagates.
+
+class _StartStopPill extends StatefulWidget {
   final bool isRunning;
   final VoidCallback onTap;
 
   const _StartStopPill({required this.isRunning, required this.onTap});
 
   @override
+  State<_StartStopPill> createState() => _StartStopPillState();
+}
+
+class _StartStopPillState extends State<_StartStopPill> {
+  late bool _localRunning;
+  bool _locked = false; // debounce — prevent double-fire
+
+  @override
+  void initState() {
+    super.initState();
+    _localRunning = widget.isRunning;
+  }
+
+  @override
+  void didUpdateWidget(_StartStopPill old) {
+    super.didUpdateWidget(old);
+    // Sync with real state once Riverpod catches up
+    if (old.isRunning != widget.isRunning) {
+      setState(() {
+        _localRunning = widget.isRunning;
+        _locked = false;
+      });
+    }
+  }
+
+  void _handleDown() {
+    if (_locked) return;
+    setState(() {
+      _locked = true;
+      _localRunning = !_localRunning; // flip appearance immediately
+    });
+    widget.onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // onTapDown fires the moment the finger touches — no waiting for lift.
-    // This makes the button feel instant rather than requiring a deliberate press.
-    return GestureDetector(
-      onTapDown: (_) => onTap(),
-      behavior: HitTestBehavior.opaque,
+    return Listener(
+      // onPointerDown bypasses the gesture recognizer pipeline entirely —
+      // fires the very instant the touch registers on screen.
+      onPointerDown: (_) => _handleDown(),
       child: Container(
-        // Extra vertical padding increases the tap target without changing
-        // the visual pill size.
+        // Extra padding = larger tap target without changing visual size
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Container(
           width: 156,
@@ -99,18 +129,18 @@ class _StartStopPill extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(25),
             border: Border.all(
-              color: isRunning
-                  ? AppColors.tealPrimary.withOpacity(0.60)
-                  : AppColors.tealPrimary.withOpacity(0.45),
+              color: _localRunning
+                  ? AppColors.tealPrimary.withOpacity(0.70)
+                  : AppColors.tealPrimary.withOpacity(0.50),
               width: 1.5,
             ),
-            color: isRunning
-                ? AppColors.tealPrimary.withOpacity(0.08)
+            color: _localRunning
+                ? AppColors.tealPrimary.withOpacity(0.10)
                 : Colors.transparent,
           ),
           child: Center(
             child: Text(
-              isRunning ? 'STOP' : 'START',
+              _localRunning ? 'STOP' : 'START',
               style: AppTextStyles.pillLabel,
             ),
           ),
@@ -120,11 +150,14 @@ class _StartStopPill extends StatelessWidget {
   }
 }
 
+// ── Icon button (BACK / PAUSE / FIRE / SKIP) ──────────────────────────────
+
 class _IconButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
-  /// When true (e.g. while paused), the button glows teal to show active state.
+
+  /// When true the button glows teal — used to show PAUSE is active.
   final bool active;
 
   const _IconButton({
@@ -137,19 +170,26 @@ class _IconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
+
+    // Active state: vivid teal circle with solid border
+    // Enabled state: dim white circle
+    // Disabled state: very faint
     final iconColor = active ? AppColors.tealPrimary : Colors.white;
     final borderColor = active
-        ? AppColors.tealPrimary.withOpacity(0.65)
+        ? AppColors.tealPrimary               // full opacity when glowing
         : Colors.white.withOpacity(0.25);
     final bgColor = active
-        ? AppColors.tealPrimary.withOpacity(0.12)
+        ? AppColors.tealPrimary.withOpacity(0.28) // clearly visible tint
         : Colors.transparent;
+    final labelColor = active
+        ? AppColors.tealPrimary               // matches icon
+        : Colors.white.withOpacity(0.75);
 
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Opacity(
-        opacity: enabled ? (active ? 1.0 : 0.7) : 0.25,
+        opacity: enabled ? 1.0 : 0.25,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -159,18 +199,23 @@ class _IconButton extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: bgColor,
-                border: Border.all(color: borderColor),
+                border: Border.all(color: borderColor, width: active ? 1.5 : 1.0),
+                boxShadow: active
+                    ? [
+                        BoxShadow(
+                          color: AppColors.tealPrimary.withOpacity(0.35),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        )
+                      ]
+                    : null,
               ),
               child: Icon(icon, color: iconColor, size: 18),
             ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: AppTextStyles.fireButtonLabel.copyWith(
-                color: active
-                    ? AppColors.tealPrimary.withOpacity(0.85)
-                    : Colors.white.withOpacity(0.75),
-              ),
+              style: AppTextStyles.fireButtonLabel.copyWith(color: labelColor),
             ),
           ],
         ),
