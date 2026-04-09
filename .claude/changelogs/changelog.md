@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 ### Added
+- **Background execution — silent audio loop** — plays silence.m4a at volume 0 on loop while timer is running; keeps AVAudioSession active so iOS doesn't suspend the app on lock/background
+- **audio_session package** — properly configures AVAudioSession `.playback` + `.mixWithOthers` so the setting survives just_audio/flutter_tts session reinitialisation; handles interruption recovery (Spotify pause → re-activate session)
 - **About & Credits screen** (`/about`) — app description, legally-required moon photo attribution (Gregory H. Revera, CC BY-SA 3.0), audio credits, accessible from Settings → About & Credits
 - **AppDelegate.swift AVAudioSession** — configures `.playback` category with `.mixWithOthers` so chimes and TTS play on locked/silent screen
 - `/about` GoRouter route added to `app_router.dart`

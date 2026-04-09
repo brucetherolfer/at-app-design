@@ -234,6 +234,32 @@ See Session 5 entry above.
 
 ---
 
+---
+
+## Session 7 — Background execution: silent audio loop + audio_session
+
+### Problem
+App stopped the moment the screen locked or another app came to foreground. Spotify killed it entirely.
+
+### Root cause
+iOS suspends any app with no active audio session. `UIBackgroundModes: audio` only keeps an app alive if it's actually playing audio. We had the background mode and AVAudioSession configured correctly in AppDelegate, but `just_audio` and `flutter_tts` were reinitialising the session on first use — overwriting our `mixWithOthers` option and dropping it.
+
+### Fix 1 — Silent audio loop
+Generated a 2KB silent .m4a (`assets/audio/silence.m4a` via ffmpeg). `AudioService.startSilentLoop()` plays it at volume 0 on `LoopMode.one`. iOS sees an active audio session → keeps the app alive. Called on `start()`, kept alive through `pause()`, stopped only on `stop()`.
+
+### Fix 2 — audio_session package
+Added `audio_session: ^0.1.21`. This is the proper companion to `just_audio` — it configures the shared `AVAudioSession` in a way that persists even when `just_audio` / `flutter_tts` reinitialise internally. Configured: category `.playback`, options `.mixWithOthers`.
+
+`mixWithOthers` is the key flag: our audio session coexists with Spotify rather than competing with it. Both play simultaneously. Interruption handler re-activates our session and resumes the silent loop if Spotify temporarily knocked us off.
+
+### Result
+- App runs while screen is locked ✓
+- App runs while backgrounded ✓  
+- Spotify and AT app play simultaneously ✓
+- Prompts/chimes fire on top of music ✓
+
+---
+
 ## What's next
 
 See `build-list.md` for full tracking. Top priorities:

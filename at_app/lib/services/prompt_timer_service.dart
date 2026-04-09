@@ -42,17 +42,24 @@ class PromptTimerService {
     _isRunning = true;
     _isPaused = false;
 
+    // Silent loop keeps AVAudioSession active so iOS doesn't suspend the app
+    // when the screen locks or another app comes to the foreground.
+    await AudioService().startSilentLoop();
+
     final settings = await _settingsRepo.load();
     await _firePrompt(settings);
     _remaining = _intervalFor(settings);
     _scheduleCountdown(settings);
   }
 
-  /// Pause — suspends without resetting.
+  /// Pause — suspends prompts without resetting. Silent loop stays running
+  /// so the app remains alive and can be resumed.
   void pause() {
     if (!_isRunning || _isPaused) return;
     _isPaused = true;
     _timer?.cancel();
+    // Note: silent loop intentionally kept running during pause so iOS
+    // doesn't kill the app before the user resumes.
   }
 
   /// Resume after pause.
@@ -71,6 +78,7 @@ class PromptTimerService {
     _remaining = Duration.zero;
     _lastFiredPrompt = null;
     _countdownController.add(_remaining);
+    AudioService().stopSilentLoop();
   }
 
   /// Fire the next prompt immediately, then reschedule.
