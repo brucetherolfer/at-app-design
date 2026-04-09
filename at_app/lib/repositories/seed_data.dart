@@ -34,18 +34,25 @@ Library get mioLibrary => Library()
   ..sortOrder = 2
   ..createdAt = DateTime(2024);
 
-Library get fmsLibrary => Library()
-  ..uid = 'builtin_fms'
-  ..name = "Classic AT — FM's"
+Library get fmsDirectionsLibrary => Library()
+  ..uid = 'builtin_fms_directions'
+  ..name = "FM's Directions"
   ..isBuiltIn = true
   ..sortOrder = 3
+  ..createdAt = DateTime(2024);
+
+Library get fmsSequenceLibrary => Library()
+  ..uid = 'builtin_fms_sequence'
+  ..name = "FM's Sequence"
+  ..isBuiltIn = true
+  ..sortOrder = 4
   ..createdAt = DateTime(2024);
 
 Library get modifiedClassicLibrary => Library()
   ..uid = 'builtin_modified'
   ..name = 'Classic AT — Modified'
   ..isBuiltIn = true
-  ..sortOrder = 4
+  ..sortOrder = 5
   ..createdAt = DateTime(2024);
 
 Library get bodyscanFullLibrary => Library()
@@ -377,28 +384,50 @@ List<Prompt> get mioPrompts {
   }).toList();
 }
 
-// ── Classic AT — FM's Prompts (6) ─────────────────────────────────────────
-// Source: Classic AT - FM's Prompts spreadsheet. Original FM Alexander directions.
+// ── FM's Directions (1 prompt — full combined direction) ──────────────────
 
-List<Prompt> get fmsPrompts {
-  final texts = [
-    'Let the neck be free.',
-    'So the head can go forward and up.',
-    'The back can lengthen.',
-    'And widen.',
-    'And the knees can go forward and away.',
-    'Let the neck be free, so the head can go forward and up, the back can lengthen and widen, and the knees can go forward and away.',
-  ];
-  return texts.asMap().entries.map((e) {
-    return Prompt()
-      ..uid = _uuid.v4()
-      ..text = e.value
-      ..libraryUid = 'builtin_fms'
-      ..sortOrder = e.key
-      ..isBuiltIn = true
-      ..createdAt = DateTime(2024);
-  }).toList();
-}
+List<Prompt> get fmsDirectionsPrompts => [
+  Prompt()
+    ..uid = 'fms_dir_001'
+    ..text = "Let your neck be free, so your head can go forward and up, and your back lengthen and widen, and your knees can go forward and away."
+    ..libraryUid = 'builtin_fms_directions'
+    ..sortOrder = 0
+    ..isBuiltIn = true
+    ..createdAt = DateTime(2024),
+];
+
+// ── FM's Sequence (4 prompts — split for sequential delivery) ─────────────
+
+List<Prompt> get fmsSequencePrompts => [
+  Prompt()
+    ..uid = 'fms_seq_001'
+    ..text = "Let your neck be free."
+    ..libraryUid = 'builtin_fms_sequence'
+    ..sortOrder = 0
+    ..isBuiltIn = true
+    ..createdAt = DateTime(2024),
+  Prompt()
+    ..uid = 'fms_seq_002'
+    ..text = "So your head can go forward and up."
+    ..libraryUid = 'builtin_fms_sequence'
+    ..sortOrder = 1
+    ..isBuiltIn = true
+    ..createdAt = DateTime(2024),
+  Prompt()
+    ..uid = 'fms_seq_003'
+    ..text = "And your back lengthen and widen."
+    ..libraryUid = 'builtin_fms_sequence'
+    ..sortOrder = 2
+    ..isBuiltIn = true
+    ..createdAt = DateTime(2024),
+  Prompt()
+    ..uid = 'fms_seq_004'
+    ..text = "And your knees can go forward and away."
+    ..libraryUid = 'builtin_fms_sequence'
+    ..sortOrder = 3
+    ..isBuiltIn = true
+    ..createdAt = DateTime(2024),
+];
 
 // ── Classic AT — Modified Prompts (13) ────────────────────────────────────
 // Source: Classic AT - Modified Prompts spreadsheet. Contemporary adaptations.

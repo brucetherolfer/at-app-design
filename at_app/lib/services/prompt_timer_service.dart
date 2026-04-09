@@ -20,6 +20,7 @@ class PromptTimerService {
   Duration _remaining = Duration.zero;
   bool _isRunning = false;
   bool _isPaused = false;
+  Prompt? _lastFiredPrompt;
 
   final _promptFiredController = StreamController<String>.broadcast();
 
@@ -34,13 +35,15 @@ class PromptTimerService {
   final _blackoutRepo = BlackoutRepository();
   final _settingsRepo = SettingsRepository();
 
-  /// Start the timer from settings.
+  /// Start the timer from settings — fires a prompt immediately, then
+  /// begins the countdown to the next one.
   Future<void> start() async {
     if (_isRunning && !_isPaused) return;
     _isRunning = true;
     _isPaused = false;
 
     final settings = await _settingsRepo.load();
+    await _firePrompt(settings);
     _remaining = _intervalFor(settings);
     _scheduleCountdown(settings);
   }
@@ -66,6 +69,7 @@ class PromptTimerService {
     _isRunning = false;
     _isPaused = false;
     _remaining = Duration.zero;
+    _lastFiredPrompt = null;
     _countdownController.add(_remaining);
   }
 
@@ -78,10 +82,13 @@ class PromptTimerService {
     _scheduleCountdown(settings);
   }
 
-  /// Skip back — reset countdown to full interval without firing.
+  /// Skip back — replay the last fired prompt (if any) and reset the countdown.
   Future<void> skipBack() async {
     _timer?.cancel();
     final settings = await _settingsRepo.load();
+    if (_lastFiredPrompt != null) {
+      await _replayPrompt(_lastFiredPrompt!, settings);
+    }
     _remaining = _intervalFor(settings);
     _scheduleCountdown(settings);
   }
@@ -130,7 +137,15 @@ class PromptTimerService {
   Future<void> _firePrompt(AppSettings settings) async {
     final prompt = await _pickPrompt(settings);
     if (prompt == null) return;
+    _lastFiredPrompt = prompt;
+    await _deliverPrompt(prompt, settings);
+  }
 
+  Future<void> _replayPrompt(Prompt prompt, AppSettings settings) async {
+    await _deliverPrompt(prompt, settings);
+  }
+
+  Future<void> _deliverPrompt(Prompt prompt, AppSettings settings) async {
     _promptFiredController.add(prompt.text);
 
     // Notification
@@ -176,7 +191,10 @@ class PromptTimerService {
 
   Duration _intervalFor(AppSettings settings) {
     if (settings.intervalType == IntervalType.fixed) {
-      return Duration(minutes: settings.fixedIntervalMinutes);
+      final secs = settings.fixedIntervalSeconds > 0
+          ? settings.fixedIntervalSeconds
+          : 1200; // fallback if DB has stale 0 from old schema
+      return Duration(seconds: secs);
     } else {
       final min = settings.minIntervalMinutes;
       final max = settings.maxIntervalMinutes;

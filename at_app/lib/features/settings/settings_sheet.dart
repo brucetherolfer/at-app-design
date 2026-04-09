@@ -25,7 +25,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   // so the sheet rebuilds without waiting for Isar → provider → modal propagation
   late DeliveryMode _deliveryMode;
   late IntervalType _intervalType;
-  late int _fixedIntervalMinutes;
+  late int _fixedIntervalSeconds;
   late int _minIntervalMinutes;
   late int _maxIntervalMinutes;
   late PromptOrder _promptOrder;
@@ -41,7 +41,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
     final s = ref.read(settingsProvider);
     _deliveryMode = s.deliveryMode;
     _intervalType = s.intervalType;
-    _fixedIntervalMinutes = s.fixedIntervalMinutes;
+    _fixedIntervalSeconds = s.fixedIntervalSeconds > 0 ? s.fixedIntervalSeconds : 1200;
     _minIntervalMinutes = s.minIntervalMinutes;
     _maxIntervalMinutes = s.maxIntervalMinutes;
     _promptOrder = s.promptOrder;
@@ -207,14 +207,24 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                   if (_intervalType == IntervalType.fixed)
                     ATRow(
                       label: 'Every',
-                      trailing: _Stepper(
-                        value: _fixedIntervalMinutes,
-                        unit: 'min',
-                        min: 1,
-                        max: 120,
-                        onChanged: (v) {
-                          setState(() => _fixedIntervalMinutes = v);
-                          notifier.setFixedInterval(v);
+                      trailing: _IntervalStepper(
+                        totalSeconds: _fixedIntervalSeconds,
+                        onChanged: (secs) {
+                          setState(() => _fixedIntervalSeconds = secs);
+                          notifier.setFixedInterval(secs);
+                        },
+                        onTapCenter: () async {
+                          final picked =
+                              await showDialog<int>(
+                            context: context,
+                            builder: (_) => _DurationPickerDialog(
+                              initialSeconds: _fixedIntervalSeconds,
+                            ),
+                          );
+                          if (picked != null && mounted) {
+                            setState(() => _fixedIntervalSeconds = picked);
+                            notifier.setFixedInterval(picked);
+                          }
                         },
                       ),
                     )
@@ -312,6 +322,19 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                     sublabel: _chimeLabel(_selectedChime),
                     trailing: const Icon(Icons.chevron_right,
                         color: Color(0x47F0F0F0), size: 18),
+                    onTap: () async {
+                      final picked = await showDialog<String>(
+                        context: context,
+                        builder: (_) =>
+                            _ChimePickerDialog(current: _selectedChime),
+                      );
+                      if (picked != null && mounted) {
+                        setState(() => _selectedChime = picked);
+                        ref
+                            .read(settingsNotifierProvider.notifier)
+                            .setChime(picked);
+                      }
+                    },
                   ),
                 ]),
 
@@ -354,6 +377,17 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                     trailing: const Icon(Icons.chevron_right,
                         color: Color(0x47F0F0F0), size: 18),
                     onTap: () => context.push('/library'),
+                  ),
+                ]),
+
+                // ── About ─────────────────────────────────────
+                const ATSectionLabel(label: 'About'),
+                ATCard(children: [
+                  ATRow(
+                    label: 'About & Credits',
+                    trailing: const Icon(Icons.chevron_right,
+                        color: Color(0x47F0F0F0), size: 18),
+                    onTap: () => context.push('/about'),
                   ),
                 ]),
               ],
@@ -455,6 +489,238 @@ class _Chip extends StatelessWidget {
                 ? const Color(0xFF48CAE4).withOpacity(0.85)
                 : const Color(0xFFFFFFFF).withOpacity(0.35),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Interval stepper (seconds, tap-center to open H:M:S picker) ──────────
+
+String _formatIntervalSeconds(int secs) {
+  if (secs <= 0) return '—';
+  final h = secs ~/ 3600;
+  final m = (secs % 3600) ~/ 60;
+  final s = secs % 60;
+  if (h > 0 && m == 0 && s == 0) return '${h}hr';
+  if (h > 0 && s == 0) return '${h}hr ${m}min';
+  if (h > 0) return '${h}hr ${m}min ${s}s';
+  if (m > 0 && s == 0) return '${m}min';
+  if (m > 0) return '${m}min ${s}s';
+  return '${s}sec';
+}
+
+class _IntervalStepper extends StatelessWidget {
+  final int totalSeconds;
+  final ValueChanged<int> onChanged;
+  final VoidCallback onTapCenter;
+
+  const _IntervalStepper({
+    required this.totalSeconds,
+    required this.onChanged,
+    required this.onTapCenter,
+  });
+
+  static const int _step = 60; // +/- 1 min per tap
+  static const int _min = 5;
+  static const int _max = 43200; // 12 hours
+
+  @override
+  Widget build(BuildContext context) {
+    final canDecrement = totalSeconds - _step >= _min;
+    final canIncrement = totalSeconds + _step <= _max;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white.withOpacity(0.10)),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _StepBtn(
+            icon: '−',
+            onTap: canDecrement
+                ? () => onChanged((totalSeconds - _step).clamp(_min, _max))
+                : null,
+          ),
+          Container(width: 1, height: 30, color: Colors.white.withOpacity(0.07)),
+          GestureDetector(
+            onTap: onTapCenter,
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(
+              width: 72,
+              height: 30,
+              child: Center(
+                child: Text(
+                  _formatIntervalSeconds(totalSeconds),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w300,
+                    color: const Color(0xFF48CAE4).withOpacity(0.70),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Container(width: 1, height: 30, color: Colors.white.withOpacity(0.07)),
+          _StepBtn(
+            icon: '+',
+            onTap: canIncrement
+                ? () => onChanged((totalSeconds + _step).clamp(_min, _max))
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Duration picker dialog (H:M:S) ────────────────────────────────────────
+
+class _DurationPickerDialog extends StatefulWidget {
+  final int initialSeconds;
+  const _DurationPickerDialog({required this.initialSeconds});
+
+  @override
+  State<_DurationPickerDialog> createState() => _DurationPickerDialogState();
+}
+
+class _DurationPickerDialogState extends State<_DurationPickerDialog> {
+  late int _hours;
+  late int _minutes;
+  late int _seconds;
+
+  @override
+  void initState() {
+    super.initState();
+    final t = widget.initialSeconds;
+    _hours = t ~/ 3600;
+    _minutes = (t % 3600) ~/ 60;
+    _seconds = t % 60;
+  }
+
+  int get _total => _hours * 3600 + _minutes * 60 + _seconds;
+
+  @override
+  Widget build(BuildContext context) {
+    final teal = const Color(0xFF48CAE4);
+    final bodyStyle = TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 14);
+
+    return AlertDialog(
+      backgroundColor: const Color(0xFF0C1D2E),
+      title: const Text('Set Interval',
+          style: TextStyle(color: Colors.white70, fontSize: 16)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _UnitRow(label: 'hr', value: _hours, min: 0, max: 23,
+              onChanged: (v) => setState(() => _hours = v)),
+          const SizedBox(height: 8),
+          _UnitRow(label: 'min', value: _minutes, min: 0, max: 59,
+              onChanged: (v) => setState(() => _minutes = v)),
+          const SizedBox(height: 8),
+          _UnitRow(label: 'sec', value: _seconds, min: 0, max: 59,
+              onChanged: (v) => setState(() => _seconds = v)),
+          if (_total < 5)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text('Minimum interval is 5 seconds',
+                  style: TextStyle(
+                      color: Colors.redAccent.withOpacity(0.75), fontSize: 12)),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel',
+              style: TextStyle(color: teal.withOpacity(0.55))),
+        ),
+        TextButton(
+          onPressed: _total >= 5 ? () => Navigator.pop(context, _total) : null,
+          child: Text('Set',
+              style: TextStyle(
+                  color: _total >= 5 ? teal : teal.withOpacity(0.25))),
+        ),
+      ],
+    );
+  }
+}
+
+class _UnitRow extends StatelessWidget {
+  final String label;
+  final int value;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  const _UnitRow({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          width: 32,
+          child: Text(label,
+              style: TextStyle(
+                  color: Colors.white.withOpacity(0.40), fontSize: 13)),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _DialogStepBtn(
+              icon: '−',
+              onTap: value > min ? () => onChanged(value - 1) : null,
+            ),
+            SizedBox(
+              width: 44,
+              child: Center(
+                child: Text(
+                  value.toString().padLeft(2, '0'),
+                  style: const TextStyle(
+                      color: Color(0xFF48CAE4),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w200),
+                ),
+              ),
+            ),
+            _DialogStepBtn(
+              icon: '+',
+              onTap: value < max ? () => onChanged(value + 1) : null,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _DialogStepBtn extends StatelessWidget {
+  final String icon;
+  final VoidCallback? onTap;
+  const _DialogStepBtn({required this.icon, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 36,
+        height: 36,
+        child: Center(
+          child: Text(icon,
+              style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white.withOpacity(onTap != null ? 0.50 : 0.15))),
         ),
       ),
     );
@@ -679,6 +945,62 @@ class _AudioModePickerDialog extends StatelessWidget {
             style: TextStyle(
                 color: const Color(0xFF48CAE4).withOpacity(0.6)),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Chime picker dialog ───────────────────────────────────────────────────
+
+class _ChimePickerDialog extends StatelessWidget {
+  final String current;
+  const _ChimePickerDialog({required this.current});
+
+  static const _keys = ['bell', 'bowl', 'tone'];
+  static const _labels = ['Soft Bell', 'Tibetan Bowl', 'Simple Tone'];
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF0C1D2E),
+      title: const Text('Chime',
+          style: TextStyle(color: Colors.white70, fontSize: 16)),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: _keys.length,
+          itemBuilder: (_, i) {
+            final selected = _keys[i] == current;
+            return ListTile(
+              dense: true,
+              title: Text(
+                _labels[i],
+                style: TextStyle(
+                  color: selected
+                      ? const Color(0xFF48CAE4)
+                      : Colors.white.withOpacity(0.75),
+                  fontSize: 14,
+                  fontWeight: selected ? FontWeight.w400 : FontWeight.w300,
+                ),
+              ),
+              trailing: selected
+                  ? const Icon(Icons.check,
+                      color: Color(0xFF48CAE4), size: 16)
+                  : null,
+              onTap: () => Navigator.pop(context, _keys[i]),
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel',
+              style: TextStyle(
+                  color: const Color(0xFF48CAE4).withOpacity(0.6))),
         ),
       ],
     );

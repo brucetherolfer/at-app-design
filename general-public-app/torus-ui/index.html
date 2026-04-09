@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AT App — Torus UI</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#000; overflow:hidden; }
+    canvas { display:block; }
+  </style>
+</head>
+<body>
+
+<!-- Three.js r128 — has full legacy post-processing support -->
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+<script>
+// ── Renderer ──────────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.toneMappingExposure = 1.5;
+document.body.appendChild(renderer.domElement);
+
+// ── Scene / Camera ────────────────────────────────────────────
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 1.8, 5.2);
+camera.lookAt(0, 0, 0);
+
+// ── Bloom ─────────────────────────────────────────────────────
+const composer = new THREE.EffectComposer(renderer);
+composer.addPass(new THREE.RenderPass(scene, camera));
+const bloom = new THREE.UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.8,   // strength — less wash-out
+  0.65,  // radius
+  0.0    // threshold
+);
+composer.addPass(bloom);
+
+// ── Geometry helpers ──────────────────────────────────────────
+function makeTorus(R, tube, color, opacity) {
+  return new THREE.Mesh(
+    new THREE.TorusGeometry(R, tube, 128, 512),
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: opacity < 1,
+      opacity,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    })
+  );
+}
+
+function makeArc(R, tube, arc, color, opacity) {
+  return new THREE.Mesh(
+    new THREE.TorusGeometry(R, tube, 64, 512, arc),
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: opacity < 1,
+      opacity,
+      depthWrite: false,
+    })
+  );
+}
+
+// ── Build torus group ─────────────────────────────────────────
+// Multiple overlapping tori at slightly different tilt angles
+// creates the organic wound-light-trail look of the original
+const group = new THREE.Group();
+
+// Viewing tilt — rotate the whole group
+group.rotation.x = THREE.MathUtils.degToRad(22);
+
+// --- Blue / indigo wound trails ---
+// Each mesh is tilted slightly differently on Y or Z → they cross
+const trails = [
+  // [R, tube, color, opacity, rotY, rotZ]
+  // Core — saturated indigo, not white
+  [1.60, 0.009, 0x6655dd, 0.85,  0.000,  0.000],
+  // Pairs — tight spread, deep blue/indigo
+  [1.60, 0.008, 0x5f50d8, 0.78,  0.018,  0.000],
+  [1.60, 0.008, 0x5f50d8, 0.78, -0.018,  0.000],
+  [1.60, 0.007, 0x5545cc, 0.68,  0.036,  0.000],
+  [1.60, 0.007, 0x5545cc, 0.68, -0.036,  0.000],
+  [1.60, 0.007, 0x4838bb, 0.56,  0.056,  0.000],
+  [1.60, 0.007, 0x4838bb, 0.56, -0.056,  0.000],
+  [1.60, 0.006, 0x3c2caa, 0.44,  0.078,  0.000],
+  [1.60, 0.006, 0x3c2caa, 0.44, -0.078,  0.000],
+  [1.60, 0.005, 0x302099, 0.32,  0.102,  0.000],
+  [1.60, 0.005, 0x302099, 0.32, -0.102,  0.000],
+  [1.60, 0.004, 0x221580, 0.20,  0.128,  0.000],
+  [1.60, 0.004, 0x221580, 0.20, -0.128,  0.000],
+];
+
+const trailMeshes = trails.map(([R, tube, color, opacity, ry, rz]) => {
+  const m = makeTorus(R, tube, color, opacity);
+  m.rotation.y = ry;
+  m.rotation.z = rz;
+  group.add(m);
+  return m;
+});
+
+// --- Gold arc ---
+// Positioned at top of ring, layered with glow falloff
+const goldGroup = new THREE.Group();
+
+// Deep warm outer glow — narrow arc
+const g1 = makeArc(1.60, 0.028, Math.PI * 0.38, 0x882200, 0.65);
+goldGroup.add(g1);
+// Mid amber
+const g2 = makeArc(1.60, 0.016, Math.PI * 0.32, 0xdd5500, 0.80);
+goldGroup.add(g2);
+// Bright amber core
+const g3 = makeArc(1.60, 0.009, Math.PI * 0.26, 0xff9900, 1.0);
+goldGroup.add(g3);
+// White-hot highlight — small
+const g4 = makeArc(1.60, 0.005, Math.PI * 0.12, 0xffdd88, 0.9);
+g4.rotation.z = Math.PI * 0.13;
+goldGroup.add(g4);
+
+// Tilt gold arcs slightly for 3D integration
+goldGroup.rotation.y = 0.03;
+group.add(goldGroup);
+
+scene.add(group);
+
+// ── Animation ─────────────────────────────────────────────────
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  t += 0.005;
+
+  // Ring breathes
+  const b = 1 + Math.sin(t * 1.0) * 0.015;
+  group.scale.setScalar(b);
+
+  // Each trail rotates at very slightly different speeds → winding look
+  trailMeshes.forEach((m, i) => {
+    const speed = 0.20 + i * 0.002;
+    m.rotation.z = t * speed * (i % 2 === 0 ? 1 : -1) * 0.5;
+  });
+
+  // Gold arc drifts around the ring
+  goldGroup.rotation.z = t * 0.22 + Math.PI * 0.5;
+
+  // Bloom breathes slightly
+  bloom.strength = 1.4 + Math.sin(t * 0.8) * 0.15;
+
+  composer.render();
+}
+animate();
+
+// ── Resize ────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

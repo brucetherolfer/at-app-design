@@ -15,11 +15,11 @@ final settingsProvider = Provider<AppSettings>((ref) {
       AppSettings()
         ..deliveryMode = DeliveryMode.free
         ..intervalType = IntervalType.fixed
-        ..fixedIntervalMinutes = 20
+        ..fixedIntervalSeconds = 420
         ..minIntervalMinutes = 10
         ..maxIntervalMinutes = 30
         ..promptOrder = PromptOrder.random
-        ..primaryLibraryUid = 'builtin_all'
+        ..primaryLibraryUid = 'builtin_fms_directions'
         ..alternateLibraryUid = null
         ..lastFiredFrom = LibrarySlot.alternate
         ..lastFiredSequentialIndex = 0
@@ -55,8 +55,8 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   Future<void> setIntervalType(IntervalType type) =>
       _save((s) => s..intervalType = type);
 
-  Future<void> setFixedInterval(int minutes) =>
-      _save((s) => s..fixedIntervalMinutes = minutes);
+  Future<void> setFixedInterval(int seconds) =>
+      _save((s) => s..fixedIntervalSeconds = seconds);
 
   Future<void> setRandomInterval(int min, int max) =>
       _save((s) => s..minIntervalMinutes = min..maxIntervalMinutes = max);

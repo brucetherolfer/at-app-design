@@ -4,6 +4,7 @@ import '../features/main/main_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/sequence/sequence_screen.dart';
 import '../features/blackout/blackout_screen.dart';
+import '../features/about/about_screen.dart';
 import '../models/library.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -30,6 +31,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/blackout',
         builder: (context, state) => const BlackoutScreen(),
+      ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutScreen(),
       ),
     ],
   );

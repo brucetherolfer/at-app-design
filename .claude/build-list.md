@@ -7,11 +7,11 @@ Things remaining before App Store submission.
 ## Must-have before submission
 
 - [ ] **Bug fixing** — app first launched on simulator, bugs being identified and fixed
-- [ ] **About / Credits screen** — Required for moon photo attribution (Gregory H. Revera, CC BY-SA 3.0). One screen, accessible from Settings.
-- [ ] **AppDelegate.swift** — Configure AVAudioSession for locked-screen audio playback (`.playback` category).
+- [x] **About / Credits screen** — Moon attribution + audio credits. Accessible from Settings → About & Credits.
+- [x] **AppDelegate.swift** — AVAudioSession `.playback` + `.mixWithOthers`. Chimes/TTS play on locked/silent screen.
 - [ ] **Background execution validation** — Test on physical iPhone. Confirm prompts fire when app is backgrounded 30+ min, screen locked, audio plays on locked screen.
 - [ ] **Primary Control sequence** — `promptUids` is empty. Bruce to provide the prompt text/order.
-- [ ] **Blackout window seed data** — Confirm Bruce's massage schedule (Mon/Tue/Thu/Fri times) and pre-populate on first launch.
+- [ ] **Blackout windows** — No pre-seeded data. Bruce will add his own windows to verify the feature works correctly from a fresh-user perspective.
 - [ ] **App name — final decision** — Working name "Alexander Technique App". Confirm before App Store submission (check trademark).
 - [ ] **App icon** — Replace default Flutter icon with AT-flavored icon.
 - [ ] **iOS flavor schemes** — Xcode schemes for `at` and `general` flavors (needs Debug-at/Release-at/Profile-at build configs added to Xcode pbxproj).

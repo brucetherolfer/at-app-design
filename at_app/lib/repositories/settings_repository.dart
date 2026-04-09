@@ -27,11 +27,11 @@ class SettingsRepository {
     return AppSettings()
       ..deliveryMode = DeliveryMode.free
       ..intervalType = IntervalType.fixed
-      ..fixedIntervalMinutes = 20
+      ..fixedIntervalSeconds = 420
       ..minIntervalMinutes = 10
       ..maxIntervalMinutes = 30
       ..promptOrder = PromptOrder.random
-      ..primaryLibraryUid = 'builtin_all'
+      ..primaryLibraryUid = 'builtin_fms_directions'
       ..alternateLibraryUid = null
       ..lastFiredFrom = LibrarySlot.alternate
       ..lastFiredSequentialIndex = 0

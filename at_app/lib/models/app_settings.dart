@@ -21,7 +21,7 @@ class AppSettings {
   @enumerated
   late IntervalType intervalType;
 
-  late int fixedIntervalMinutes;
+  late int fixedIntervalSeconds;
 
   late int minIntervalMinutes;
 

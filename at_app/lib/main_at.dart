@@ -39,7 +39,8 @@ Future<void> _seedIfNeeded() async {
   await libRepo.save(allPromptsLibrary);
   await libRepo.save(brucesLibrary);
   await libRepo.save(mioLibrary);
-  await libRepo.save(fmsLibrary);
+  await libRepo.save(fmsDirectionsLibrary);
+  await libRepo.save(fmsSequenceLibrary);
   await libRepo.save(modifiedClassicLibrary);
   await libRepo.save(bodyscanFullLibrary);
   await libRepo.save(bodyscanJointsAnatLibrary);
@@ -50,7 +51,8 @@ Future<void> _seedIfNeeded() async {
   await promptRepo.saveAll(allPrompts);
   await promptRepo.saveAll(brucesPrompts);
   await promptRepo.saveAll(mioPrompts);
-  await promptRepo.saveAll(fmsPrompts);
+  await promptRepo.saveAll(fmsDirectionsPrompts);
+  await promptRepo.saveAll(fmsSequencePrompts);
   await promptRepo.saveAll(modifiedClassicPrompts);
   await promptRepo.saveAll(bodyscanFullPrompts);
   await promptRepo.saveAll(bodyscanJointsAnatPrompts);

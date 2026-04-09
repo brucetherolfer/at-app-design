@@ -39,9 +39,9 @@ const AppSettingsSchema = CollectionSchema(
       type: IsarType.byte,
       enumMap: _AppSettingsdeliveryModeEnumValueMap,
     ),
-    r'fixedIntervalMinutes': PropertySchema(
+    r'fixedIntervalSeconds': PropertySchema(
       id: 4,
-      name: r'fixedIntervalMinutes',
+      name: r'fixedIntervalSeconds',
       type: IsarType.long,
     ),
     r'intervalType': PropertySchema(
@@ -178,7 +178,7 @@ void _appSettingsSerialize(
   writer.writeString(offsets[1], object.alternateLibraryUid);
   writer.writeByte(offsets[2], object.audioMode.index);
   writer.writeByte(offsets[3], object.deliveryMode.index);
-  writer.writeLong(offsets[4], object.fixedIntervalMinutes);
+  writer.writeLong(offsets[4], object.fixedIntervalSeconds);
   writer.writeByte(offsets[5], object.intervalType.index);
   writer.writeBool(offsets[6], object.isPaused);
   writer.writeBool(offsets[7], object.isRunning);
@@ -212,7 +212,7 @@ AppSettings _appSettingsDeserialize(
   object.deliveryMode =
       _AppSettingsdeliveryModeValueEnumMap[reader.readByteOrNull(offsets[3])] ??
           DeliveryMode.free;
-  object.fixedIntervalMinutes = reader.readLong(offsets[4]);
+  object.fixedIntervalSeconds = reader.readLong(offsets[4]);
   object.id = id;
   object.intervalType =
       _AppSettingsintervalTypeValueEnumMap[reader.readByteOrNull(offsets[5])] ??
@@ -886,45 +886,45 @@ extension AppSettingsQueryFilter
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
-      fixedIntervalMinutesEqualTo(int value) {
+      fixedIntervalSecondsEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fixedIntervalMinutes',
+        property: r'fixedIntervalSeconds',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
-      fixedIntervalMinutesGreaterThan(
+      fixedIntervalSecondsGreaterThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'fixedIntervalMinutes',
+        property: r'fixedIntervalSeconds',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
-      fixedIntervalMinutesLessThan(
+      fixedIntervalSecondsLessThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'fixedIntervalMinutes',
+        property: r'fixedIntervalSeconds',
         value: value,
       ));
     });
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
-      fixedIntervalMinutesBetween(
+      fixedIntervalSecondsBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -932,7 +932,7 @@ extension AppSettingsQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'fixedIntervalMinutes',
+        property: r'fixedIntervalSeconds',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -2121,16 +2121,16 @@ extension AppSettingsQuerySortBy
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
-      sortByFixedIntervalMinutes() {
+      sortByFixedIntervalSeconds() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fixedIntervalMinutes', Sort.asc);
+      return query.addSortBy(r'fixedIntervalSeconds', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
-      sortByFixedIntervalMinutesDesc() {
+      sortByFixedIntervalSecondsDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fixedIntervalMinutes', Sort.desc);
+      return query.addSortBy(r'fixedIntervalSeconds', Sort.desc);
     });
   }
 
@@ -2399,16 +2399,16 @@ extension AppSettingsQuerySortThenBy
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
-      thenByFixedIntervalMinutes() {
+      thenByFixedIntervalSeconds() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fixedIntervalMinutes', Sort.asc);
+      return query.addSortBy(r'fixedIntervalSeconds', Sort.asc);
     });
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
-      thenByFixedIntervalMinutesDesc() {
+      thenByFixedIntervalSecondsDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fixedIntervalMinutes', Sort.desc);
+      return query.addSortBy(r'fixedIntervalSeconds', Sort.desc);
     });
   }
 
@@ -2664,9 +2664,9 @@ extension AppSettingsQueryWhereDistinct
   }
 
   QueryBuilder<AppSettings, AppSettings, QDistinct>
-      distinctByFixedIntervalMinutes() {
+      distinctByFixedIntervalSeconds() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'fixedIntervalMinutes');
+      return query.addDistinctBy(r'fixedIntervalSeconds');
     });
   }
 
@@ -2814,9 +2814,9 @@ extension AppSettingsQueryProperty
   }
 
   QueryBuilder<AppSettings, int, QQueryOperations>
-      fixedIntervalMinutesProperty() {
+      fixedIntervalSecondsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'fixedIntervalMinutes');
+      return query.addPropertyName(r'fixedIntervalSeconds');
     });
   }
 

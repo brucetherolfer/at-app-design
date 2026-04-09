@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+### Added
+- **About & Credits screen** (`/about`) — app description, legally-required moon photo attribution (Gregory H. Revera, CC BY-SA 3.0), audio credits, accessible from Settings → About & Credits
+- **AppDelegate.swift AVAudioSession** — configures `.playback` category with `.mixWithOthers` so chimes and TTS play on locked/silent screen
+- `/about` GoRouter route added to `app_router.dart`
+- "About" section in Settings sheet with "About & Credits" row
+- **FM's Directions library** — 1 prompt, full combined FM Alexander direction (replaces "Classic AT — FM's")
+- **FM's Sequence library** — 4 prompts split for sequential delivery (deterministic UIDs `fms_seq_001–004`)
+- **Duration picker for fixed interval** — tap center of interval stepper to open H:M:S picker; +/- still steps by 1 min; label auto-formats ("7min", "1hr 30min", "45sec"); minimum 5 seconds
+- **Chime picker** — Chime row in Settings now opens a picker dialog (Soft Bell / Tibetan Bowl / Simple Tone)
+
+### Changed
+- **Fixed interval stored in seconds** — `fixedIntervalMinutes` renamed to `fixedIntervalSeconds` in `AppSettings` (Isar schema regenerated); default 420s (7 min)
+- **First-run defaults** — FM's Directions library + 7-minute interval (was All Prompts + 20 min)
+- **Start fires prompt immediately** — first prompt fires on tap of Start, countdown then begins for the next
+- Removed "Classic AT — FM's" library (replaced by FM's Directions)
+
 ### Fixed
+- **Skip back replays last prompt** — BACK button now re-fires the last played prompt (notification + audio) instead of just resetting the countdown. If no prompt has fired yet in the session, resets countdown only. `_lastFiredPrompt` cleared on Stop.
+- **Chime button non-functional** — row had chevron but no `onTap`; now opens picker
 - **Settings sheet live-update** — converted `SettingsSheet` to `ConsumerStatefulWidget` with local shadow state; toggles and steppers now update instantly without waiting for Isar → Riverpod → modal propagation
 - **Back button on Library Detail** — `LibraryDetailScreen` was pushed via `Navigator.push` (breaking `context.pop()`); now pushed via `context.push('/library/detail', extra: library)` through GoRouter so back button works correctly
 - **Library row in settings** — was incorrectly navigating to Library Manager; now opens an `_LibraryPickerDialog` to select the active prompt library

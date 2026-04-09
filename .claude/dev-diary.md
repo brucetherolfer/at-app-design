@@ -182,6 +182,58 @@ Considered using GoRouter route navigation (`context.push('/library/pick')`) fro
 
 ---
 
+---
+
+## Session 5 — AppDelegate AVAudioSession + About screen
+
+### AppDelegate.swift — locked-screen audio
+Added `AVAudioSession.setCategory(.playback, mode: .default, options: [.mixWithOthers])` in `didFinishLaunchingWithOptions`. `.playback` is the iOS category that allows audio to continue when the screen locks or the silent switch is on. `.mixWithOthers` prevents the app from ducking or stopping other audio (ringtones, music) — appropriate for a notification-style app. Without this, just_audio and flutter_tts output would be silenced by the lock screen.
+
+### About & Credits screen
+Created `lib/features/about/about_screen.dart` using `InnerScreenScaffold`. Contains:
+- App name + one-line description
+- Moon photo credit: Gregory H. Revera, Wikimedia Commons, CC BY-SA 3.0 (legally required — this is a copyleft license)
+- Audio credits for all three chimes (Pixabay × 2, Mixkit × 1)
+- "Built for Bruce" line
+
+Added `/about` route to `app_router.dart` and "About & Credits" row in the settings sheet under a new "About" section label.
+
+---
+
+## Session 6 — Skip back replay, interval seconds, library changes, chime fix, fire on start
+
+### Skip back replays last prompt
+Changed `PromptTimerService.skipBack()` from "reset countdown only" to "replay last fired prompt + reset countdown." Added `Prompt? _lastFiredPrompt` field — stored on every `_firePrompt` call. Extracted shared delivery logic into `_deliverPrompt()` so both `_firePrompt` and `_replayPrompt` use the same path (notification + audio + stream). `stop()` clears `_lastFiredPrompt` so stale prompts don't replay across sessions.
+
+### Fixed interval stored in seconds (was minutes)
+Renamed `fixedIntervalMinutes` → `fixedIntervalSeconds` in `AppSettings`. Regenerated Isar `.g.dart`. Default changed from 20 min (1200s) to 7 min (420s). Timer service now uses `Duration(seconds: ...)` with a 0-fallback for any device with stale DB schema.
+
+Settings sheet: replaced `_Stepper` for the fixed interval with `_IntervalStepper` — +/- steps by 1 minute (60s), center label auto-formats ("7min", "1hr 30min", "45sec"), tap center opens `_DurationPickerDialog` with H:M:S controls. Minimum interval enforced at 5 seconds.
+
+### Prompt library changes
+- Removed "Classic AT — FM's" (6 individual direction prompts)
+- Added "FM's Directions" (uid: `builtin_fms_directions`) — 1 prompt, full combined direction: *"Let your neck be free, so your head can go forward and up, and your back lengthen and widen, and your knees can go forward and away."*
+- Added "FM's Sequence" (uid: `builtin_fms_sequence`) — 4 prompts with deterministic UIDs (`fms_seq_001–004`) for sequential delivery:
+  1. Let your neck be free.
+  2. So your head can go forward and up.
+  3. And your back lengthen and widen.
+  4. And your knees can go forward and away.
+- "Classic AT — Modified" kept unchanged
+
+### First-run defaults changed
+New user default: FM's Directions library, 7-minute fixed interval. Settings persist across sessions after first launch — seed guard (`if (libs.isNotEmpty) return`) ensures defaults only apply on fresh install.
+
+### Fire prompt immediately on Start
+`PromptTimerService.start()` now calls `_firePrompt()` before starting the countdown. First prompt fires the moment the user taps Start — no waiting for the first interval to expire.
+
+### Chime picker fixed
+The Chime row in Settings had a chevron but no `onTap` — tapping did nothing. Added `_ChimePickerDialog` (Soft Bell / Tibetan Bowl / Simple Tone) wired to the row. Picker updates local shadow state + persists via `setChime()`.
+
+### About & Credits screen + AppDelegate AVAudioSession (also this session)
+See Session 5 entry above.
+
+---
+
 ## What's next
 
 See `build-list.md` for full tracking. Top priorities:
