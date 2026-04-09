@@ -65,69 +65,58 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       body: ATBackground(
         nightMode: isNight,
         child: SafeArea(
-          child: Stack(
+          child: Column(
             children: [
-              // App name
-              Positioned(
-                top: 16,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Text(
-                    AppFlavor.appDisplayName.toUpperCase(),
-                    style: isNight
-                        ? AppTextStyles.appNameNight
-                        : AppTextStyles.appNameDay,
-                  ),
-                ),
-              ),
-
-              // Settings gear
-              Positioned(
-                top: 16,
-                right: 28,
-                child: GestureDetector(
-                  onTap: () {
-                    final container = ProviderScope.containerOf(context);
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => UncontrolledProviderScope(
-                        container: container,
-                        child: const SettingsSheet(),
+              // ── Top bar: app name + settings gear ───────────────────────
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Text(
+                      AppFlavor.appDisplayName.toUpperCase(),
+                      style: isNight
+                          ? AppTextStyles.appNameNight
+                          : AppTextStyles.appNameDay,
+                    ),
+                    Positioned(
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          final container =
+                              ProviderScope.containerOf(context);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => UncontrolledProviderScope(
+                              container: container,
+                              child: const SettingsSheet(),
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.settings_outlined,
+                          size: 22,
+                          color: AppColors.tealPrimary.withOpacity(0.55),
+                        ),
                       ),
-                    );
-                  },
-                  child: Icon(
-                    Icons.settings_outlined,
-                    size: 22,
-                    color: AppColors.tealPrimary.withOpacity(0.55),
-                  ),
+                    ),
+                  ],
                 ),
               ),
 
-              // Status text
-              Positioned(
-                top: 50,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Text(
-                    statusText,
-                    style: isNight
-                        ? AppTextStyles.statusNight
-                        : AppTextStyles.statusDay,
-                  ),
-                ),
+              // ── Status text ──────────────────────────────────────────────
+              Text(
+                statusText,
+                style: isNight
+                    ? AppTextStyles.statusNight
+                    : AppTextStyles.statusDay,
               ),
 
-              // Orb + ripple rings (centered between top 102 and bottom 228)
-              Positioned(
-                top: 66,
-                bottom: 228,
-                left: 0,
-                right: 0,
+              // ── Orb (fills all remaining space) ─────────────────────────
+              Expanded(
                 child: Center(
                   child: Stack(
                     alignment: Alignment.center,
@@ -148,46 +137,36 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 ),
               ),
 
-              // Prompt text
-              Positioned(
-                bottom: 248,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: PromptTextWidget(text: _lastPromptText),
-                ),
+              // ── Prompt text ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: PromptTextWidget(text: _lastPromptText),
               ),
 
-              // Countdown
-              Positioned(
-                bottom: 185,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: CountdownDisplay(
-                    remaining: remaining,
-                    visualMode: settings.visualMode,
-                    isRunning: isRunning && !isPaused,
-                    isStopped: !isRunning,
-                  ),
-                ),
+              const SizedBox(height: 12),
+
+              // ── Countdown ────────────────────────────────────────────────
+              CountdownDisplay(
+                remaining: remaining,
+                visualMode: settings.visualMode,
+                isRunning: isRunning && !isPaused,
+                isStopped: !isRunning,
               ),
 
-              // Controls
-              Positioned(
-                bottom: 50,
-                left: 0,
-                right: 0,
-                child: MainControls(
-                  isRunning: isRunning,
-                  isPaused: isPaused,
-                  onStartStop: () => _handleStartStop(settings),
-                  onFireNow: () => PromptTimerService().fireNow(),
-                  onSkipForward: () => PromptTimerService().fireNow(),
-                  onSkipBack: () => PromptTimerService().skipBack(),
-                  onPauseResume: () => _handlePauseResume(),
-                ),
+              const SizedBox(height: 28),
+
+              // ── Controls ─────────────────────────────────────────────────
+              MainControls(
+                isRunning: isRunning,
+                isPaused: isPaused,
+                onStartStop: () => _handleStartStop(settings),
+                onFireNow: () => PromptTimerService().fireNow(),
+                onSkipForward: () => PromptTimerService().fireNow(),
+                onSkipBack: () => PromptTimerService().skipBack(),
+                onPauseResume: () => _handlePauseResume(),
               ),
+
+              const SizedBox(height: 36),
             ],
           ),
         ),

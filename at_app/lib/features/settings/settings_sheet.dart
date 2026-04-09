@@ -318,7 +318,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                     onTap: () => _pickAudioMode(context),
                   ),
                   ATRow(
-                    label: 'Chime',
+                    label: 'Sound',
                     sublabel: _chimeLabel(_selectedChime),
                     trailing: const Icon(Icons.chevron_right,
                         color: Color(0x47F0F0F0), size: 18),
@@ -889,9 +889,9 @@ class _AudioModePickerDialog extends StatelessWidget {
   static const _labels = ['Silent', 'Tone', 'Voice', 'Tone + Voice'];
   static const _sublabels = [
     'No sound',
-    'Chime only',
+    'Sound only',
     'Spoken prompt',
-    'Chime then voice',
+    'Sound + voice',
   ];
 
   @override
@@ -951,7 +951,7 @@ class _AudioModePickerDialog extends StatelessWidget {
   }
 }
 
-// ── Chime picker dialog ───────────────────────────────────────────────────
+// ── Sound picker dialog ───────────────────────────────────────────────────
 
 class _ChimePickerDialog extends StatelessWidget {
   final String current;
@@ -964,7 +964,7 @@ class _ChimePickerDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: const Color(0xFF0C1D2E),
-      title: const Text('Chime',
+      title: const Text('Sound',
           style: TextStyle(color: Colors.white70, fontSize: 16)),
       contentPadding: const EdgeInsets.symmetric(vertical: 8),
       content: SizedBox(

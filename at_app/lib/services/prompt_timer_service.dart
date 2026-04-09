@@ -49,7 +49,7 @@ class PromptTimerService {
     final settings = await _settingsRepo.load();
     await _firePrompt(settings);
     _remaining = _intervalFor(settings);
-    _scheduleCountdown(settings);
+    _scheduleCountdown();
   }
 
   /// Pause — suspends prompts without resetting. Silent loop stays running
@@ -66,8 +66,7 @@ class PromptTimerService {
   Future<void> resume() async {
     if (!_isRunning || !_isPaused) return;
     _isPaused = false;
-    final settings = await _settingsRepo.load();
-    _scheduleCountdown(settings);
+    _scheduleCountdown();
   }
 
   /// Stop and reset.
@@ -87,7 +86,7 @@ class PromptTimerService {
     final settings = await _settingsRepo.load();
     await _firePrompt(settings);
     _remaining = _intervalFor(settings);
-    _scheduleCountdown(settings);
+    _scheduleCountdown();
   }
 
   /// Skip back — replay the last fired prompt (if any) and reset the countdown.
@@ -98,23 +97,26 @@ class PromptTimerService {
       await _replayPrompt(_lastFiredPrompt!, settings);
     }
     _remaining = _intervalFor(settings);
-    _scheduleCountdown(settings);
+    _scheduleCountdown();
   }
 
-  void _scheduleCountdown(AppSettings settings) {
+  void _scheduleCountdown() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (t) async {
       if (_remaining <= Duration.zero) {
         t.cancel();
+        // Reload settings fresh on each prompt fire so changes to audio mode,
+        // sound, voice, interval etc. take effect immediately without restart.
+        final settings = await _settingsRepo.load();
         if (await _isInBlackout()) {
           // Skip this tick — reschedule
           _remaining = _intervalFor(settings);
-          _scheduleCountdown(settings);
+          _scheduleCountdown();
           return;
         }
         await _firePrompt(settings);
         _remaining = _intervalFor(settings);
-        _scheduleCountdown(settings);
+        _scheduleCountdown();
       } else {
         _remaining -= const Duration(seconds: 1);
         _countdownController.add(_remaining);

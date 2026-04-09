@@ -16,6 +16,7 @@ void main() async {
   await IsarService.open();
   await _seedIfNeeded();
   await _seedBlackoutsIfNeeded();
+  await _migrateLibraries();
   await _migrateFmsPrompts();
   await _resetRunState();
   await NotificationService.init();
@@ -80,6 +81,26 @@ Future<void> _seedBlackoutsIfNeeded() async {
   final hasSleep = existing.any((w) => w.uid == 'builtin_blackout_sleep');
   if (!hasSleep) {
     await repo.save(sleepBlackoutWindow);
+  }
+}
+
+/// Adds new built-in libraries to existing installs.
+/// The main seed guard (if libs.isNotEmpty) blocks new libraries from being
+/// added to phones that already had libraries seeded. This migration runs
+/// independently on every launch but only writes what's missing.
+Future<void> _migrateLibraries() async {
+  final libRepo = LibraryRepository();
+  final promptRepo = PromptRepository();
+  final existing = (await libRepo.getAll()).map((l) => l.uid).toSet();
+
+  if (!existing.contains('builtin_fms_directions')) {
+    await libRepo.save(fmsDirectionsLibrary);
+    await promptRepo.saveAll(fmsDirectionsPrompts);
+  }
+
+  if (!existing.contains('builtin_fms_sequence')) {
+    await libRepo.save(fmsSequenceLibrary);
+    await promptRepo.saveAll(fmsSequencePrompts);
   }
 }
 
