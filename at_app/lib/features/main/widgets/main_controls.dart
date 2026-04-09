@@ -85,7 +85,7 @@ class _StartStopPill extends StatefulWidget {
 
 class _StartStopPillState extends State<_StartStopPill> {
   late bool _localRunning;
-  bool _locked = false; // debounce — prevent double-fire
+  bool _locked = false; // debounce — prevent double-fire within same press
 
   @override
   void initState() {
@@ -96,30 +96,35 @@ class _StartStopPillState extends State<_StartStopPill> {
   @override
   void didUpdateWidget(_StartStopPill old) {
     super.didUpdateWidget(old);
-    // Sync with real state once Riverpod catches up
+    // Only sync display state — never release lock here (race condition risk).
+    // Lock is released on a timer after the action completes.
     if (old.isRunning != widget.isRunning) {
-      setState(() {
-        _localRunning = widget.isRunning;
-        _locked = false;
-      });
+      setState(() => _localRunning = widget.isRunning);
     }
   }
 
-  void _handleDown() {
+  void _handleDown(TapDownDetails _) {
     if (_locked) return;
     setState(() {
       _locked = true;
-      _localRunning = !_localRunning; // flip appearance immediately
+      _localRunning = !_localRunning; // flip appearance immediately on touch
     });
     widget.onTap();
+    // Release after enough time for start()/stop() to complete.
+    // Prevents double-fire and the race condition that Listener.onPointerDown
+    // had with iOS native gesture recognizer cancellations.
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) setState(() => _locked = false);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      // onPointerDown bypasses the gesture recognizer pipeline entirely —
-      // fires the very instant the touch registers on screen.
-      onPointerDown: (_) => _handleDown(),
+    return GestureDetector(
+      // onTapDown fires before finger lift — instant feel — while still
+      // going through Flutter's recognizer pipeline (safe on iOS).
+      onTapDown: _handleDown,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         // Extra padding = larger tap target without changing visual size
         padding: const EdgeInsets.symmetric(vertical: 8),

@@ -768,7 +768,9 @@ class _Stepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white.withOpacity(0.10)),
         borderRadius: BorderRadius.circular(20),
@@ -802,6 +804,7 @@ class _Stepper extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

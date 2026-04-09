@@ -205,12 +205,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       await notifier.setRunning(false);
       await notifier.setPaused(false);
     } else {
-      // _StartStopPill already flipped its local appearance on pointer-down,
-      // so the visual is instant. Await start() properly here — unawaited
-      // was silently swallowing errors and leaving the button locked.
+      // _StartStopPill already flipped its local appearance on tap-down.
+      // Await start() so errors surface rather than being swallowed.
+      // On error, reset UI state so the button doesn't lock.
       await notifier.setRunning(true);
       await notifier.setPaused(false);
-      await PromptTimerService().start();
+      try {
+        await PromptTimerService().start();
+      } catch (e) {
+        debugPrint('PromptTimerService.start() failed: $e');
+        await notifier.setRunning(false);
+        await notifier.setPaused(false);
+      }
     }
   }
 
