@@ -529,7 +529,9 @@ class _IntervalStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final canDecrement = totalSeconds - _step >= _min;
     final canIncrement = totalSeconds + _step <= _max;
-    return Container(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white.withOpacity(0.10)),
         borderRadius: BorderRadius.circular(20),
@@ -571,6 +573,7 @@ class _IntervalStepper extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

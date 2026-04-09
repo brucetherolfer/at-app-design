@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -67,22 +68,29 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // ── Top bar: app name + settings gear ───────────────────────
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Text(
-                      AppFlavor.appDisplayName.toUpperCase(),
-                      style: isNight
-                          ? AppTextStyles.appNameNight
-                          : AppTextStyles.appNameDay,
-                    ),
-                    Positioned(
-                      right: 0,
-                      child: GestureDetector(
+              // ── Top bar: app name (centred) + settings gear (right) ─────
+              // Row layout keeps gear separate from name — no overlap at any
+              // font size or screen width.
+              MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.noScaling),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 14, 28, 0),
+                  child: Row(
+                    children: [
+                      // Left spacer = gear width so name stays centred
+                      const SizedBox(width: 22),
+                      Expanded(
+                        child: Text(
+                          AppFlavor.appDisplayName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: isNight
+                              ? AppTextStyles.appNameNight
+                              : AppTextStyles.appNameDay,
+                        ),
+                      ),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           final container =
                               ProviderScope.containerOf(context);
@@ -102,48 +110,65 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           color: AppColors.tealPrimary.withOpacity(0.55),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── Status text ──────────────────────────────────────────────
-              Text(
-                statusText,
-                style: isNight
-                    ? AppTextStyles.statusNight
-                    : AppTextStyles.statusDay,
-              ),
-
-              // ── Orb (fills all remaining space) ─────────────────────────
-              Expanded(
-                child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      RippleRings(trigger: _promptFired),
-                      if (isNight)
-                        NightOrb(
-                          isActive: _promptFired,
-                          isStopped: !isRunning,
-                        )
-                      else
-                        DayOrb(
-                          isActive: _promptFired,
-                          isStopped: !isRunning,
-                        ),
                     ],
                   ),
                 ),
               ),
 
-              // ── Prompt text ──────────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: PromptTextWidget(text: _lastPromptText),
+              const SizedBox(height: 6),
+
+              // ── Status text — scaling suppressed so it never wraps badly ─
+              MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.noScaling),
+                child: Text(
+                  statusText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: isNight
+                      ? AppTextStyles.statusNight
+                      : AppTextStyles.statusDay,
+                ),
               ),
 
-              const SizedBox(height: 12),
+              // ── Orb (fills all remaining space) + prompt overlay ─────────
+              // Prompt text lives INSIDE the Expanded so it never compresses
+              // the orb — it overlays at the bottom of the orb area instead.
+              Expanded(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Orb + ripple rings fill the full Expanded area
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          RippleRings(trigger: _promptFired),
+                          if (isNight)
+                            NightOrb(
+                              isActive: _promptFired,
+                              isStopped: !isRunning,
+                            )
+                          else
+                            DayOrb(
+                              isActive: _promptFired,
+                              isStopped: !isRunning,
+                            ),
+                        ],
+                      ),
+                    ),
+                    // Prompt text overlays at the bottom — orb size unaffected
+                    Positioned(
+                      bottom: 8,
+                      left: 32,
+                      right: 32,
+                      child: PromptTextWidget(text: _lastPromptText),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
 
               // ── Countdown ────────────────────────────────────────────────
               CountdownDisplay(
@@ -181,9 +206,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       await notifier.setRunning(false);
       await notifier.setPaused(false);
     } else {
-      await PromptTimerService().start();
+      // Flip UI to STOP immediately so the button feels responsive.
+      // The timer service starts in the background — first prompt fires
+      // async without blocking the button redraw.
       await notifier.setRunning(true);
       await notifier.setPaused(false);
+      unawaited(PromptTimerService().start());
     }
   }
 
