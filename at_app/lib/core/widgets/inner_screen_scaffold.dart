@@ -37,6 +37,7 @@ class InnerScreenScaffold extends StatelessWidget {
                       left: 16,
                       child: GestureDetector(
                         onTap: () => context.pop(),
+                        behavior: HitTestBehavior.opaque,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -55,10 +56,16 @@ class InnerScreenScaffold extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Title
-                    Text(
-                      title.toUpperCase(),
-                      style: AppTextStyles.navTitle,
+                    // Title — constrained so it never overlaps back button
+                    Positioned(
+                      left: 70,
+                      right: 70,
+                      child: Text(
+                        title.toUpperCase(),
+                        style: AppTextStyles.navTitle,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     // Actions
                     if (actions != null)

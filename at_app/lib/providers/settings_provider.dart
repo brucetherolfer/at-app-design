@@ -7,6 +7,10 @@ final settingsStreamProvider = StreamProvider<AppSettings>((ref) {
 });
 
 final settingsProvider = Provider<AppSettings>((ref) {
+  // Prefer notifier state — updates immediately when _save() completes
+  final notifierValue = ref.watch(settingsNotifierProvider).valueOrNull;
+  if (notifierValue != null) return notifierValue;
+  // Fall back to Isar stream (handles initial load and cross-session changes)
   return ref.watch(settingsStreamProvider).valueOrNull ??
       AppSettings()
         ..deliveryMode = DeliveryMode.free
@@ -19,7 +23,7 @@ final settingsProvider = Provider<AppSettings>((ref) {
         ..alternateLibraryUid = null
         ..lastFiredFrom = LibrarySlot.alternate
         ..lastFiredSequentialIndex = 0
-        ..audioMode = AudioMode.silent // system notification sound plays by default
+        ..audioMode = AudioMode.silent
         ..selectedVoiceName = ''
         ..speechRate = 0.5
         ..speechPitch = 1.0
@@ -29,7 +33,7 @@ final settingsProvider = Provider<AppSettings>((ref) {
         ..activeSequenceUid = null
         ..isRunning = false
         ..isPaused = false
-        ..visualMode = VisualMode.night;
+        ..visualMode = VisualMode.day;
 });
 
 class SettingsNotifier extends AsyncNotifier<AppSettings> {

@@ -174,6 +174,7 @@ class _SequenceRow extends StatelessWidget {
           else
             GestureDetector(
               onTap: onSelect,
+              behavior: HitTestBehavior.opaque,
               child: Text(
                 'SELECT',
                 style: AppTextStyles.tagLabel.copyWith(
@@ -195,6 +196,7 @@ class _AddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         height: 46,
         decoration: BoxDecoration(
@@ -241,6 +243,7 @@ class _Stepper extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: value > min ? () => onChanged(value - step) : null,
+          behavior: HitTestBehavior.opaque,
           child: Text(
             '−',
             style: TextStyle(
@@ -261,6 +264,7 @@ class _Stepper extends StatelessWidget {
         const SizedBox(width: 12),
         GestureDetector(
           onTap: value < max ? () => onChanged(value + step) : null,
+          behavior: HitTestBehavior.opaque,
           child: Text(
             '+',
             style: TextStyle(

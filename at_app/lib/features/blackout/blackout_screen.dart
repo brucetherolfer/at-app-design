@@ -109,6 +109,7 @@ class _AddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         height: 46,
         decoration: BoxDecoration(
@@ -210,6 +211,7 @@ class _AddBlackoutSheetState extends State<_AddBlackoutSheet> {
               final day = i + 1;
               final selected = _days.contains(day);
               return GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => setState(() {
                   if (selected) {
                     _days.remove(day);
@@ -268,6 +270,7 @@ class _AddBlackoutSheetState extends State<_AddBlackoutSheet> {
           const SizedBox(height: 24),
           // Save button
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () {
               if (_labelCtrl.text.trim().isNotEmpty && _days.isNotEmpty) {
                 widget.onSave(
@@ -323,6 +326,7 @@ class _TimePicker extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () async {
             final parts = value.split(':');
             final initial = TimeOfDay(

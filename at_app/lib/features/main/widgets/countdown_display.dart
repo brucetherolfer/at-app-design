@@ -7,12 +7,14 @@ class CountdownDisplay extends StatelessWidget {
   final Duration remaining;
   final VisualMode visualMode;
   final bool isRunning;
+  final bool isStopped;
 
   const CountdownDisplay({
     super.key,
     required this.remaining,
     required this.visualMode,
     required this.isRunning,
+    this.isStopped = false,
   });
 
   @override
@@ -24,6 +26,8 @@ class CountdownDisplay extends StatelessWidget {
     final valueStyle = isNight
         ? AppTextStyles.countdownValueNight
         : AppTextStyles.countdownValueDay;
+
+    if (isStopped) return const SizedBox.shrink();
 
     return Column(
       mainAxisSize: MainAxisSize.min,

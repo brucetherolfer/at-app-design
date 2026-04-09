@@ -16,6 +16,7 @@ import 'widgets/ripple_rings.dart';
 import 'widgets/prompt_text_widget.dart';
 import 'widgets/countdown_display.dart';
 import 'widgets/main_controls.dart';
+import '../settings/settings_sheet.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -68,7 +69,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             children: [
               // App name
               Positioned(
-                top: 52 - MediaQuery.of(context).padding.top,
+                top: 16,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -83,10 +84,21 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
               // Settings gear
               Positioned(
-                top: 52 - MediaQuery.of(context).padding.top,
+                top: 16,
                 right: 28,
                 child: GestureDetector(
-                  onTap: () => context.push('/settings'),
+                  onTap: () {
+                    final container = ProviderScope.containerOf(context);
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => UncontrolledProviderScope(
+                        container: container,
+                        child: const SettingsSheet(),
+                      ),
+                    );
+                  },
                   child: Icon(
                     Icons.settings_outlined,
                     size: 22,
@@ -97,7 +109,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
               // Status text
               Positioned(
-                top: 86 - MediaQuery.of(context).padding.top,
+                top: 50,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -112,7 +124,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
               // Orb + ripple rings (centered between top 102 and bottom 228)
               Positioned(
-                top: 102 - MediaQuery.of(context).padding.top,
+                top: 66,
                 bottom: 228,
                 left: 0,
                 right: 0,
@@ -156,6 +168,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     remaining: remaining,
                     visualMode: settings.visualMode,
                     isRunning: isRunning && !isPaused,
+                    isStopped: !isRunning,
                   ),
                 ),
               ),
@@ -172,7 +185,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   onFireNow: () => PromptTimerService().fireNow(),
                   onSkipForward: () => PromptTimerService().fireNow(),
                   onSkipBack: () => PromptTimerService().skipBack(),
-                  onPauseResume: () => _handlePauseResume(settings),
+                  onPauseResume: () => _handlePauseResume(),
                 ),
               ),
             ],
@@ -195,9 +208,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     }
   }
 
-  Future<void> _handlePauseResume(AppSettings settings) async {
+  Future<void> _handlePauseResume() async {
     final notifier = ref.read(settingsNotifierProvider.notifier);
-    if (settings.isPaused) {
+    if (PromptTimerService().isPaused) {
       await PromptTimerService().resume();
       await notifier.setPaused(false);
     } else {

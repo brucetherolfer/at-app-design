@@ -2,8 +2,18 @@
 
 ## [Unreleased]
 
-### In progress
-- Bug fixing from first simulator run
+### Fixed
+- **Settings sheet live-update** — converted `SettingsSheet` to `ConsumerStatefulWidget` with local shadow state; toggles and steppers now update instantly without waiting for Isar → Riverpod → modal propagation
+- **Back button on Library Detail** — `LibraryDetailScreen` was pushed via `Navigator.push` (breaking `context.pop()`); now pushed via `context.push('/library/detail', extra: library)` through GoRouter so back button works correctly
+- **Library row in settings** — was incorrectly navigating to Library Manager; now opens an `_LibraryPickerDialog` to select the active prompt library
+- **Audio Mode row** — had no `onTap`; now opens `_AudioModePickerDialog` with all 4 modes (Silent / Tone / Voice / Tone + Voice) with descriptions
+- **"+ ADD LIBRARY" shown inside Library Detail** — `_AddLibraryButton` had hardcoded label; renamed to `_AddButton` with `label` param; detail screen correctly shows "+ ADD PROMPT"
+- **Alternate Library — no way to pick which library** — toggle turning ON now opens a library picker (excluding primary); row tap when on opens picker to change selection; snackbar shown if no eligible libraries exist
+
+### Added
+- `/library/detail` GoRouter route (accepts `Library` via `state.extra`)
+- `_LibraryPickerDialog` — reusable AlertDialog picker for selecting a library with checkmark on current selection
+- `_AudioModePickerDialog` — AlertDialog picker for Audio Mode with sublabel descriptions per mode
 
 ---
 

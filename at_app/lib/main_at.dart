@@ -14,9 +14,20 @@ void main() async {
 
   await IsarService.open();
   await _seedIfNeeded();
+  await _resetRunState();
   await NotificationService.init();
 
   runApp(const ProviderScope(child: AtApp()));
+}
+
+Future<void> _resetRunState() async {
+  final settings = await SettingsRepository().load();
+  if (settings.isRunning || settings.isPaused) {
+    settings
+      ..isRunning = false
+      ..isPaused = false;
+    await SettingsRepository().save(settings);
+  }
 }
 
 Future<void> _seedIfNeeded() async {

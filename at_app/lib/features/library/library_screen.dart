@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_text_styles.dart';
@@ -13,6 +14,8 @@ import '../../providers/library_provider.dart';
 import '../../providers/repository_providers.dart';
 
 const _uuid = Uuid();
+
+// ── Library Manager ────────────────────────────────────────────────────────
 
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
@@ -43,7 +46,10 @@ class LibraryScreen extends ConsumerWidget {
                   children: custom.map((lib) => _LibraryRow(library: lib)).toList(),
                 ),
               const SizedBox(height: 12),
-              _AddLibraryButton(onTap: () => _showAddDialog(context, ref)),
+              _AddButton(
+                label: '+ ADD LIBRARY',
+                onTap: () => _showAddLibraryDialog(context, ref),
+              ),
             ],
           );
         },
@@ -51,7 +57,7 @@ class LibraryScreen extends ConsumerWidget {
     );
   }
 
-  void _showAddDialog(BuildContext context, WidgetRef ref) {
+  void _showAddLibraryDialog(BuildContext context, WidgetRef ref) {
     final ctrl = TextEditingController();
     showDialog(
       context: context,
@@ -129,46 +135,7 @@ class _LibraryRow extends ConsumerWidget {
               color: Colors.white.withOpacity(0.28), size: 18),
         ],
       ),
-      onTap: () => _openLibrary(context, library),
-    );
-  }
-
-  void _openLibrary(BuildContext context, Library library) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => LibraryDetailScreen(library: library),
-      ),
-    );
-  }
-}
-
-class _AddLibraryButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _AddLibraryButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 46,
-        decoration: BoxDecoration(
-          color: AppColors.dashedBg,
-          border: Border.all(color: AppColors.dashedBorder),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Center(
-          child: Text(
-            '+ ADD LIBRARY',
-            style: AppTextStyles.pillLabel.copyWith(
-              fontSize: 12,
-              letterSpacing: 0.96,
-              color: AppColors.dashedText,
-            ),
-          ),
-        ),
-      ),
+      onTap: () => context.push('/library/detail', extra: library),
     );
   }
 }
@@ -215,7 +182,8 @@ class _LibraryDetailScreenState extends ConsumerState<LibraryDetailScreen> {
                 ),
               const SizedBox(height: 12),
               if (!widget.library.isBuiltIn)
-                _AddLibraryButton(
+                _AddButton(
+                  label: '+ ADD PROMPT',
                   onTap: () => _showAddPromptDialog(context),
                 ),
             ],
@@ -300,6 +268,40 @@ class _PromptRow extends StatelessWidget {
               child: Icon(Icons.close,
                   size: 16, color: Colors.white.withOpacity(0.28)),
             ),
+    );
+  }
+}
+
+// ── Shared add button ──────────────────────────────────────────────────────
+
+class _AddButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _AddButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 46,
+        decoration: BoxDecoration(
+          color: AppColors.dashedBg,
+          border: Border.all(color: AppColors.dashedBorder),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: AppTextStyles.pillLabel.copyWith(
+              fontSize: 12,
+              letterSpacing: 0.96,
+              color: AppColors.dashedText,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

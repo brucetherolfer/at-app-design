@@ -100,10 +100,92 @@ PATH="/opt/homebrew/bin:$PATH" LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 flutter run .
 
 ---
 
+---
+
+## Session 3 — Bug fixing: settings sheet, hit testing, PAUSED state, iOS 26 simulator
+
+### Bugs fixed this session
+
+**Settings buttons non-functional (all except Library button)**
+Two-part root cause:
+1. `ATRow` wrapped every row in `GestureDetector(behavior: opaque)` even when `onTap == null`, blocking touches from reaching child widgets (toggles, steppers, chips). Fix: skip GestureDetector entirely when `onTap == null`.
+2. `ATToggle` was missing `HitTestBehavior.opaque` — only the thumb was tappable, not the full track area.
+
+**Settings sheet not scrolling**
+`Column(mainAxisSize: min)` + `Flexible` gives ListView an unbounded height — Flutter can't scroll it. Fix: `mainAxisSize: max` + `Expanded`.
+
+**Settings sheet not visually updating after taps**
+`showModalBottomSheet` context is disconnected from the GoRouter ProviderScope — ConsumerWidget inside the modal saves state but never rebuilds. Fix: capture `ProviderScope.containerOf(context)` before opening, thread in via `UncontrolledProviderScope`.
+
+**Back button hidden behind title**
+`InnerScreenScaffold` title had no left margin. Fix: `Positioned(left: 70, right: 70)` keeps title clear of back button.
+
+**"PAUSED" showing when STOPPED**
+`CountdownDisplay` showed "PAUSED" any time `isRunning=false` — but that's true for both paused AND stopped. Fix: added `isStopped` param; returns `SizedBox.shrink()` when stopped.
+
+### iOS 26 simulator — objective_c.dylib bug (permanent fix)
+
+Flutter's native assets build system has a bug on iOS 26/Xcode 26: it compiles `objective_c.framework` targeting **physical iOS** (Mach-O platform 2) even for simulator builds. The simulator rejects platform-2 dylibs at `dlopen` time. Also, `dlopen` looks for `objective_c.framework/objective_c` at the app bundle root, but it lives in `Frameworks/`.
+
+**Fix baked into Xcode project** (`ios/Runner.xcodeproj/project.pbxproj` build phase `AA1B2C3D4E5F6A7B8C9D0E1F`):
+- Runs after all other build phases, simulator only
+- Detects wrong platform via `otool -l`
+- Recompiles from `~/.pub-cache` source with correct `-target arm64-apple-ios13.0-simulator` flags
+- Crucially: also compiles `src/include/dart_api_dl.c` (required for `_Dart_CurrentIsolate_DL` and other Dart DL API symbols — missing this causes a second crash)
+- Creates `Runner.app/objective_c.framework → Frameworks/objective_c.framework` symlink for dlopen
+
+Hot reload fails on iOS 26 simulator ("Error while starting Kernel isolate task") — separate Flutter SDK bug. Full restart required for code changes on simulator.
+
+### What's confirmed working
+- App launches clean on iOS 26 simulator, no objective_c errors
+- PAUSED/STOPPED display correct
+- All code changes correct by inspection (settings interactivity needs USB device test)
+
+---
+
+---
+
+## Session 4 — Settings sheet live-update fix + UX bug fixes
+
+### Settings sheet live-update (ConsumerStatefulWidget conversion)
+
+`UncontrolledProviderScope` was in place from Session 3 but wasn't enough — the modal overlay's element tree still didn't receive Riverpod rebuild notifications when state changed. Root cause: GoRouter's ProviderScope and the modal's context are genuinely disconnected at the element tree level; the scope container is shared but rebuild signals don't cross.
+
+**Fix:** Converted `SettingsSheet` from `ConsumerWidget` to `ConsumerStatefulWidget`. State class holds local shadow copies of every displayed field (`_deliveryMode`, `_intervalType`, `_fixedIntervalMinutes`, etc.). Every `onChanged` callback does two things: `setState()` for immediate UI rebuild, then `notifier.setXxx()` for Isar persistence. The sheet now rebuilds instantly on every tap without depending on Riverpod propagation.
+
+### Back button broken on LibraryDetailScreen
+
+`LibraryDetailScreen` was pushed via `Navigator.push(MaterialPageRoute(...))` but `InnerScreenScaffold` calls `context.pop()` (GoRouter). GoRouter's pop operates on its own page stack — it popped the wrong level, going all the way back to `/` instead of back to Library Manager.
+
+**Fix:** Changed `_openLibrary` to `context.push('/library/detail', extra: library)` (GoRouter). Added `/library/detail` route to `app_router.dart`. Now `context.pop()` correctly returns to `/library`.
+
+### Settings sheet UX: 6 bugs fixed
+
+**Library row → Library Manager (wrong destination)**
+The "Library" row in Prompts section navigated to `/library` (Library Manager). Needs to be a picker for the active library. Fix: `onTap` now shows `_LibraryPickerDialog` — an AlertDialog listing all libraries with a checkmark on the current one. Tap to select.
+
+**Audio Mode row — no onTap**
+Audio Mode row had a chevron but no handler — tapping it did nothing. Fix: `onTap` now shows `_AudioModePickerDialog` — an AlertDialog with all 4 modes (Silent/Tone/Voice/Tone+Voice) with one-line descriptions. Tap to select.
+
+**"+ ADD LIBRARY" label inside Library Detail screen**
+`LibraryDetailScreen` reused `_AddLibraryButton` which hardcodes the label. Fix: renamed to `_AddButton` with a `label` parameter. Library Manager uses `'+ ADD LIBRARY'`, Library Detail uses `'+ ADD PROMPT'`.
+
+**Alternate Library — no way to pick which library**
+Toggle turning ON auto-picked the first non-primary library. No way to choose. Fix: toggle turning ON now opens `_LibraryPickerDialog` (filtered to exclude primary). Tapping the row when alternate is on opens the picker to change the selection. If only one library exists, shows a snackbar explaining the situation.
+
+**Library vs Library Manager confusion**
+Fixed by the two items above: "Library" = picker, "Library Manager" = full management screen. Clear separation.
+
+### Architecture note on dialog-based pickers
+
+Considered using GoRouter route navigation (`context.push('/library/pick')`) from within the settings modal. Decided against: GoRouter pushes to the navigator's page stack on top of the modal route, which works in theory but creates unpredictable ordering when mixing showModalBottomSheet and GoRouter. AlertDialog is simpler, fully modal, and context-safe from within the sheet.
+
+---
+
 ## What's next
 
 See `build-list.md` for full tracking. Top priorities:
-1. **Bug fixing** — app launched on simulator, bugs being identified
+1. **Test settings sheet interactivity on device** — all toggles, pickers, steppers, navigation
 2. **AppDelegate.swift** — AVAudioSession config for locked-screen audio
 3. **About/Credits screen** — moon photo attribution (legally required)
 4. **Primary Control sequence** — Bruce to provide prompt text

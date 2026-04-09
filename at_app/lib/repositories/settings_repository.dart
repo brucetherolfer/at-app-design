@@ -45,6 +45,6 @@ class SettingsRepository {
       ..activeSequenceUid = null
       ..isRunning = false
       ..isPaused = false
-      ..visualMode = VisualMode.night;
+      ..visualMode = VisualMode.day;
   }
 }

@@ -18,31 +18,35 @@ class ATRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final content = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      constraints: const BoxConstraints(minHeight: 50),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: AppTextStyles.rowLabel),
+                if (sublabel != null) ...[
+                  const SizedBox(height: 2),
+                  Text(sublabel!, style: AppTextStyles.rowSublabel),
+                ],
+              ],
+            ),
+          ),
+          if (trailing != null) trailing!,
+        ],
+      ),
+    );
+
+    if (onTap == null) return content;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-        constraints: const BoxConstraints(minHeight: 50),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(label, style: AppTextStyles.rowLabel),
-                  if (sublabel != null) ...[
-                    const SizedBox(height: 2),
-                    Text(sublabel!, style: AppTextStyles.rowSublabel),
-                  ],
-                ],
-              ),
-            ),
-            if (trailing != null) trailing!,
-          ],
-        ),
-      ),
+      child: content,
     );
   }
 }
