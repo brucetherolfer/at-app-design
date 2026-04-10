@@ -19,14 +19,18 @@ class AudioService {
   Future<void> init() async {
     if (_initialized) return;
 
-    // Configure the shared AVAudioSession via audio_session so the setting
-    // persists even when just_audio or flutter_tts reinitialize the session.
-    // .playback + mixWithOthers = our audio plays alongside Spotify/music,
-    // and iOS keeps our app alive in the background as long as session is active.
+    // Configure the AVAudioSession ONCE and never reconfigure it.
+    // mixWithOthers: our audio plays alongside Spotify/music.
+    // duckOthers: iOS automatically lowers other apps' volume while we output
+    //   audible audio (chime or TTS). The volume-0 silent loop does NOT trigger
+    //   ducking — iOS only ducks when non-silent samples are output.
+    // Reconfiguring the session during duck/restore was disrupting the silent
+    // loop and causing iOS to suspend the app in the background.
     final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration(
+    await session.configure(AudioSessionConfiguration(
       avAudioSessionCategory: AVAudioSessionCategory.playback,
-      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers,
+      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers |
+          AVAudioSessionCategoryOptions.duckOthers,
       avAudioSessionMode: AVAudioSessionMode.defaultMode,
     ));
 
@@ -43,12 +47,15 @@ class AudioService {
 
     await _tts.setSharedInstance(true);
     await _tts.awaitSpeakCompletion(true); // speak() blocks until speech finishes
+    // TTS must also have duckOthers so it doesn't override the session config
+    // back to mixWithOthers-only when it speaks.
     await _tts.setIosAudioCategory(
       IosTextToSpeechAudioCategory.playback,
       [
         IosTextToSpeechAudioCategoryOptions.allowBluetooth,
         IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
         IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+        IosTextToSpeechAudioCategoryOptions.duckOthers,
       ],
       IosTextToSpeechAudioMode.defaultMode,
     );
@@ -68,75 +75,17 @@ class AudioService {
       case AudioMode.silent:
         break;
       case AudioMode.tone:
-        await _duckForPrompt();
-        try {
-          await _playChime(chimeAsset);
-        } finally {
-          await _restoreMix();
-        }
+        await _playChime(chimeAsset);
         break;
       case AudioMode.voice:
-        await _duckForPrompt();
-        try {
-          await _speak(text, voiceName, speechRate, speechPitch);
-        } finally {
-          await _restoreMix();
-        }
+        await _speak(text, voiceName, speechRate, speechPitch);
         break;
       case AudioMode.toneAndVoice:
-        await _duckForPrompt();
-        try {
-          // Chime starts immediately (non-blocking), voice enters after decay delay
-          unawaited(_playChime(chimeAsset));
-          await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
-          await _speak(text, voiceName, speechRate, speechPitch);
-        } finally {
-          await _restoreMix();
-        }
+        // Chime starts immediately (non-blocking), voice enters after decay delay
+        unawaited(_playChime(chimeAsset));
+        await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
+        await _speak(text, voiceName, speechRate, speechPitch);
         break;
-    }
-  }
-
-  /// Switch session to duckOthers so background music lowers while prompt plays.
-  /// setActive(true) after configure is required to actually trigger the duck —
-  /// iOS only lowers other apps' volume when the session is activated with
-  /// duckOthers set.
-  Future<void> _duckForPrompt() async {
-    try {
-      final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.playback,
-        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.duckOthers,
-        avAudioSessionMode: AVAudioSessionMode.defaultMode,
-      ));
-      await session.setActive(true);
-    } catch (e) {
-      debugPrint('AudioService duck error: $e');
-    }
-  }
-
-  /// Restore mixWithOthers so music returns to full volume between prompts.
-  /// Also restarts the silent loop — reconfiguring the session can cause
-  /// just_audio to pause/stop its player, which would let iOS suspend us.
-  Future<void> _restoreMix() async {
-    try {
-      final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.playback,
-        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers,
-        avAudioSessionMode: AVAudioSessionMode.defaultMode,
-      ));
-      await session.setActive(true);
-      // Session reconfigure may have stopped the silent loop — resume it so
-      // iOS keeps the app alive until the next prompt.
-      if (_silentLoopRunning) {
-        _silentPlayer.play().catchError((Object e) {
-          debugPrint('AudioService silent loop resume error: $e');
-          _silentLoopRunning = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('AudioService restore mix error: $e');
     }
   }
 
