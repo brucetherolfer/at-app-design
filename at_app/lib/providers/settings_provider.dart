@@ -23,13 +23,15 @@ final settingsProvider = Provider<AppSettings>((ref) {
         ..alternateLibraryUid = null
         ..lastFiredFrom = LibrarySlot.alternate
         ..lastFiredSequentialIndex = 0
+        ..lastFiredAltSequentialIndex = 0
         ..audioMode = AudioMode.silent
         ..selectedVoiceName = ''
-        ..speechRate = 0.5
+        ..speechRate = 0.35
         ..speechPitch = 1.0
         ..selectedChime = 'bell'
         ..sequenceTrigger = SequenceTrigger.onDemand
         ..sequenceTimerMinutes = 60
+        ..sequenceGapSeconds = 2
         ..activeSequenceUid = null
         ..isRunning = false
         ..isPaused = false
@@ -90,6 +92,9 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
 
   Future<void> setSequenceTimerMinutes(int minutes) =>
       _save((s) => s..sequenceTimerMinutes = minutes);
+
+  Future<void> setSequenceGapSeconds(int secs) =>
+      _save((s) => s..sequenceGapSeconds = secs);
 
   Future<void> setActiveSequence(String? uid) =>
       _save((s) => s..activeSequenceUid = uid);

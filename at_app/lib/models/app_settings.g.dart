@@ -60,71 +60,81 @@ const AppSettingsSchema = CollectionSchema(
       name: r'isRunning',
       type: IsarType.bool,
     ),
-    r'lastFiredFrom': PropertySchema(
+    r'lastFiredAltSequentialIndex': PropertySchema(
       id: 8,
+      name: r'lastFiredAltSequentialIndex',
+      type: IsarType.long,
+    ),
+    r'lastFiredFrom': PropertySchema(
+      id: 9,
       name: r'lastFiredFrom',
       type: IsarType.byte,
       enumMap: _AppSettingslastFiredFromEnumValueMap,
     ),
     r'lastFiredSequentialIndex': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'lastFiredSequentialIndex',
       type: IsarType.long,
     ),
     r'maxIntervalMinutes': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'maxIntervalMinutes',
       type: IsarType.long,
     ),
     r'minIntervalMinutes': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'minIntervalMinutes',
       type: IsarType.long,
     ),
     r'primaryLibraryUid': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'primaryLibraryUid',
       type: IsarType.string,
     ),
     r'promptOrder': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'promptOrder',
       type: IsarType.byte,
       enumMap: _AppSettingspromptOrderEnumValueMap,
     ),
     r'selectedChime': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'selectedChime',
       type: IsarType.string,
     ),
     r'selectedVoiceName': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'selectedVoiceName',
       type: IsarType.string,
     ),
+    r'sequenceGapSeconds': PropertySchema(
+      id: 17,
+      name: r'sequenceGapSeconds',
+      type: IsarType.long,
+    ),
     r'sequenceTimerMinutes': PropertySchema(
-      id: 16,
+      id: 18,
       name: r'sequenceTimerMinutes',
       type: IsarType.long,
     ),
     r'sequenceTrigger': PropertySchema(
-      id: 17,
+      id: 19,
       name: r'sequenceTrigger',
       type: IsarType.byte,
       enumMap: _AppSettingssequenceTriggerEnumValueMap,
     ),
     r'speechPitch': PropertySchema(
-      id: 18,
+      id: 20,
       name: r'speechPitch',
       type: IsarType.double,
     ),
     r'speechRate': PropertySchema(
-      id: 19,
+      id: 21,
       name: r'speechRate',
       type: IsarType.double,
     ),
     r'visualMode': PropertySchema(
-      id: 20,
+      id: 22,
       name: r'visualMode',
       type: IsarType.byte,
       enumMap: _AppSettingsvisualModeEnumValueMap,
@@ -182,19 +192,21 @@ void _appSettingsSerialize(
   writer.writeByte(offsets[5], object.intervalType.index);
   writer.writeBool(offsets[6], object.isPaused);
   writer.writeBool(offsets[7], object.isRunning);
-  writer.writeByte(offsets[8], object.lastFiredFrom.index);
-  writer.writeLong(offsets[9], object.lastFiredSequentialIndex);
-  writer.writeLong(offsets[10], object.maxIntervalMinutes);
-  writer.writeLong(offsets[11], object.minIntervalMinutes);
-  writer.writeString(offsets[12], object.primaryLibraryUid);
-  writer.writeByte(offsets[13], object.promptOrder.index);
-  writer.writeString(offsets[14], object.selectedChime);
-  writer.writeString(offsets[15], object.selectedVoiceName);
-  writer.writeLong(offsets[16], object.sequenceTimerMinutes);
-  writer.writeByte(offsets[17], object.sequenceTrigger.index);
-  writer.writeDouble(offsets[18], object.speechPitch);
-  writer.writeDouble(offsets[19], object.speechRate);
-  writer.writeByte(offsets[20], object.visualMode.index);
+  writer.writeLong(offsets[8], object.lastFiredAltSequentialIndex);
+  writer.writeByte(offsets[9], object.lastFiredFrom.index);
+  writer.writeLong(offsets[10], object.lastFiredSequentialIndex);
+  writer.writeLong(offsets[11], object.maxIntervalMinutes);
+  writer.writeLong(offsets[12], object.minIntervalMinutes);
+  writer.writeString(offsets[13], object.primaryLibraryUid);
+  writer.writeByte(offsets[14], object.promptOrder.index);
+  writer.writeString(offsets[15], object.selectedChime);
+  writer.writeString(offsets[16], object.selectedVoiceName);
+  writer.writeLong(offsets[17], object.sequenceGapSeconds);
+  writer.writeLong(offsets[18], object.sequenceTimerMinutes);
+  writer.writeByte(offsets[19], object.sequenceTrigger.index);
+  writer.writeDouble(offsets[20], object.speechPitch);
+  writer.writeDouble(offsets[21], object.speechRate);
+  writer.writeByte(offsets[22], object.visualMode.index);
 }
 
 AppSettings _appSettingsDeserialize(
@@ -219,26 +231,28 @@ AppSettings _appSettingsDeserialize(
           IntervalType.fixed;
   object.isPaused = reader.readBool(offsets[6]);
   object.isRunning = reader.readBool(offsets[7]);
+  object.lastFiredAltSequentialIndex = reader.readLong(offsets[8]);
   object.lastFiredFrom = _AppSettingslastFiredFromValueEnumMap[
-          reader.readByteOrNull(offsets[8])] ??
+          reader.readByteOrNull(offsets[9])] ??
       LibrarySlot.primary;
-  object.lastFiredSequentialIndex = reader.readLong(offsets[9]);
-  object.maxIntervalMinutes = reader.readLong(offsets[10]);
-  object.minIntervalMinutes = reader.readLong(offsets[11]);
-  object.primaryLibraryUid = reader.readString(offsets[12]);
+  object.lastFiredSequentialIndex = reader.readLong(offsets[10]);
+  object.maxIntervalMinutes = reader.readLong(offsets[11]);
+  object.minIntervalMinutes = reader.readLong(offsets[12]);
+  object.primaryLibraryUid = reader.readString(offsets[13]);
   object.promptOrder =
-      _AppSettingspromptOrderValueEnumMap[reader.readByteOrNull(offsets[13])] ??
+      _AppSettingspromptOrderValueEnumMap[reader.readByteOrNull(offsets[14])] ??
           PromptOrder.random;
-  object.selectedChime = reader.readString(offsets[14]);
-  object.selectedVoiceName = reader.readString(offsets[15]);
-  object.sequenceTimerMinutes = reader.readLong(offsets[16]);
+  object.selectedChime = reader.readString(offsets[15]);
+  object.selectedVoiceName = reader.readString(offsets[16]);
+  object.sequenceGapSeconds = reader.readLong(offsets[17]);
+  object.sequenceTimerMinutes = reader.readLong(offsets[18]);
   object.sequenceTrigger = _AppSettingssequenceTriggerValueEnumMap[
-          reader.readByteOrNull(offsets[17])] ??
+          reader.readByteOrNull(offsets[19])] ??
       SequenceTrigger.onDemand;
-  object.speechPitch = reader.readDouble(offsets[18]);
-  object.speechRate = reader.readDouble(offsets[19]);
+  object.speechPitch = reader.readDouble(offsets[20]);
+  object.speechRate = reader.readDouble(offsets[21]);
   object.visualMode =
-      _AppSettingsvisualModeValueEnumMap[reader.readByteOrNull(offsets[20])] ??
+      _AppSettingsvisualModeValueEnumMap[reader.readByteOrNull(offsets[22])] ??
           VisualMode.day;
   return object;
 }
@@ -273,36 +287,40 @@ P _appSettingsDeserializeProp<P>(
     case 7:
       return (reader.readBool(offset)) as P;
     case 8:
+      return (reader.readLong(offset)) as P;
+    case 9:
       return (_AppSettingslastFiredFromValueEnumMap[
               reader.readByteOrNull(offset)] ??
           LibrarySlot.primary) as P;
-    case 9:
-      return (reader.readLong(offset)) as P;
     case 10:
       return (reader.readLong(offset)) as P;
     case 11:
       return (reader.readLong(offset)) as P;
     case 12:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 13:
+      return (reader.readString(offset)) as P;
+    case 14:
       return (_AppSettingspromptOrderValueEnumMap[
               reader.readByteOrNull(offset)] ??
           PromptOrder.random) as P;
-    case 14:
-      return (reader.readString(offset)) as P;
     case 15:
       return (reader.readString(offset)) as P;
     case 16:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 17:
+      return (reader.readLong(offset)) as P;
+    case 18:
+      return (reader.readLong(offset)) as P;
+    case 19:
       return (_AppSettingssequenceTriggerValueEnumMap[
               reader.readByteOrNull(offset)] ??
           SequenceTrigger.onDemand) as P;
-    case 18:
-      return (reader.readDouble(offset)) as P;
-    case 19:
-      return (reader.readDouble(offset)) as P;
     case 20:
+      return (reader.readDouble(offset)) as P;
+    case 21:
+      return (reader.readDouble(offset)) as P;
+    case 22:
       return (_AppSettingsvisualModeValueEnumMap[
               reader.readByteOrNull(offset)] ??
           VisualMode.day) as P;
@@ -1071,6 +1089,62 @@ extension AppSettingsQueryFilter
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      lastFiredAltSequentialIndexEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastFiredAltSequentialIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      lastFiredAltSequentialIndexGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastFiredAltSequentialIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      lastFiredAltSequentialIndexLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastFiredAltSequentialIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      lastFiredAltSequentialIndexBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastFiredAltSequentialIndex',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
       lastFiredFromEqualTo(LibrarySlot value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1759,6 +1833,62 @@ extension AppSettingsQueryFilter
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      sequenceGapSecondsEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sequenceGapSeconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      sequenceGapSecondsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sequenceGapSeconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      sequenceGapSecondsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sequenceGapSeconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      sequenceGapSecondsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sequenceGapSeconds',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
       sequenceTimerMinutesEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -2171,6 +2301,20 @@ extension AppSettingsQuerySortBy
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      sortByLastFiredAltSequentialIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFiredAltSequentialIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      sortByLastFiredAltSequentialIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFiredAltSequentialIndex', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByLastFiredFrom() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastFiredFrom', Sort.asc);
@@ -2276,6 +2420,20 @@ extension AppSettingsQuerySortBy
       sortBySelectedVoiceNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'selectedVoiceName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      sortBySequenceGapSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sequenceGapSeconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      sortBySequenceGapSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sequenceGapSeconds', Sort.desc);
     });
   }
 
@@ -2461,6 +2619,20 @@ extension AppSettingsQuerySortThenBy
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      thenByLastFiredAltSequentialIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFiredAltSequentialIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      thenByLastFiredAltSequentialIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastFiredAltSequentialIndex', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByLastFiredFrom() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastFiredFrom', Sort.asc);
@@ -2566,6 +2738,20 @@ extension AppSettingsQuerySortThenBy
       thenBySelectedVoiceNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'selectedVoiceName', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      thenBySequenceGapSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sequenceGapSeconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      thenBySequenceGapSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sequenceGapSeconds', Sort.desc);
     });
   }
 
@@ -2688,6 +2874,13 @@ extension AppSettingsQueryWhereDistinct
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QDistinct>
+      distinctByLastFiredAltSequentialIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastFiredAltSequentialIndex');
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByLastFiredFrom() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastFiredFrom');
@@ -2742,6 +2935,13 @@ extension AppSettingsQueryWhereDistinct
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'selectedVoiceName',
           caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QDistinct>
+      distinctBySequenceGapSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sequenceGapSeconds');
     });
   }
 
@@ -2839,6 +3039,13 @@ extension AppSettingsQueryProperty
     });
   }
 
+  QueryBuilder<AppSettings, int, QQueryOperations>
+      lastFiredAltSequentialIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastFiredAltSequentialIndex');
+    });
+  }
+
   QueryBuilder<AppSettings, LibrarySlot, QQueryOperations>
       lastFiredFromProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -2891,6 +3098,13 @@ extension AppSettingsQueryProperty
       selectedVoiceNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'selectedVoiceName');
+    });
+  }
+
+  QueryBuilder<AppSettings, int, QQueryOperations>
+      sequenceGapSecondsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sequenceGapSeconds');
     });
   }
 

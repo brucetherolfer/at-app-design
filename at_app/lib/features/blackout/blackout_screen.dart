@@ -210,7 +210,9 @@ class _AddBlackoutSheetState extends State<_AddBlackoutSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+      child: Container(
       decoration: const BoxDecoration(
         color: Color(0xF70A1420),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -355,7 +357,7 @@ class _AddBlackoutSheetState extends State<_AddBlackoutSheet> {
           ),
         ],
       ),
-    );
+    )); // closes Container + MediaQuery
   }
 }
 

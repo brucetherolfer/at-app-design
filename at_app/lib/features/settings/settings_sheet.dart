@@ -34,6 +34,9 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   late AudioMode _audioMode;
   late String _selectedChime;
   late VisualMode _visualMode;
+  late SequenceTrigger _sequenceTrigger;
+  late int _sequenceGapSeconds;
+  late int _speechRatePct; // 10–80, represents speechRate * 100
 
   @override
   void initState() {
@@ -50,6 +53,12 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
     _audioMode = s.audioMode;
     _selectedChime = s.selectedChime;
     _visualMode = s.visualMode;
+    _sequenceTrigger = s.sequenceTrigger;
+    _sequenceGapSeconds =
+        s.sequenceGapSeconds > 0 ? s.sequenceGapSeconds : 2;
+    // Round to nearest 5 and clamp 10–80
+    final raw = (s.speechRate * 100).round();
+    _speechRatePct = ((raw / 5).round() * 5).clamp(10, 80);
   }
 
   // ── Pickers ──────────────────────────────────────────────────────────────
@@ -175,7 +184,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                     label: 'Delivery Mode',
                     sublabel: _deliveryMode == DeliveryMode.free
                         ? 'Free — prompts throughout the day'
-                        : 'Sequence — ordered set on timer',
+                        : 'Sequence — plays library in order',
                     trailing: _ModeToggle(
                       value: _deliveryMode,
                       onChanged: (m) {
@@ -184,6 +193,37 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                       },
                     ),
                   ),
+                  if (_deliveryMode == DeliveryMode.sequence) ...[
+                    ATRow(
+                      label: 'Sequence Trigger',
+                      sublabel: _sequenceTrigger == SequenceTrigger.onDemand
+                          ? 'Manual — FIRE button only'
+                          : 'Timed — auto-repeats at interval',
+                      trailing: ATToggle(
+                        value: _sequenceTrigger == SequenceTrigger.timer,
+                        onChanged: (v) {
+                          final next = v
+                              ? SequenceTrigger.timer
+                              : SequenceTrigger.onDemand;
+                          setState(() => _sequenceTrigger = next);
+                          notifier.setSequenceTrigger(next);
+                        },
+                      ),
+                    ),
+                    ATRow(
+                      label: 'Gap Between Prompts',
+                      trailing: _Stepper(
+                        value: _sequenceGapSeconds,
+                        unit: 'sec',
+                        min: 1,
+                        max: 30,
+                        onChanged: (v) {
+                          setState(() => _sequenceGapSeconds = v);
+                          notifier.setSequenceGapSeconds(v);
+                        },
+                      ),
+                    ),
+                  ],
                 ]),
 
                 // ── Interval ──────────────────────────────────
@@ -317,6 +357,22 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                         color: Color(0x47F0F0F0), size: 18),
                     onTap: () => _pickAudioMode(context),
                   ),
+                  if (_audioMode == AudioMode.voice ||
+                      _audioMode == AudioMode.toneAndVoice)
+                    ATRow(
+                      label: 'Speech Rate',
+                      trailing: _Stepper(
+                        value: _speechRatePct,
+                        unit: '%',
+                        min: 10,
+                        max: 80,
+                        step: 5,
+                        onChanged: (v) {
+                          setState(() => _speechRatePct = v);
+                          notifier.setSpeechRate(v / 100.0);
+                        },
+                      ),
+                    ),
                   ATRow(
                     label: 'Sound',
                     sublabel: _chimeLabel(_selectedChime),
@@ -521,14 +577,21 @@ class _IntervalStepper extends StatelessWidget {
     required this.onTapCenter,
   });
 
-  static const int _step = 60; // +/- 1 min per tap
   static const int _min = 5;
   static const int _max = 43200; // 12 hours
 
+  // Step size is context-sensitive: 1s when below 1 min so you can fine-tune
+  // seconds, 60s (1 min) once you're at a minute or above. This means pressing
+  // − at exactly 1 min (60s) drops to 59s, and + at 59s rises to 1 min.
+  int _decrementStep(int current) => current <= 60 ? 1 : 60;
+  int _incrementStep(int current) => current < 60 ? 1 : 60;
+
   @override
   Widget build(BuildContext context) {
-    final canDecrement = totalSeconds - _step >= _min;
-    final canIncrement = totalSeconds + _step <= _max;
+    final decStep = _decrementStep(totalSeconds);
+    final incStep = _incrementStep(totalSeconds);
+    final canDecrement = totalSeconds - decStep >= _min;
+    final canIncrement = totalSeconds + incStep <= _max;
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
       child: Container(
@@ -542,7 +605,7 @@ class _IntervalStepper extends StatelessWidget {
           _StepBtn(
             icon: '−',
             onTap: canDecrement
-                ? () => onChanged((totalSeconds - _step).clamp(_min, _max))
+                ? () => onChanged((totalSeconds - decStep).clamp(_min, _max))
                 : null,
           ),
           Container(width: 1, height: 30, color: Colors.white.withOpacity(0.07)),
@@ -568,7 +631,7 @@ class _IntervalStepper extends StatelessWidget {
           _StepBtn(
             icon: '+',
             onTap: canIncrement
-                ? () => onChanged((totalSeconds + _step).clamp(_min, _max))
+                ? () => onChanged((totalSeconds + incStep).clamp(_min, _max))
                 : null,
           ),
         ],
@@ -756,6 +819,7 @@ class _Stepper extends StatelessWidget {
   final String unit;
   final int min;
   final int max;
+  final int step;
   final ValueChanged<int> onChanged;
 
   const _Stepper({
@@ -764,6 +828,7 @@ class _Stepper extends StatelessWidget {
     required this.min,
     required this.max,
     required this.onChanged,
+    this.step = 1,
   });
 
   @override
@@ -780,7 +845,7 @@ class _Stepper extends StatelessWidget {
         children: [
           _StepBtn(
             icon: '−',
-            onTap: value > min ? () => onChanged(value - 1) : null,
+            onTap: value > min ? () => onChanged((value - step).clamp(min, max)) : null,
           ),
           Container(width: 1, height: 30, color: Colors.white.withOpacity(0.07)),
           SizedBox(
@@ -800,7 +865,7 @@ class _Stepper extends StatelessWidget {
           Container(width: 1, height: 30, color: Colors.white.withOpacity(0.07)),
           _StepBtn(
             icon: '+',
-            onTap: value < max ? () => onChanged(value + 1) : null,
+            onTap: value < max ? () => onChanged((value + step).clamp(min, max)) : null,
           ),
         ],
       ),

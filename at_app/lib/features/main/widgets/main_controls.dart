@@ -36,25 +36,25 @@ class MainControls extends StatelessWidget {
             label: 'BACK',
             onTap: isRunning ? onSkipBack : null,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 10),
           _IconButton(
             icon: isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
             label: isPaused ? 'RESUME' : 'PAUSE',
             onTap: isRunning ? onPauseResume : null,
             active: isPaused,
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 14),
           _StartStopPill(
             isRunning: isRunning,
             onTap: onStartStop,
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 14),
           _IconButton(
             icon: Icons.bolt_rounded,
             label: 'FIRE',
             onTap: isRunning ? onFireNow : null,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 10),
           _IconButton(
             icon: Icons.skip_next_rounded,
             label: 'SKIP',
@@ -159,13 +159,17 @@ class _StartStopPillState extends State<_StartStopPill> {
 }
 
 // ── Icon button (BACK / PAUSE / FIRE / SKIP) ──────────────────────────────
+//
+// Stateful so it can show immediate press feedback via _pressed, and so the
+// PAUSE button's "active" glow flips on first touch without waiting for
+// Riverpod to propagate back. didUpdateWidget syncs the real active state.
 
-class _IconButton extends StatelessWidget {
+class _IconButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
 
-  /// When true the button glows teal — used to show PAUSE is active.
+  /// When true the button shows a solid teal fill — used for PAUSE active state.
   final bool active;
 
   const _IconButton({
@@ -176,25 +180,47 @@ class _IconButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final enabled = onTap != null;
+  State<_IconButton> createState() => _IconButtonState();
+}
 
-    // Active state: vivid teal circle with solid border
-    // Enabled state: dim white circle
-    // Disabled state: very faint
-    final iconColor = active ? AppColors.tealPrimary : Colors.white;
-    final borderColor = active
-        ? AppColors.tealPrimary               // full opacity when glowing
+class _IconButtonState extends State<_IconButton> {
+  late bool _localActive;
+
+  @override
+  void initState() {
+    super.initState();
+    _localActive = widget.active;
+  }
+
+  @override
+  void didUpdateWidget(_IconButton old) {
+    super.didUpdateWidget(old);
+    // Sync local display state whenever real state changes
+    if (_localActive != widget.active) {
+      setState(() => _localActive = widget.active);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.onTap != null;
+
+    // Active (paused): solid teal fill — unmistakably "on"
+    // Enabled: dim white circle
+    // Disabled: very faint
+    final borderColor = _localActive
+        ? AppColors.tealPrimary
         : Colors.white.withOpacity(0.25);
-    final bgColor = active
-        ? AppColors.tealPrimary.withOpacity(0.28) // clearly visible tint
-        : Colors.transparent;
-    final labelColor = active
-        ? AppColors.tealPrimary               // matches icon
+    final bgColor = _localActive ? AppColors.tealPrimary : Colors.transparent;
+    final labelColor = _localActive
+        ? AppColors.tealPrimary
         : Colors.white.withOpacity(0.75);
 
     return GestureDetector(
-      onTap: onTap,
+      onTapDown: enabled
+          ? (_) => setState(() => _localActive = !_localActive)
+          : null,
+      onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
       child: Opacity(
         opacity: enabled ? 1.0 : 0.25,
@@ -207,22 +233,23 @@ class _IconButton extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: bgColor,
-                border: Border.all(color: borderColor, width: active ? 1.5 : 1.0),
-                boxShadow: active
+                border: Border.all(
+                    color: borderColor, width: _localActive ? 2.0 : 1.0),
+                boxShadow: _localActive
                     ? [
                         BoxShadow(
-                          color: AppColors.tealPrimary.withOpacity(0.35),
-                          blurRadius: 8,
-                          spreadRadius: 1,
+                          color: AppColors.tealPrimary.withOpacity(0.55),
+                          blurRadius: 12,
+                          spreadRadius: 2,
                         )
                       ]
                     : null,
               ),
-              child: Icon(icon, color: iconColor, size: 18),
+              child: Icon(widget.icon, color: Colors.white, size: 18),
             ),
             const SizedBox(height: 4),
             Text(
-              label,
+              widget.label,
               style: AppTextStyles.fireButtonLabel.copyWith(color: labelColor),
             ),
           ],

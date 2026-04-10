@@ -3,6 +3,14 @@
 ## [Unreleased]
 
 ### Added
+- **Questions prompt library** — 88 awareness check-in questions ("Is your neck free?", "Are you rushing?", etc.) added as built-in library `builtin_questions`, sortOrder 8. Migration runs on first launch of this build.
+- **Audio ducking** — background music (Spotify etc.) now lowers during prompts and restores after, like Apple Reminders. Uses `AVAudioSessionCategoryOptions.duckOthers` scoped to prompt delivery window only; silent loop stays `mixWithOthers` so music plays at full volume between prompts.
+
+### Fixed
+- **TTS ducking held for full speech duration** — `flutter_tts.speak()` resolves when speech starts, not ends, causing music to restore immediately after TTS began. Fixed: `awaitSpeakCompletion(true)` in `AudioService.init()` makes all `speak()` calls block until completion.
+- **White screen on direct open (debug builds)** — Flutter debug builds require host `flutter run` connection; opening without it showed blank screen. Fixed: always deploy with `flutter run --release` for physical device installs.
+
+### Added
 - **Blackout window enable/disable toggle** — each row in Blackout Windows screen now has a mini toggle switch; disabled windows are skipped by the timer without deleting them
 - **Sleep blackout window seeded** — first launch creates a "Sleep" window (10pm–7am, all days) in disabled state; users can enable it without having to create it manually
 - **Overnight blackout window support** — `_isInBlackout()` now correctly handles windows that span midnight (e.g. 22:00–07:00)

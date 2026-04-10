@@ -320,3 +320,63 @@ See `build-list.md` for full tracking. Top priorities:
 4. **Primary Control sequence** — Bruce to provide prompt text
 5. **Blackout windows** — seed Bruce's massage schedule
 6. **Background execution** — validate on physical device (simulator can't test this)
+
+---
+
+## Session 11 — Questions library, audio ducking, release build workflow
+
+### Questions prompt library added
+
+Bruce provided 88 awareness check-in questions ("Is your neck free?", "Are you rushing?", etc.) — a different linguistic register from the directive AT prompts. Added as a new built-in library `builtin_questions` with `sortOrder = 8`.
+
+Implementation follows the established pattern: getter in `seed_data.dart` for the library and prompts list, migration check in `main_at.dart` `_migrateLibraries()`. Random UUIDs are fine here (no sequence cross-referencing needed). Library shows up in the library picker immediately on next launch.
+
+### Audio ducking — music lowers when prompt fires
+
+User asked whether background music (Spotify etc.) could temporarily lower during prompts, like Apple Reminders. This is iOS `duckOthers` — the OS drops other audio ~20dB while the active app's audio plays.
+
+The challenge: the silent loop must stay as `mixWithOthers`. A silent audio file still counts as "playing audio" to the OS — if we set `duckOthers` permanently, music would be suppressed the entire time the app is running, not just during prompts.
+
+**Solution**: switch session to `duckOthers` immediately before delivering a prompt (chime/voice), restore `mixWithOthers` in a `finally` block after delivery completes. This means music plays at full volume between prompts and ducks only during the actual chime+speech window.
+
+Implementation in `AudioService.playPrompt()`: three `_duckForPrompt()` / `_restoreMix()` wrappers (one per non-silent mode), both methods use `AudioSession.instance.configure(...)`.
+
+**Bug discovered**: initial test showed a brief glitch at prompt start, not sustained ducking. Root cause: `flutter_tts.speak()` returns a Future that resolves when speech *starts*, not when it *finishes*. So `_restoreMix()` was being called immediately after speech began. Fix: `await _tts.awaitSpeakCompletion(true)` in `init()` — this makes all subsequent `speak()` calls block until speech finishes, so the `finally` block now runs at the right time.
+
+### Debug build white screen on direct open
+
+User encountered white screen when closing the app and reopening by tapping the icon. Root cause: Flutter debug builds on iOS are tied to the `flutter run` host process. When that connection is gone (process killed, Mac sleeping), the Dart VM can't initialize properly and the app shows blank.
+
+**Fix**: always use `flutter run --release` for device installs. Release builds run fully standalone — no host connection needed, opens normally from the home screen, works after reboot. Debug mode should only be used when actively attached for logging/hot reload.
+
+**Command going forward**: `flutter run --release -t lib/main_at.dart -d <device-id>`
+
+---
+
+## Session 10 — Root-cause START fix + sequence mode wired up
+
+### START bug root cause: `await _silentPlayer.play()` hangs forever
+
+The START button was showing STOP (local state worked) but no countdown started and no prompts fired. Root cause traced to `AudioService.startSilentLoop()`:
+
+```dart
+await _silentPlayer.setLoopMode(LoopMode.one);
+await _silentPlayer.play();   // ← HANGS FOREVER
+_silentLoopRunning = true;    // never reached
+```
+
+In just_audio, `play()` returns a Future that only completes when the player reaches a non-playing state. With `LoopMode.one`, the player loops indefinitely — the future never resolves. So `start()` was permanently blocked at `await AudioService().startSilentLoop()`, meaning `_scheduleCountdown()` was never called.
+
+The silent audio WAS actually playing (iOS could be seen keeping the app alive in earlier tests), but since `_scheduleCountdown()` was never reached, no prompts were ever queued.
+
+**Fix**: removed the `await` on `_silentPlayer.play()`. Instead, the call is fire-and-forget with a `.catchError` that resets `_silentLoopRunning = false` so subsequent attempts retry. `_silentLoopRunning = true` is now set immediately after firing.
+
+### Sequence mode: never wired into PromptTimerService
+
+`PromptTimerService._firePrompt()` completely ignored `settings.deliveryMode`. It always ran free-mode logic regardless. `SequenceService` existed but was never called.
+
+Additionally, `SequenceService._playSequence()` was looking up prompts by fetching from three hardcoded built-in library UIDs (`'builtin_all'`, `'builtin_bruces'`, `'builtin_mio'`) and doing a linear search — this would miss any custom library prompts. `PromptRepository` already had a `getByUid()` method.
+
+**Fixes**:
+1. `PromptTimerService._firePrompt()` now checks `settings.deliveryMode`: if `DeliveryMode.sequence`, delegates to `SequenceService().fireSequence()` and returns. If no `activeSequenceUid`, throws `StateError` that surfaces as a snackbar.
+2. `SequenceService._playSequence()` now calls `_promptRepo.getByUid(promptUid)` directly instead of fetching full libraries and doing `firstWhere`. Skips prompts that aren't found (logs a warning) rather than crashing.

@@ -37,7 +37,8 @@ class AppSettings {
   @enumerated
   late LibrarySlot lastFiredFrom;
 
-  late int lastFiredSequentialIndex;
+  late int lastFiredSequentialIndex;        // primary library position
+  late int lastFiredAltSequentialIndex;     // alternate library position
 
   @enumerated
   late AudioMode audioMode;
@@ -54,6 +55,8 @@ class AppSettings {
   late SequenceTrigger sequenceTrigger;
 
   late int sequenceTimerMinutes;
+
+  late int sequenceGapSeconds; // gap between prompts in sequence mode (default 2)
 
   String? activeSequenceUid;
 

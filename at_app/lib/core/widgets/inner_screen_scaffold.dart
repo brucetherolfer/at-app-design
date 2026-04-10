@@ -26,8 +26,12 @@ class InnerScreenScaffold extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Nav bar
-              SizedBox(
+              // Nav bar — noScaling so large accessibility fonts don't
+              // overflow the fixed 52px height or push Back into the title.
+              MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.noScaling),
+              child: SizedBox(
                 height: 52,
                 child: Stack(
                   alignment: Alignment.center,
@@ -75,7 +79,7 @@ class InnerScreenScaffold extends StatelessWidget {
                       ),
                   ],
                 ),
-              ),
+              )), // closes SizedBox + MediaQuery
               const Divider(height: 1, thickness: 1, color: Color(0x0DFFFFFF)),
               // Content
               Expanded(child: body),

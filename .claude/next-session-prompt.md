@@ -1,35 +1,58 @@
 # AT App — Next Session Handoff
 
 ## Project
-Flutter iOS app (AT App) for Alexander Technique awareness prompts. Primary user: Bruce (RMT, Salt Spring Island BC). Build command: `PATH="/opt/homebrew/bin:$PATH" LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 flutter build ios -t lib/main_at.dart --release`. Install: `xcrun devicectl device install app --device 00008110-001A60A11A9B601E "build/ios/iphoneos/Runner.app"`. Simulator: `7B432A2D-308A-4126-A2B4-8E55AF3FFF38`.
+Flutter iOS app for Alexander Technique awareness prompts. Primary user: Bruce (RMT, Salt Spring Island BC).
+
+**Install command (always use release — debug builds white-screen when opened without flutter run):**
+```
+flutter run --release -t lib/main_at.dart -d 00008110-001A60A11A9B601E
+```
+Simulator: `flutter run -t lib/main_at.dart -d 7B432A2D-308A-4126-A2B4-8E55AF3FFF38`
 
 Read `CLAUDE.md`, `AT APP/CLAUDE.md`, `.claude/dev-diary.md`, `.claude/lessons.md`, `.claude/build-list.md` before starting anything.
 
+---
+
 ## State at handoff
-App is installed on Bruce's iPhone and simulator. Core timer runs in background with silent audio loop. Background execution (background/lock screen/simultaneous Spotify) confirmed working.
 
-## Known issues to investigate first
-1. **START button still unreliable** — Button flips to STOP visually (local state works), but the timer may not actually start. Root cause unknown — `start()` might be silently failing or hanging at `AudioService().startSilentLoop()` on the physical device. Try/catch now wraps `start()` so it should reset on error, but Bruce needs to confirm it's working. If still broken, add visible error feedback (brief snackbar/alert) so we can see what's happening.
+Release build installed on Bruce's iPhone. App runs standalone (close and reopen works). Core timer runs in background with silent audio loop.
 
-2. **Sequence mode not working** — Bruce confirmed sequence mode (DeliveryMode.sequence) isn't working. Needs investigation: check `PromptTimerService._pickPrompt()` for sequence handling, check `SequenceRepository`, check how `deliveryMode` flows from settings into prompt delivery.
-
-## What works
+### What's working ✓
 - Background execution (lock screen, app switching, simultaneous Spotify) ✓
-- Silent audio loop keeps iOS from killing the app ✓
-- FM's Directions every 7 min as default ✓
-- Library migration on launch ✓
-- Sleep blackout window seeded (disabled by default) ✓
-- Blackout window enable/disable toggle ✓  
-- Overnight blackout window support ✓
-- Sound switching live (no restart needed) ✓
-- Pause button glows teal when active ✓
-- Stop/pause race conditions fixed ✓
-- Responsive layout (Column + Expanded orb) ✓
-- All accessibility scaling fixed (noScaling on all steppers/controls) ✓
-- Time-sensitive notifications: code ready (InterruptionLevel.timeSensitive) — needs one Xcode step: Runner target → Signing & Capabilities → + → "Time Sensitive Notifications" to register with Apple portal
+- Audio ducking — music lowers during prompts, restores after (like Apple Reminders) ✓
+- Pause button visual state changes immediately on tap ✓
+- Sequence mode: fires active library in order with configurable gap ✓
+- Sequence trigger: Manual (FIRE only) vs Timed (auto-repeat) ✓
+- Gap-between-prompts stepper in settings (SEQ mode only) ✓
+- Speech rate stepper in settings (voice modes only) ✓
+- Alternating libraries use separate sequential counters (no even/odd skipping) ✓
+- Questions library — 88 awareness check-in questions ✓
+- All built-in libraries: All Prompts, Bruce's, MIO, FM's Directions, FM's Sequence, Classic AT Modified, Bodyscan Full, Bodyscan Joints (Anat + Plain), Questions ✓
+- Accessibility font scaling fixed on all screens ✓
+- BACK button not clipped on phone ✓
+
+### Known open items
+- **Audio ducking toggle** — ducking is always on for non-silent modes. User may want a setting to disable it (e.g. when not listening to music).
+- **Primary Control sequence** — `promptUids` is empty. Bruce to provide prompt text/order.
+- **Time-sensitive notifications** — code ready, needs one-time Xcode step: Runner target → Signing & Capabilities → + → "Time Sensitive Notifications"
+- **App icon** — still default Flutter icon
+- **App name** — working name, confirm before App Store submission
+
+---
 
 ## Architecture notes
-- `lib/services/prompt_timer_service.dart` — singleton, manages countdown + prompt delivery. All async methods have `if (!_isRunning) return` guards after every await.
-- `lib/services/audio_service.dart` — `startSilentLoop()` plays silence.m4a at vol 0 to keep AVAudioSession alive
-- `lib/main_at.dart` — runs `_seedIfNeeded()`, `_seedBlackoutsIfNeeded()`, `_migrateLibraries()`, `_migrateFmsPrompts()` on every launch
-- State: Riverpod `settingsNotifierProvider` → `settingsProvider` (computed). `_StartStopPill` has local `_localRunning` state for instant visual flip.
+
+- `lib/services/audio_service.dart` — `_duckForPrompt()` switches to `duckOthers` before prompt, `_restoreMix()` restores `mixWithOthers` in finally block. `awaitSpeakCompletion(true)` in `init()` makes TTS block until speech finishes (critical — without it duck restores while voice still speaking).
+- `lib/services/prompt_timer_service.dart` — `_sequenceBusy` flag prevents concurrent sequence runs. `SequenceTrigger.onDemand` vs `.timer` controls auto-repeat. Separate `lastFiredSequentialIndex` and `lastFiredAltSequentialIndex` counters for primary vs alternate library.
+- `lib/main_at.dart` — `_migrateLibraries()` adds new built-in libraries to existing installs on every launch (idempotent, checks by uid).
+- `lib/repositories/seed_data.dart` — all built-in data. Questions library: `questionsLibrary` getter + `questionsPrompts` list (88 items).
+- State: Riverpod `settingsNotifierProvider`. `_StartStopPill` and `_IconButton` use `StatefulWidget` with local state + `didUpdateWidget` for immediate visual feedback.
+
+---
+
+## Build-list priorities (see `.claude/build-list.md`)
+1. Primary Control sequence — waiting on Bruce for prompt text
+2. Time-sensitive notifications — one Xcode GUI step
+3. App icon
+4. App name decision
+5. Background execution validation (30+ min locked screen test)

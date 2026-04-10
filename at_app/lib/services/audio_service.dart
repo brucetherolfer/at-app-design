@@ -42,6 +42,7 @@ class AudioService {
     });
 
     await _tts.setSharedInstance(true);
+    await _tts.awaitSpeakCompletion(true); // speak() blocks until speech finishes
     await _tts.setIosAudioCategory(
       IosTextToSpeechAudioCategory.playback,
       [
@@ -67,17 +68,75 @@ class AudioService {
       case AudioMode.silent:
         break;
       case AudioMode.tone:
-        await _playChime(chimeAsset);
+        await _duckForPrompt();
+        try {
+          await _playChime(chimeAsset);
+        } finally {
+          await _restoreMix();
+        }
         break;
       case AudioMode.voice:
-        await _speak(text, voiceName, speechRate, speechPitch);
+        await _duckForPrompt();
+        try {
+          await _speak(text, voiceName, speechRate, speechPitch);
+        } finally {
+          await _restoreMix();
+        }
         break;
       case AudioMode.toneAndVoice:
-        // Chime starts immediately (non-blocking), voice enters after decay delay
-        unawaited(_playChime(chimeAsset));
-        await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
-        await _speak(text, voiceName, speechRate, speechPitch);
+        await _duckForPrompt();
+        try {
+          // Chime starts immediately (non-blocking), voice enters after decay delay
+          unawaited(_playChime(chimeAsset));
+          await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
+          await _speak(text, voiceName, speechRate, speechPitch);
+        } finally {
+          await _restoreMix();
+        }
         break;
+    }
+  }
+
+  /// Switch session to duckOthers so background music lowers while prompt plays.
+  /// setActive(true) after configure is required to actually trigger the duck —
+  /// iOS only lowers other apps' volume when the session is activated with
+  /// duckOthers set.
+  Future<void> _duckForPrompt() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.duckOthers,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      ));
+      await session.setActive(true);
+    } catch (e) {
+      debugPrint('AudioService duck error: $e');
+    }
+  }
+
+  /// Restore mixWithOthers so music returns to full volume between prompts.
+  /// Also restarts the silent loop — reconfiguring the session can cause
+  /// just_audio to pause/stop its player, which would let iOS suspend us.
+  Future<void> _restoreMix() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      ));
+      await session.setActive(true);
+      // Session reconfigure may have stopped the silent loop — resume it so
+      // iOS keeps the app alive until the next prompt.
+      if (_silentLoopRunning) {
+        _silentPlayer.play().catchError((Object e) {
+          debugPrint('AudioService silent loop resume error: $e');
+          _silentLoopRunning = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('AudioService restore mix error: $e');
     }
   }
 
@@ -127,7 +186,13 @@ class AudioService {
       await _silentPlayer.setAsset('assets/audio/silence.m4a');
       await _silentPlayer.setVolume(0.0);
       await _silentPlayer.setLoopMode(LoopMode.one);
-      await _silentPlayer.play();
+      // Intentionally not awaited — play() for LoopMode.one never completes
+      // because the player loops indefinitely. Fire and forget; errors reset the
+      // flag so the next start() call retries.
+      _silentPlayer.play().catchError((Object e) {
+        debugPrint('AudioService silent loop play error: $e');
+        _silentLoopRunning = false;
+      });
       _silentLoopRunning = true;
     } catch (e) {
       debugPrint('AudioService silent loop error: $e');

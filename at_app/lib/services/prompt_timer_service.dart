@@ -20,6 +20,7 @@ class PromptTimerService {
   Duration _remaining = Duration.zero;
   bool _isRunning = false;
   bool _isPaused = false;
+  bool _sequenceBusy = false; // guard: prevents concurrent sequence plays
   Prompt? _lastFiredPrompt;
 
   final _promptFiredController = StreamController<String>.broadcast();
@@ -79,6 +80,7 @@ class PromptTimerService {
     _timer?.cancel();
     _isRunning = false;
     _isPaused = false;
+    _sequenceBusy = false;
     _remaining = Duration.zero;
     _lastFiredPrompt = null;
     _countdownController.add(_remaining);
@@ -140,6 +142,15 @@ class PromptTimerService {
           // subsequent misses are logged only.
         }
         if (!_isRunning || _isPaused) return; // cancelled while awaiting
+        // In sequence mode with on-demand trigger: don't auto-reschedule.
+        // User fires manually via FIRE button. Countdown resets to full but
+        // won't fire again on its own.
+        if (settings.deliveryMode == DeliveryMode.sequence &&
+            settings.sequenceTrigger == SequenceTrigger.onDemand) {
+          _remaining = _intervalFor(settings);
+          _countdownController.add(_remaining);
+          return; // no _scheduleCountdown() — stops auto-repeat
+        }
         _remaining = _intervalFor(settings);
         _scheduleCountdown();
       } else {
@@ -176,6 +187,42 @@ class PromptTimerService {
   }
 
   Future<void> _firePrompt(AppSettings settings) async {
+    if (settings.deliveryMode == DeliveryMode.sequence) {
+      // Guard: only one sequence plays at a time.
+      // Pressing FIRE while a sequence is already running is ignored.
+      if (_sequenceBusy) {
+        debugPrint('⚠️ Sequence already running — ignoring concurrent fire');
+        return;
+      }
+      _sequenceBusy = true;
+      try {
+        final prompts =
+            await _promptRepo.getByLibrary(settings.primaryLibraryUid);
+        if (prompts.isEmpty) {
+          throw StateError(
+              'No prompts found in library "${settings.primaryLibraryUid}". Open Settings and check your active library.');
+        }
+        for (int i = 0; i < prompts.length; i++) {
+          if (!_isRunning || _isPaused) return;
+          final prompt = prompts[i];
+          _lastFiredPrompt = prompt;
+          _promptFiredController.add(prompt.text);
+          debugPrint('🔔 Sequence ${i + 1}/${prompts.length}: "${prompt.text}"');
+          await _deliverPrompt(prompt, settings);
+          if (i < prompts.length - 1) {
+            if (!_isRunning || _isPaused) return;
+            final gapSecs = settings.sequenceGapSeconds > 0
+                ? settings.sequenceGapSeconds
+                : 2;
+            await Future.delayed(Duration(seconds: gapSecs));
+          }
+        }
+      } finally {
+        _sequenceBusy = false;
+      }
+      return;
+    }
+
     final prompt = await _pickPrompt(settings);
     if (prompt == null) {
       debugPrint('⚠️ PromptTimerService: no prompts in library "${settings.primaryLibraryUid}" — cannot fire');
@@ -225,10 +272,19 @@ class PromptTimerService {
     if (prompts.isEmpty) return null;
 
     if (settings.promptOrder == PromptOrder.sequential) {
-      final index = settings.lastFiredSequentialIndex % prompts.length;
-      settings.lastFiredSequentialIndex = index + 1;
+      // Use separate counters so primary and alternate each step through
+      // their own libraries independently. A shared counter causes each
+      // library to skip every other prompt when alternating.
+      final int rawIndex;
+      if (useAlternate) {
+        rawIndex = settings.lastFiredAltSequentialIndex % prompts.length;
+        settings.lastFiredAltSequentialIndex = rawIndex + 1;
+      } else {
+        rawIndex = settings.lastFiredSequentialIndex % prompts.length;
+        settings.lastFiredSequentialIndex = rawIndex + 1;
+      }
       await _settingsRepo.save(settings);
-      return prompts[index];
+      return prompts[rawIndex];
     } else {
       return prompts[_random.nextInt(prompts.length)];
     }

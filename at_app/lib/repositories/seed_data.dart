@@ -77,6 +77,13 @@ Library get bodyscanJointsPlainLibrary => Library()
   ..sortOrder = 7
   ..createdAt = DateTime(2024);
 
+Library get questionsLibrary => Library()
+  ..uid = 'builtin_questions'
+  ..name = 'Questions'
+  ..isBuiltIn = true
+  ..sortOrder = 8
+  ..createdAt = DateTime(2024);
+
 // ── All Prompts (197) ──────────────────────────────────────────────────────
 // Source: All_Prompts spreadsheet. Full AT awareness prompt set.
 
@@ -614,6 +621,112 @@ List<Prompt> get bodyscanJointsPlainPrompts {
       ..uid = _bsJpUid(e.key + 1)
       ..text = e.value
       ..libraryUid = 'builtin_bs_joints_plain'
+      ..sortOrder = e.key
+      ..isBuiltIn = true
+      ..createdAt = DateTime(2024);
+  }).toList();
+}
+
+// ── Questions (88) ────────────────────────────────────────────────────────
+// Awareness check-in questions.
+
+List<Prompt> get questionsPrompts {
+  final texts = [
+    'Is your neck free?',
+    'Are your shoulders dropping away from your ears?',
+    'Is your jaw clenched?',
+    'Where is your weight right now?',
+    'Is your breathing restricted anywhere?',
+    'Is your chest collapsed?',
+    'Are you gripping with your hands?',
+    'Is your tongue pressed to the roof of your mouth?',
+    'Are you bracing your legs?',
+    'Notice your lower back — is it compressed?',
+    'Are you holding your breath?',
+    'Is your pelvis tucked or tilted?',
+    'Are you squinting?',
+    'Is your neck shortening?',
+    'Are you pulling your head back?',
+    'Is your belly gripping?',
+    'Are your toes curled?',
+    'Is your sternum lifting?',
+    'Are you leaning into one hip?',
+    'Is your chin jutting forward?',
+    'Are you rushing?',
+    'Is your upper chest tight?',
+    'Are your hands tense?',
+    'Is your head tipped to one side?',
+    'Are you end-gaining right now?',
+    'Is your back narrowing?',
+    'Are you over-efforting?',
+    'Is your head balanced on your spine?',
+    'Are you bracing your core?',
+    'Is your throat constricted?',
+    'Are you pulling down?',
+    'Are your neck muscles tight?',
+    'Are you lifting your chest unnecessarily?',
+    'Is your head free to nod?',
+    'Are you contracting to stay upright?',
+    'Is your lower jaw hanging free?',
+    'Is your sternum compressed?',
+    'Are you pulling your shoulders forward?',
+    'Is your breathing shallow?',
+    'Are you holding tension in your forehead?',
+    'Is your mid-back collapsing?',
+    'Are you fixing your gaze too hard?',
+    'Is your weight forward on your toes?',
+    'Are you bracing for something that isn\'t happening?',
+    'Is your neck shortening as you think?',
+    'Are you compressing downward as you sit?',
+    'Is your upper arm rotating inward?',
+    'Are you rushing through this moment?',
+    'Is your sacrum tucked under?',
+    'Are you gripping the floor?',
+    'Are you compressing your abdomen?',
+    'Are you bending at your waist?',
+    'Is your abdomen compressed?',
+    'Is your abdomen collapsed?',
+    'Is your solar plexus compressed?',
+    'Is your solar plexus collapsed?',
+    'Are your toes clenched?',
+    'Are your ankles held?',
+    'Are your feet clenched?',
+    'Where are you easing a little bit?',
+    'What is happening to the ease in your body?',
+    'Are you holding?',
+    'Are you gripping?',
+    'Are you clenching?',
+    'Are you tightening?',
+    'Are you heavy?',
+    'Are you light?',
+    'Are you compressing?',
+    'Are you shrinking?',
+    'Are you noticing the space around you?',
+    'Are you bracing?',
+    'Are you tensing?',
+    'Are you shortening?',
+    'Are you stiffening?',
+    'Are you locking?',
+    'Are you guarding?',
+    'Are you collapsing?',
+    'Are you pulling in?',
+    'Are you sinking?',
+    'Are you floating?',
+    'Are you rising?',
+    'Are you clutching?',
+    'Are you squeezing?',
+    'Are you hardening?',
+    'Are you narrowing?',
+    'Are you shortening?',
+    'Are you withdrawing?',
+    'Are you curling in?',
+    'Are you hunching?',
+  ];
+  return texts.asMap().entries.map((e) {
+    return Prompt()
+      ..uid = _uuid.v4()
+      ..text = e.value
+      ..libraryUid = 'builtin_questions'
       ..sortOrder = e.key
       ..isBuiltIn = true
       ..createdAt = DateTime(2024);

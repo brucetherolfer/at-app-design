@@ -18,6 +18,10 @@ Things remaining before App Store submission.
 
 ## Nice to have before v1
 
+- [ ] **Blackout window indicator on main screen** — When currently inside a blackout window, the main screen should show "Blackout window" (or similar) instead of the timer countdown, so the user knows why no prompts are firing. Currently the countdown just keeps resetting silently.
+
+
+- [ ] **Sequence gap control** — Gap between prompts in sequence mode is currently hardcoded at 2 seconds. Bruce noted 2s works for some sequences but is too fast for body scan. Add a per-sequence or global gap setting (e.g. 1–10 seconds, default 2). Could be a stepper in Settings under a "Sequence" section, or on the sequence screen itself.
 - [ ] **Voice picker UI** — Settings row to browse and select TTS voice from device voices.
 - [ ] **Chime preview** — Tap a chime in Settings to hear it before selecting.
 - [ ] **Onboarding flow** — First-launch screen explaining the app, requesting notification permissions gracefully.
@@ -31,7 +35,7 @@ Things remaining before App Store submission.
 - [ ] Custom sound file import
 - [ ] Gamification, streaks, progress tracking
 - [ ] **Prompt text placement** — on phone, the prompt text at the bottom of the orb area is large. Consider moving it to the row where the skip forward/back/pause buttons sit, replacing or above those labels. This frees the orb for the visual and keeps the text within the control zone.
-- [ ] **Audio ducking** — lower music volume during prompts. iOS supports this via `AVAudioSessionCategoryOptionDuckOthers` (instead of or alongside `mixWithOthers`). Trade-off: Spotify/music dips briefly every prompt interval, which may feel annoying during casual use but useful in focused practice. Make it a user toggle.
+- [x] **Audio ducking** — implemented. `duckOthers` scoped to prompt delivery window; `mixWithOthers` restored after. Music lowers during chime/voice, returns to full volume between prompts.
 - [ ] **Consider removing skip forward/back from main screen** — Bruce raised this. The controls may be clutter for typical use (interval fires, just let it run). Evaluate after real-world testing. If removed, keep the fire-now button. Skip logic can remain in the timer service for programmatic use.
 
 ---

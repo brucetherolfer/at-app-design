@@ -49,6 +49,7 @@ Future<void> _seedIfNeeded() async {
   await libRepo.save(bodyscanFullLibrary);
   await libRepo.save(bodyscanJointsAnatLibrary);
   await libRepo.save(bodyscanJointsPlainLibrary);
+  await libRepo.save(questionsLibrary);
 
   // Seed all built-in prompts
   final promptRepo = PromptRepository();
@@ -61,6 +62,7 @@ Future<void> _seedIfNeeded() async {
   await promptRepo.saveAll(bodyscanFullPrompts);
   await promptRepo.saveAll(bodyscanJointsAnatPrompts);
   await promptRepo.saveAll(bodyscanJointsPlainPrompts);
+  await promptRepo.saveAll(questionsPrompts);
 
   // Seed built-in sequences
   final seqRepo = SequenceRepository();
@@ -101,6 +103,11 @@ Future<void> _migrateLibraries() async {
   if (!existing.contains('builtin_fms_sequence')) {
     await libRepo.save(fmsSequenceLibrary);
     await promptRepo.saveAll(fmsSequencePrompts);
+  }
+
+  if (!existing.contains('builtin_questions')) {
+    await libRepo.save(questionsLibrary);
+    await promptRepo.saveAll(questionsPrompts);
   }
 }
 

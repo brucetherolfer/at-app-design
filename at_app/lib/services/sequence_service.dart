@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import '../models/sequence.dart';
 import '../models/app_settings.dart';
 import '../repositories/prompt_repository.dart';
@@ -38,17 +39,11 @@ class SequenceService {
   Future<void> _playSequence(Sequence seq, AppSettings settings) async {
     for (int i = 0; i < seq.promptUids.length; i++) {
       final promptUid = seq.promptUids[i];
-      // Find prompt by uid — search built-in libraries
-      final allLibPrompts = await _promptRepo.getByLibrary('builtin_all');
-      final allPrompts = [
-        ...allLibPrompts,
-        ...await _promptRepo.getByLibrary('builtin_bruces'),
-        ...await _promptRepo.getByLibrary('builtin_mio'),
-      ];
-      final prompt = allPrompts.firstWhere(
-        (p) => p.uid == promptUid,
-        orElse: () => allPrompts.first,
-      );
+      final prompt = await _promptRepo.getByUid(promptUid);
+      if (prompt == null) {
+        debugPrint('⚠️ SequenceService: prompt uid "$promptUid" not found — skipping');
+        continue;
+      }
 
       await NotificationService.showPrompt(prompt.text);
       await AudioService().playPrompt(

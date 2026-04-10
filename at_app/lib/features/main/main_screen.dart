@@ -170,11 +170,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               const SizedBox(height: 8),
 
               // ── Countdown ────────────────────────────────────────────────
-              CountdownDisplay(
-                remaining: remaining,
-                visualMode: settings.visualMode,
-                isRunning: isRunning && !isPaused,
-                isStopped: !isRunning,
+              MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.noScaling),
+                child: CountdownDisplay(
+                  remaining: remaining,
+                  visualMode: settings.visualMode,
+                  isRunning: isRunning && !isPaused,
+                  isStopped: !isRunning,
+                ),
               ),
 
               const SizedBox(height: 28),
