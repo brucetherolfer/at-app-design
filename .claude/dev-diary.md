@@ -323,6 +323,72 @@ See `build-list.md` for full tracking. Top priorities:
 
 ---
 
+## Session 12 — Background delivery: batch OS notifications + native Swift keepalive
+
+### Problem
+Prompts fired correctly when app was open but stopped completely on screen lock. Confirmed across multiple days of debugging attempts.
+
+### Root cause (confirmed)
+Flutter's Dart isolate suspends when the app backgrounds — even with `UIBackgroundModes: audio` declared and an active `AVAudioSession`. iOS freezes `Timer.periodic` ticks in the Dart VM while keeping native Swift code running. The audio session can be kept alive natively, but Dart can't reliably wake up on schedule from the locked state.
+
+A second compounding issue: `flutter_tts` calls `AVAudioSession.setActive(false)` asynchronously after every utterance (even with `setSharedInstance(true)`). This deactivates the session between prompts, causing error code `560030580` ('!act' = `AVAudioSessionErrorCodeSessionNotActive`) and silencing subsequent audio.
+
+### Solution 1 — Native Swift keepalive (AppDelegate.swift)
+Rewrote `AppDelegate.swift` to run a completely Dart-independent audio layer:
+- `nativeSilentPlayer: AVAudioPlayer` — loads `near_silent_native.caf` (30-sec mono, pcm_s16le, from iOS bundle), loops infinitely, volume 0.05
+- `keepAliveTimer: Timer` — fires every 3 seconds on `RunLoop.main` (`.common` mode so it runs during UI events too), calls `setActive(true)` and restarts the player if it stopped
+- Starts on `UIApplication.didEnterBackgroundNotification`, stops (timer only) on `willEnterForegroundNotification`
+- Handles `AVAudioSession.interruptionNotification` (phone calls, Siri) — re-activates and resumes player on interruption end
+- Handles `AVAudioSession.mediaServicesWereResetNotification` — full session reconfigure + player restart
+
+This keepalive fires even when the Dart isolate is paused — it's purely native.
+
+### Solution 2 — Batch OS notification scheduling (64-slot rolling window)
+Pre-schedule 64 `UNNotificationRequest` objects at session start using `flutter_local_notifications` `zonedSchedule()`. iOS owns these — they fire on schedule regardless of Dart VM state.
+
+**Implementation:**
+- IDs `2000–2063` reserved for batch slots
+- `NotificationService.scheduleBatch()` takes `firstTime`, `interval`, `texts[]`, `chimeKey` — schedules all 64 in parallel via `Future.wait()`
+- Notification title: `''` (empty) so Siri Announce reads only the body (actual prompt text), no "AT Prompt" prefix
+- Custom `.caf` sound files in iOS bundle: `soft_bell.caf`, `tibetan_bowl.caf`, `simple_tone.caf` (pcm_s16le, 44100Hz) — referenced by filename string in `DarwinNotificationDetails.sound`
+- `InterruptionLevel.timeSensitive` on all batch notifications
+
+**Rolling window:** After every live Dart fire, `_scheduleBatch()` is called again with fresh texts for the next 64 slots. This means there are always 64 prompts pre-queued ahead regardless of how short the interval is (tested at 5-second intervals).
+
+**Live fire + batch coordination:** When the Dart countdown fires, `cancelBatchSlot(_batchIndex)` cancels the corresponding OS notification (so it doesn't double-fire alongside the live audio). `_batchIndex` increments each live fire.
+
+**Actual prompt texts in batch:** `_buildBatchTexts()` pre-calculates which prompts will fire:
+- Sequential order: peeks ahead from `lastFiredSequentialIndex` without advancing the DB counter (pure preview — live fires own the state machine)
+- Random order: random picks from library
+
+### Solution 3 — Dart-side session reactivation
+`_reactivateSession()` in `AudioService` runs 500ms after each `_speak()` and `_playChime()` call (in `finally` blocks) to counteract `flutter_tts` calling `setActive(false)`. The 500ms delay is necessary because flutter_tts deactivates asynchronously after `speak()` returns — a synchronous reactivation loses the race.
+
+### Audio files generated
+- `assets/audio/near_silent.m4a` — 2-sec pink noise at -60dB, AAC 32k (Dart-side `just_audio` silent loop)
+- `ios/Runner/near_silent_native.caf` — 30-sec mono, 22050Hz, pcm_s16le (native Swift player)
+- `ios/Runner/soft_bell.caf`, `tibetan_bowl.caf`, `simple_tone.caf` — converted from m4a sources, pcm_s16le 44100Hz (notification sounds)
+
+All four `.caf` files added to Xcode project (`project.pbxproj`) with IDs `AA000001–AA000008`.
+
+### Key debugging find: hardware mute switch
+Notification sounds (chime in batch notifications) weren't playing despite correct code. Root cause: hardware mute switch was ON. `InterruptionLevel.timeSensitive` overrides Focus modes but NOT the hardware mute switch. This ate several hours of debugging. Always check mute before concluding sound code is broken.
+
+### Current behaviour (confirmed on device)
+- First prompt fires live (Dart + audio) on tap of Start
+- On screen lock: Dart fires one more prompt live, then Dart isolate suspends
+- After that: iOS delivers batch notifications on schedule; Siri Announce reads actual prompt text through headphones
+- Native Swift keepalive keeps `AVAudioSession` active for when Dart does wake
+- Batch chime `.caf` plays in notifications (mute switch must be off)
+
+### Remaining limitation
+True live audio (TTS voice + chime from Dart) through lock requires a background isolate — either `audio_service` package (proper background plugin) or pre-generating TTS `.m4a` files at session start with `flutter_tts.synthesizeToFile()`. Siri Announce fills this gap acceptably for now.
+
+### Notification title fix
+`showPrompt()` title changed from `'AT Prompt'` → `'Prompt'`. Batch notifications use `''` (empty title) so Siri reads only the body text.
+
+---
+
 ## Session 11 — Questions library, audio ducking, release build workflow
 
 ### Questions prompt library added

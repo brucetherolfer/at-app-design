@@ -48,4 +48,14 @@ Mistakes made and rules to follow. Updated after corrections.
 
 - [2026-04-09] **`DeliveryMode` enum changes require explicit handling in every dispatch point.** Adding a new `DeliveryMode` value (e.g. `sequence`) does nothing unless every place that switches on delivery mode explicitly handles it. `PromptTimerService._firePrompt()` had no check for `DeliveryMode.sequence` — it silently fell through to free-mode logic. Always audit all callsites when adding enum values.
 
+- [2026-04-10] **Hardware mute switch silences notification sounds even with `InterruptionLevel.timeSensitive`.** `timeSensitive` overrides Focus modes and Do Not Disturb, but NOT the physical mute toggle. Always check hardware mute before debugging sound code. This cost multiple hours of investigation.
+
+- [2026-04-10] **`flutter_tts` calls `AVAudioSession.setActive(false)` asynchronously after each utterance, even with `setSharedInstance(true)`.** A synchronous reactivation immediately after `speak()` loses the race. Use a 500ms delayed `setActive(true)` in the `finally` block to counteract it. Also run a native Swift `Timer` every 3s as belt-and-suspenders.
+
+- [2026-04-10] **`await player.play()` with `LoopMode.one` in just_audio hangs forever — fire without await.** (Confirmed again — this is the same lesson as the silent loop from Session 10. Rule: any looping just_audio player must use `player.play().catchError(...)`, never `await player.play()`.)
+
+- [2026-04-10] **Dart `Timer.periodic` suspends when iOS backgrounds the app, even with `UIBackgroundModes: audio`.** The audio session can be kept alive natively (Swift `AVAudioPlayer` + `Timer` in `RunLoop.main`) but Dart timers stop ticking. For reliable background delivery, pre-schedule OS notifications (`UNNotificationRequest` via `flutter_local_notifications` `zonedSchedule()`). iOS owns these and fires them on schedule regardless of Dart VM state.
+
+- [2026-04-10] **Empty notification title (`''`) causes Siri Announce to read only the body text.** If you set a non-empty title (e.g. `'AT Prompt'`), Siri reads "AT Prompt — [body text]". Empty string makes Siri read only the body, which is what you want for AT prompts.
+
 - [2026-04-09] **Flutter native assets `objective_c.framework` bug affects device builds too, not just simulator.** The framework always comes out with `VersionPlatform=7` (simulator) and an ad-hoc signature regardless of build target. The existing simulator fix script (which exited early for non-simulator) left device builds broken. Fix: extend the build phase script to also handle `$PLATFORM_NAME = "iphoneos"` — recompile targeting `arm64-apple-ios13.0` and re-sign with `$EXPANDED_CODE_SIGN_IDENTITY`. Use Python string pre-escaping (not raw string + replace) to modify pbxproj shellScript values, and verify the closing pattern as `";\n` not `";"` to avoid truncation.

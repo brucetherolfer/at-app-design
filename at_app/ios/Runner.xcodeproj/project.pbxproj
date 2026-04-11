@@ -17,6 +17,10 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		C68C2778F99BDA5FD26317F1 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E1AC9A286F16580EA71E8F7 /* Pods_Runner.framework */; };
+		AA0001110000000000000000 /* near_silent_native.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000000 /* near_silent_native.caf */; };
+		AA0001110000000000000001 /* soft_bell.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000001 /* soft_bell.caf */; };
+		AA0001110000000000000002 /* tibetan_bowl.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000002 /* tibetan_bowl.caf */; };
+		AA0001110000000000000003 /* simple_tone.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000003 /* simple_tone.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +71,10 @@
 		B5E45FA2CF04F24A4B3417D8 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		DEB9445D7464F38CF2F0705C /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		FC14E5415DAC6E0B8C67745E /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0001210000000000000000 /* near_silent_native.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = near_silent_native.caf; sourceTree = "<group>"; };
+		AA0001210000000000000001 /* soft_bell.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = soft_bell.caf; sourceTree = "<group>"; };
+		AA0001210000000000000002 /* tibetan_bowl.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = tibetan_bowl.caf; sourceTree = "<group>"; };
+		AA0001210000000000000003 /* simple_tone.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = simple_tone.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,6 +163,10 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				AA0001210000000000000000 /* near_silent_native.caf */,
+				AA0001210000000000000001 /* soft_bell.caf */,
+				AA0001210000000000000002 /* tibetan_bowl.caf */,
+				AA0001210000000000000003 /* simple_tone.caf */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -267,6 +279,10 @@
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
+				AA0001110000000000000000 /* near_silent_native.caf in Resources */,
+				AA0001110000000000000001 /* soft_bell.caf in Resources */,
+				AA0001110000000000000002 /* tibetan_bowl.caf in Resources */,
+				AA0001110000000000000003 /* simple_tone.caf in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

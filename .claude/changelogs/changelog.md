@@ -3,6 +3,21 @@
 ## [Unreleased]
 
 ### Added
+- **Batch OS notification scheduling (64-slot rolling window)** — pre-schedules 64 `UNNotificationRequest` objects at session start using `flutter_local_notifications` `zonedSchedule()`. iOS fires these regardless of Dart VM state. IDs `2000–2063`. Rolling window: rescheduled on every live Dart fire so there are always 64 prompts queued ahead. Tested at 5-second intervals.
+- **Actual prompt texts in batch notifications** — `_buildBatchTexts()` pre-calculates the next 64 prompt texts (sequential: peeks ahead without advancing DB counter; random: random picks). Siri Announce now reads real AT prompt text, not a generic fallback.
+- **Custom chime sounds in batch notifications** — `.caf` files (`soft_bell.caf`, `tibetan_bowl.caf`, `simple_tone.caf`) added to iOS bundle; `DarwinNotificationDetails.sound` set to filename string. Plays the user's selected chime sound in OS notifications.
+- **Native Swift keepalive (AppDelegate.swift)** — `AVAudioPlayer` + `Timer` running entirely in Swift, independent of Dart. Fires every 3s on `RunLoop.main (.common)`: calls `setActive(true)` + restarts native player if stopped. Starts on background, stops timer on foreground. Handles audio interruption + media services reset.
+- **`near_silent_native.caf`** — 30-sec mono pcm_s16le native audio file for Swift player (independent of just_audio)
+- **`near_silent.m4a`** — 2-sec pink noise at -60dB for Dart-side `just_audio` silent loop
+- **`chimeKey` wired through to batch** — `PromptTimerService._scheduleBatch()` now passes `chimeKey: settings.selectedChime` to `NotificationService.scheduleBatch()`
+- **Dart-side session reactivation** — `_reactivateSession()` with 500ms delay in `finally` blocks of `_speak()` and `_playChime()` to counteract `flutter_tts` calling `setActive(false)` asynchronously
+
+### Changed
+- **Batch notification title set to `''` (empty)** — Siri Announce reads only the body (actual prompt text); no "AT Prompt" prefix
+- **Live notification title** — `'AT Prompt'` → `'Prompt'`
+- **`cancelBatchSlot()` on live fire** — when Dart countdown fires, corresponding OS notification is cancelled before showing live audio, preventing double-delivery
+
+### Added
 - **Questions prompt library** — 88 awareness check-in questions ("Is your neck free?", "Are you rushing?", etc.) added as built-in library `builtin_questions`, sortOrder 8. Migration runs on first launch of this build.
 - **Audio ducking** — background music (Spotify etc.) now lowers during prompts and restores after, like Apple Reminders. Uses `AVAudioSessionCategoryOptions.duckOthers` scoped to prompt delivery window only; silent loop stays `mixWithOthers` so music plays at full volume between prompts.
 
