@@ -23,6 +23,7 @@ Things remaining before App Store submission.
 
 - [ ] **Sequence gap control** — Gap between prompts in sequence mode is currently hardcoded at 2 seconds. Bruce noted 2s works for some sequences but is too fast for body scan. Add a per-sequence or global gap setting (e.g. 1–10 seconds, default 2). Could be a stepper in Settings under a "Sequence" section, or on the sequence screen itself.
 - [ ] **Voice picker UI** — Settings row to browse and select TTS voice from device voices.
+- [ ] **Per-library voice assignment** — Each library can have its own voice (TTS voice name or pre-recorded file set). When alternating libraries, the two libraries play in different voices — harder to ignore, stronger conditioning signal. UI: voice picker on the library detail screen, or a dedicated voice-per-library matrix in Settings. Architecture: `_voiceAssets` map in AudioService is the foundation; extend to per-library TTS voice selection + pre-recorded file lookup by library UID + prompt UID.
 - [ ] **Chime preview** — Tap a chime in Settings to hear it before selecting.
 - [ ] **Onboarding flow** — First-launch screen explaining the app, requesting notification permissions gracefully.
 - [ ] **Web background disclaimer** — Banner on web version noting prompts require the tab to stay open.
