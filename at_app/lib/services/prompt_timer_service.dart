@@ -177,40 +177,46 @@ class PromptTimerService {
   /// always 64 prompts queued ahead, regardless of interval length. iOS owns
   /// these; they fire even when the Dart isolate is fully suspended.
   Future<void> _scheduleBatch(AppSettings settings, Duration firstInterval) async {
-    final texts = await _buildBatchTexts(settings, NotificationService.batchSize);
+    final (texts, uids) = await _buildBatchData(settings, NotificationService.batchSize);
     await NotificationService.scheduleBatch(
       firstTime: DateTime.now().add(firstInterval),
       interval: _intervalFor(settings),
       texts: texts,
+      uids: uids,
       chimeKey: settings.selectedChime,
     );
   }
 
-  /// Build a list of [count] prompt texts for the upcoming batch slots.
+  /// Build lists of [count] prompt texts and UIDs for the upcoming batch slots.
   ///
   /// For sequential order: steps through from the current index without
   /// touching the persistent DB counter (pure preview — live fires own state).
   /// For random order: picks randomly from the library.
-  Future<List<String>> _buildBatchTexts(AppSettings settings, int count) async {
+  Future<(List<String>, List<String>)> _buildBatchData(AppSettings settings, int count) async {
     try {
       final prompts = await _promptRepo.getByLibrary(settings.primaryLibraryUid);
-      if (prompts.isEmpty) return [];
+      if (prompts.isEmpty) return (<String>[], <String>[]);
 
       final texts = <String>[];
+      final uids = <String>[];
       if (settings.promptOrder == PromptOrder.sequential) {
         // Peek ahead from current index without advancing the DB counter.
         final startIdx = settings.lastFiredSequentialIndex % prompts.length;
         for (int i = 0; i < count; i++) {
-          texts.add(prompts[(startIdx + i) % prompts.length].text);
+          final p = prompts[(startIdx + i) % prompts.length];
+          texts.add(p.text);
+          uids.add(p.uid);
         }
       } else {
         for (int i = 0; i < count; i++) {
-          texts.add(prompts[_random.nextInt(prompts.length)].text);
+          final p = prompts[_random.nextInt(prompts.length)];
+          texts.add(p.text);
+          uids.add(p.uid);
         }
       }
-      return texts;
+      return (texts, uids);
     } catch (_) {
-      return [];
+      return (<String>[], <String>[]);
     }
   }
 

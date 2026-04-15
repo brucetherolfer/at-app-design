@@ -21,6 +21,11 @@
 		AA0001110000000000000001 /* soft_bell.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000001 /* soft_bell.caf */; };
 		AA0001110000000000000002 /* tibetan_bowl.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000002 /* tibetan_bowl.caf */; };
 		AA0001110000000000000003 /* simple_tone.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000003 /* simple_tone.caf */; };
+		AA0001110000000000000004 /* fms_directions.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000004 /* fms_directions.caf */; };
+		AA0001110000000000000005 /* fms_seq_001.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000005 /* fms_seq_001.caf */; };
+		AA0001110000000000000006 /* fms_seq_002.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000006 /* fms_seq_002.caf */; };
+		AA0001110000000000000007 /* fms_seq_003.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000007 /* fms_seq_003.caf */; };
+		AA0001110000000000000008 /* fms_seq_004.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001210000000000000008 /* fms_seq_004.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +80,11 @@
 		AA0001210000000000000001 /* soft_bell.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = soft_bell.caf; sourceTree = "<group>"; };
 		AA0001210000000000000002 /* tibetan_bowl.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = tibetan_bowl.caf; sourceTree = "<group>"; };
 		AA0001210000000000000003 /* simple_tone.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = simple_tone.caf; sourceTree = "<group>"; };
+		AA0001210000000000000004 /* fms_directions.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = fms_directions.caf; sourceTree = "<group>"; };
+		AA0001210000000000000005 /* fms_seq_001.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = fms_seq_001.caf; sourceTree = "<group>"; };
+		AA0001210000000000000006 /* fms_seq_002.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = fms_seq_002.caf; sourceTree = "<group>"; };
+		AA0001210000000000000007 /* fms_seq_003.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = fms_seq_003.caf; sourceTree = "<group>"; };
+		AA0001210000000000000008 /* fms_seq_004.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff-core; path = fms_seq_004.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -167,6 +177,11 @@
 				AA0001210000000000000001 /* soft_bell.caf */,
 				AA0001210000000000000002 /* tibetan_bowl.caf */,
 				AA0001210000000000000003 /* simple_tone.caf */,
+				AA0001210000000000000004 /* fms_directions.caf */,
+				AA0001210000000000000005 /* fms_seq_001.caf */,
+				AA0001210000000000000006 /* fms_seq_002.caf */,
+				AA0001210000000000000007 /* fms_seq_003.caf */,
+				AA0001210000000000000008 /* fms_seq_004.caf */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -283,6 +298,11 @@
 				AA0001110000000000000001 /* soft_bell.caf in Resources */,
 				AA0001110000000000000002 /* tibetan_bowl.caf in Resources */,
 				AA0001110000000000000003 /* simple_tone.caf in Resources */,
+				AA0001110000000000000004 /* fms_directions.caf in Resources */,
+				AA0001110000000000000005 /* fms_seq_001.caf in Resources */,
+				AA0001110000000000000006 /* fms_seq_002.caf in Resources */,
+				AA0001110000000000000007 /* fms_seq_003.caf in Resources */,
+				AA0001110000000000000008 /* fms_seq_004.caf in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

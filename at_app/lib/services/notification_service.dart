@@ -89,10 +89,26 @@ class NotificationService {
     }
   }
 
+  /// Map prompt UID to a pre-generated voice .caf file, if one exists.
+  /// When present, the voice file is used as the notification sound instead
+  /// of the chime — the notification plays the spoken prompt text directly.
+  static String? _voiceCaf(String? uid) {
+    if (uid == null) return null;
+    const voiceFiles = {
+      'builtin_fms_directions': 'fms_directions.caf',
+      'fms_seq_001': 'fms_seq_001.caf',
+      'fms_seq_002': 'fms_seq_002.caf',
+      'fms_seq_003': 'fms_seq_003.caf',
+      'fms_seq_004': 'fms_seq_004.caf',
+    };
+    return voiceFiles[uid];
+  }
+
   static Future<void> scheduleBatch({
     required DateTime firstTime,
     required Duration interval,
     required List<String> texts,
+    List<String> uids = const [],
     String chimeKey = 'bell',
   }) async {
     if (!Platform.isIOS) return;
@@ -100,19 +116,7 @@ class NotificationService {
     // Cancel and reschedule in parallel for speed.
     await cancelBatch();
 
-    // Empty title → Siri reads only the prompt body, no "AT Prompt" prefix.
-    // Custom .caf sound plays the user's selected chime natively.
-    final sound = _chimeCaf(chimeKey);
-    final iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: false,
-      presentSound: true,
-      sound: sound,
-      interruptionLevel: InterruptionLevel.timeSensitive,
-    );
-    final details = NotificationDetails(iOS: iosDetails);
     final now = tz.TZDateTime.now(tz.local);
-
     DateTime next = firstTime;
     final futures = <Future<void>>[];
     const fallback = 'Time for your Alexander Technique practice.';
@@ -122,6 +126,20 @@ class NotificationService {
       final body = texts.isEmpty
           ? fallback
           : texts[min(i, texts.length - 1)];
+      final uid = uids.isEmpty ? null : uids[min(i, uids.length - 1)];
+
+      // Voice .caf takes priority when available (prompt spoken in notification).
+      // Falls back to chime .caf if no voice file exists for this prompt UID.
+      final sound = _voiceCaf(uid) ?? _chimeCaf(chimeKey);
+
+      final iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: false,
+        presentSound: true,
+        sound: sound,
+        interruptionLevel: InterruptionLevel.timeSensitive,
+      );
+      final details = NotificationDetails(iOS: iosDetails);
 
       if (scheduled.isAfter(now)) {
         futures.add(
