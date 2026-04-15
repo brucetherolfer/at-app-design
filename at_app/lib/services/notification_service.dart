@@ -95,11 +95,11 @@ class NotificationService {
   static String? _voiceCaf(String? uid) {
     if (uid == null) return null;
     const voiceFiles = {
-      'builtin_fms_directions': 'fms_directions.caf',
-      'fms_seq_001': 'fms_seq_001.caf',
-      'fms_seq_002': 'fms_seq_002.caf',
-      'fms_seq_003': 'fms_seq_003.caf',
-      'fms_seq_004': 'fms_seq_004.caf',
+      'fms_dir_001':  'fms_directions.caf',   // FM's Directions (single prompt)
+      'fms_seq_001':  'fms_seq_001.caf',
+      'fms_seq_002':  'fms_seq_002.caf',
+      'fms_seq_003':  'fms_seq_003.caf',
+      'fms_seq_004':  'fms_seq_004.caf',
     };
     return voiceFiles[uid];
   }
