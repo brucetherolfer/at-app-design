@@ -12,9 +12,23 @@ class AudioService {
 
   final FlutterTts _tts = FlutterTts();
   final AudioPlayer _chimePlayer = AudioPlayer();
+  final AudioPlayer _voiceFilePlayer = AudioPlayer();
   final AudioPlayer _silentPlayer = AudioPlayer();
   bool _initialized = false;
   bool _silentLoopRunning = false;
+
+  // Pre-recorded voice files keyed by prompt UID.
+  // When a match exists, the file plays via just_audio instead of TTS —
+  // same lock-screen path as the chime, no Siri required.
+  static const Map<String, String> _voiceAssets = {
+    'fms_dir_001': 'assets/audio/fms_directions.m4a',
+    'fms_seq_001': 'assets/audio/fms_seq_001.m4a',
+    'fms_seq_002': 'assets/audio/fms_seq_002.m4a',
+    'fms_seq_003': 'assets/audio/fms_seq_003.m4a',
+    'fms_seq_004': 'assets/audio/fms_seq_004.m4a',
+  };
+
+  String? _voiceAsset(String? uid) => uid == null ? null : _voiceAssets[uid];
 
   Future<void> init() async {
     if (_initialized) return;
@@ -61,8 +75,10 @@ class AudioService {
     required String voiceName,
     required double speechRate,
     required double speechPitch,
+    String? promptUid,
   }) async {
     await init();
+    final voiceFile = _voiceAsset(promptUid);
     switch (mode) {
       case AudioMode.silent:
         break;
@@ -77,7 +93,11 @@ class AudioService {
       case AudioMode.voice:
         await _duckForPrompt();
         try {
-          await _speak(text, voiceName, speechRate, speechPitch);
+          if (voiceFile != null) {
+            await _playVoiceFile(voiceFile);
+          } else {
+            await _speak(text, voiceName, speechRate, speechPitch);
+          }
         } finally {
           await _restoreMix();
         }
@@ -85,10 +105,13 @@ class AudioService {
       case AudioMode.toneAndVoice:
         await _duckForPrompt();
         try {
-          // Chime starts immediately (non-blocking), voice enters after decay delay
           unawaited(_playChime(chimeAsset));
           await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
-          await _speak(text, voiceName, speechRate, speechPitch);
+          if (voiceFile != null) {
+            await _playVoiceFile(voiceFile);
+          } else {
+            await _speak(text, voiceName, speechRate, speechPitch);
+          }
         } finally {
           await _restoreMix();
         }
@@ -147,6 +170,18 @@ class AudioService {
       }
     } catch (e) {
       debugPrint('AudioService restore mix error: $e');
+    }
+  }
+
+  Future<void> _playVoiceFile(String assetPath) async {
+    try {
+      await _voiceFilePlayer.setAsset(assetPath);
+      await _voiceFilePlayer.play();
+      await _voiceFilePlayer.seek(Duration.zero);
+    } catch (e) {
+      debugPrint('AudioService voice file error: $e');
+    } finally {
+      _reactivateSession();
     }
   }
 
@@ -234,12 +269,14 @@ class AudioService {
   Future<void> stopAll() async {
     await _tts.stop();
     await _chimePlayer.stop();
+    await _voiceFilePlayer.stop();
     await stopSilentLoop();
   }
 
   Future<void> dispose() async {
     await stopAll();
     await _chimePlayer.dispose();
+    await _voiceFilePlayer.dispose();
     await _silentPlayer.dispose();
   }
 

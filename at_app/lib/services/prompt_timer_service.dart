@@ -313,6 +313,7 @@ class PromptTimerService {
       voiceName: settings.selectedVoiceName,
       speechRate: settings.speechRate,
       speechPitch: settings.speechPitch,
+      promptUid: prompt.uid,
     );
   }
 
