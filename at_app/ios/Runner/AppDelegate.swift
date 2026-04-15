@@ -64,10 +64,15 @@ import AVFoundation
 
   private func configureAudioSession() {
     do {
+      // mixWithOthers only — no duckOthers here.
+      // Ducking is scoped to individual prompt deliveries on the Dart side
+      // (_duckForPrompt / _restoreMix in audio_service.dart). Setting duckOthers
+      // permanently causes the silent keepalive loop to suppress other audio
+      // (e.g. Spotify) for the entire session, not just during prompts.
       try AVAudioSession.sharedInstance().setCategory(
         .playback,
         mode: .default,
-        options: [.mixWithOthers, .duckOthers]
+        options: [.mixWithOthers]
       )
       try AVAudioSession.sharedInstance().setActive(true)
     } catch {

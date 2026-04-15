@@ -52,6 +52,10 @@ Mistakes made and rules to follow. Updated after corrections.
 
 - [2026-04-10] **`flutter_tts` calls `AVAudioSession.setActive(false)` asynchronously after each utterance, even with `setSharedInstance(true)`.** A synchronous reactivation immediately after `speak()` loses the race. Use a 500ms delayed `setActive(true)` in the `finally` block to counteract it. Also run a native Swift `Timer` every 3s as belt-and-suspenders.
 
+- [2026-04-15] **Scoped ducking (`_duckForPrompt` / `_restoreMix`) must stop the silent loop BEFORE session reconfigure, and fully reinitialise it (setAsset + setVolume + setLoopMode + play) AFTER restore.** The `105a12bc` attempt only called `play()` on an interrupted player — the reconfigure fires an interruption event via `audio_session`, which puts just_audio into a stopped/faulted state that `play()` alone can't recover from. Stop first, fully reinit after.
+
+- [2026-04-15] **Never set `duckOthers` permanently on the AVAudioSession when a silent keepalive loop is running.** The near-silence loop (even at volume 0.05) counts as active audio to iOS — `duckOthers` on a permanently active session suppresses other apps (Spotify, music) for the entire session, not just during prompts. Scope `duckOthers` to the prompt delivery window only.
+
 - [2026-04-10] **`await player.play()` with `LoopMode.one` in just_audio hangs forever — fire without await.** (Confirmed again — this is the same lesson as the silent loop from Session 10. Rule: any looping just_audio player must use `player.play().catchError(...)`, never `await player.play()`.)
 
 - [2026-04-10] **Dart `Timer.periodic` suspends when iOS backgrounds the app, even with `UIBackgroundModes: audio`.** The audio session can be kept alive natively (Swift `AVAudioPlayer` + `Timer` in `RunLoop.main`) but Dart timers stop ticking. For reliable background delivery, pre-schedule OS notifications (`UNNotificationRequest` via `flutter_local_notifications` `zonedSchedule()`). iOS owns these and fires them on schedule regardless of Dart VM state.

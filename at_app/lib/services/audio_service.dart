@@ -19,21 +19,18 @@ class AudioService {
   Future<void> init() async {
     if (_initialized) return;
 
-    // Configure audio session once. mixWithOthers allows Spotify/podcasts to
-    // keep playing alongside us. duckOthers lowers them while we speak/chime.
-    // The AppDelegate also sets this natively — this call keeps the Dart-side
-    // audio_session in sync.
+    // mixWithOthers only — no duckOthers here. Ducking is scoped to each
+    // prompt delivery via _duckForPrompt()/_restoreMix(). Permanent duckOthers
+    // would suppress Spotify/music the entire session because the silent
+    // keepalive loop counts as active audio to iOS.
     final session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration(
+    await session.configure(const AudioSessionConfiguration(
       avAudioSessionCategory: AVAudioSessionCategory.playback,
-      avAudioSessionCategoryOptions:
-          AVAudioSessionCategoryOptions.mixWithOthers |
-          AVAudioSessionCategoryOptions.duckOthers,
+      avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers,
       avAudioSessionMode: AVAudioSessionMode.defaultMode,
     ));
 
-    // When an interruption (phone call, Siri) ends, the AppDelegate reactivates
-    // the native session. Also resume the silent loop here on the Dart side.
+    // When an interruption (phone call, Siri) ends, re-activate and resume loop.
     session.interruptionEventStream.listen((event) {
       if (!event.begin && _silentLoopRunning) {
         session.setActive(true).then((_) {
@@ -43,14 +40,14 @@ class AudioService {
     });
 
     await _tts.setSharedInstance(true);
-    await _tts.awaitSpeakCompletion(true);
+    await _tts.awaitSpeakCompletion(true); // speak() blocks until speech finishes
     await _tts.setIosAudioCategory(
       IosTextToSpeechAudioCategory.playback,
       [
         IosTextToSpeechAudioCategoryOptions.allowBluetooth,
         IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
         IosTextToSpeechAudioCategoryOptions.mixWithOthers,
-        IosTextToSpeechAudioCategoryOptions.duckOthers,
+        // No duckOthers here — ducking is managed by _duckForPrompt()
       ],
       IosTextToSpeechAudioMode.defaultMode,
     );
@@ -70,47 +67,87 @@ class AudioService {
       case AudioMode.silent:
         break;
       case AudioMode.tone:
-        await _playChime(chimeAsset);
+        await _duckForPrompt();
+        try {
+          await _playChime(chimeAsset);
+        } finally {
+          await _restoreMix();
+        }
         break;
       case AudioMode.voice:
-        await _speak(text, voiceName, speechRate, speechPitch);
+        await _duckForPrompt();
+        try {
+          await _speak(text, voiceName, speechRate, speechPitch);
+        } finally {
+          await _restoreMix();
+        }
         break;
       case AudioMode.toneAndVoice:
-        unawaited(_playChime(chimeAsset));
-        await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
-        await _speak(text, voiceName, speechRate, speechPitch);
+        await _duckForPrompt();
+        try {
+          // Chime starts immediately (non-blocking), voice enters after decay delay
+          unawaited(_playChime(chimeAsset));
+          await Future.delayed(Duration(milliseconds: _voiceDelayFor(chimeAsset)));
+          await _speak(text, voiceName, speechRate, speechPitch);
+        } finally {
+          await _restoreMix();
+        }
         break;
     }
   }
 
-  /// Start the near-inaudible background audio loop.
-  ///
-  /// Plays a 2-second near-silent pink noise file on repeat. This keeps the
-  /// AVAudioSession active so iOS doesn't suspend the app between prompts.
-  /// Volume is set low (0.05) — barely perceptible, not digital silence.
-  Future<void> startSilentLoop() async {
-    if (_silentLoopRunning) return;
+  /// Switch to duckOthers before prompt delivery so music lowers during
+  /// chime + voice. Stops the silent loop first — reconfiguring the session
+  /// while just_audio is playing triggers an interruption event that can
+  /// leave the player in a broken state. The native Swift keepalive keeps
+  /// AVAudioSession alive while the loop is paused.
+  Future<void> _duckForPrompt() async {
     try {
-      await init();
+      // Stop the Dart silent loop before session reconfigure.
+      await _silentPlayer.stop();
       final session = await AudioSession.instance;
+      await session.configure(AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.mixWithOthers |
+            AVAudioSessionCategoryOptions.duckOthers,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      ));
       await session.setActive(true);
-      await _silentPlayer.setAsset('assets/audio/near_silent.m4a');
-      await _silentPlayer.setVolume(0.05);
-      await _silentPlayer.setLoopMode(LoopMode.one);
-      _silentPlayer.play().catchError((Object e) {
-        debugPrint('AudioService silent loop error: $e');
-        _silentLoopRunning = false;
-      });
-      _silentLoopRunning = true;
     } catch (e) {
-      debugPrint('AudioService startSilentLoop error: $e');
+      debugPrint('AudioService duck error: $e');
     }
   }
 
-  Future<void> stopSilentLoop() async {
-    if (!_silentLoopRunning) return;
-    try { await _silentPlayer.stop(); } catch (_) {}
-    _silentLoopRunning = false;
+  /// Restore mixWithOthers after prompt delivery so music returns to full
+  /// volume. Fully reinitialises the silent loop (setAsset + setVolume +
+  /// setLoopMode + play) — a reconfigure interrupts just_audio's internal
+  /// player state, so calling play() alone on the interrupted player is not
+  /// enough; the asset must be re-set.
+  Future<void> _restoreMix() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.mixWithOthers,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      ));
+      await session.setActive(true);
+      // Full reinit of the silent loop after session reconfigure.
+      if (_silentLoopRunning) {
+        try {
+          await _silentPlayer.setAsset('assets/audio/near_silent.m4a');
+          await _silentPlayer.setVolume(0.05);
+          await _silentPlayer.setLoopMode(LoopMode.one);
+        } catch (_) {}
+        _silentPlayer.play().catchError((Object e) {
+          debugPrint('AudioService silent loop resume error: $e');
+          _silentLoopRunning = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('AudioService restore mix error: $e');
+    }
   }
 
   Future<void> _playChime(String assetKey) async {
@@ -142,16 +179,16 @@ class AudioService {
     } catch (e) {
       debugPrint('AudioService TTS error: $e');
     } finally {
-      // flutter_tts calls setActive(false) after each utterance even with
-      // setSharedInstance(true). Re-assert immediately so the silent loop
-      // keeps the session alive and the Dart isolate stays running.
+      // flutter_tts calls setActive(false) asynchronously after speak()
+      // returns even with setSharedInstance(true). Reactivate 500ms later
+      // to counteract it before _restoreMix() also reasserts the session.
       _reactivateSession();
     }
   }
 
   void _reactivateSession() {
-    // Delay 500 ms — flutter_tts calls setActive(false) asynchronously
-    // after speak() returns. Running immediately loses the race.
+    // Delay 500ms — flutter_tts deactivates the session asynchronously
+    // after speak() returns, losing a synchronous call here.
     Future.delayed(const Duration(milliseconds: 500), () {
       AudioSession.instance.then((session) {
         session.setActive(true).catchError((Object e) {
@@ -164,6 +201,34 @@ class AudioService {
 
   Future<List<dynamic>> getAvailableVoices() async {
     return await _tts.getVoices ?? [];
+  }
+
+  /// Start a near-inaudible audio loop to keep AVAudioSession active.
+  /// iOS only suspends background apps when there is no active audio session.
+  Future<void> startSilentLoop() async {
+    if (_silentLoopRunning) return;
+    try {
+      await init();
+      final session = await AudioSession.instance;
+      await session.setActive(true);
+      await _silentPlayer.setAsset('assets/audio/near_silent.m4a');
+      await _silentPlayer.setVolume(0.05);
+      await _silentPlayer.setLoopMode(LoopMode.one);
+      // Not awaited — play() for LoopMode.one never completes (infinite loop).
+      _silentPlayer.play().catchError((Object e) {
+        debugPrint('AudioService silent loop error: $e');
+        _silentLoopRunning = false;
+      });
+      _silentLoopRunning = true;
+    } catch (e) {
+      debugPrint('AudioService startSilentLoop error: $e');
+    }
+  }
+
+  Future<void> stopSilentLoop() async {
+    if (!_silentLoopRunning) return;
+    try { await _silentPlayer.stop(); } catch (_) {}
+    _silentLoopRunning = false;
   }
 
   Future<void> stopAll() async {

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- **Audio ducking regression** — `duckOthers` was permanently set on the shared AVAudioSession (both AppDelegate and audio_service init), causing the silent keepalive loop to suppress Spotify/music for the entire session. Fixed: `duckOthers` is now scoped to individual prompt delivery only (`_duckForPrompt()` / `_restoreMix()`). Session idles with `mixWithOthers` only between prompts. Silent loop is fully reinitialised (setAsset + setVolume + setLoopMode + play) after each restore — previous attempt only called play() on an interrupted player, which wasn't enough.
+
 ### Added
 - **Batch OS notification scheduling (64-slot rolling window)** — pre-schedules 64 `UNNotificationRequest` objects at session start using `flutter_local_notifications` `zonedSchedule()`. iOS fires these regardless of Dart VM state. IDs `2000–2063`. Rolling window: rescheduled on every live Dart fire so there are always 64 prompts queued ahead. Tested at 5-second intervals.
 - **Actual prompt texts in batch notifications** — `_buildBatchTexts()` pre-calculates the next 64 prompt texts (sequential: peeks ahead without advancing DB counter; random: random picks). Siri Announce now reads real AT prompt text, not a generic fallback.

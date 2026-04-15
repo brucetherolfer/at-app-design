@@ -389,6 +389,35 @@ True live audio (TTS voice + chime from Dart) through lock requires a background
 
 ---
 
+## Session 13 — Fix audio ducking regression
+
+### Problem
+After the Session 12 batch notification commit, audio ducking was permanently suppressing Spotify for the entire session — music stayed low all the time, only briefly restoring right after a prompt fired.
+
+### Root cause
+`ee891ebb` configured `AVAudioSessionCategoryOptions.mixWithOthers | .duckOthers` permanently on the shared session (both in `AppDelegate.swift` and `audio_service.dart` init). The near-silent keepalive loop (0.05 volume, looping constantly) counts as "active audio" to iOS — with `duckOthers` set permanently, iOS ducks Spotify for the entire session. The brief restore after each prompt was caused by `flutter_tts` momentarily calling `setActive(false)` after each utterance, which released the duck for ~500ms until `_reactivateSession()` fired and re-suppressed it.
+
+Behaviour was identical whether app was open, backgrounded, or on lock screen — same cause, same symptom.
+
+### Fix
+Two-part change:
+
+**AppDelegate.swift**: `options: [.mixWithOthers, .duckOthers]` → `options: [.mixWithOthers]`. Native session never sets `duckOthers`, so the Swift keepalive timer firing `setActive(true)` every 3s no longer re-ducks Spotify between prompts.
+
+**audio_service.dart**: Scoped ducking — `duckOthers` is only applied during actual prompt delivery (chime + voice), then removed. Two methods:
+- `_duckForPrompt()`: stops the Dart silent loop first (prevents interruption events from corrupting player state), configures `mixWithOthers | duckOthers`, calls `setActive(true)`
+- `_restoreMix()`: configures `mixWithOthers` only, calls `setActive(true)`, then **fully reinitialises** the silent loop (setAsset + setVolume + setLoopMode + play). This is the key fix vs. the `105a12bc` attempt — that version just called `play()` on an already-interrupted player, which wasn't enough.
+
+Removed `duckOthers` from `flutter_tts.setIosAudioCategory` options as well, so TTS doesn't fight the session config.
+
+### Result (confirmed on device)
+- App open: Spotify plays at full volume between prompts, ducks during prompt ✓
+- Other apps: same ✓
+- Lock screen with headphones: same ✓
+- Lock screen without headphones: same ✓
+
+---
+
 ## Session 11 — Questions library, audio ducking, release build workflow
 
 ### Questions prompt library added
